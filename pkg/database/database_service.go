@@ -14,7 +14,8 @@ import (
 )
 
 type DatabaseService struct {
-	Client *dynamodb.Client
+	Client    *dynamodb.Client
+	TableName string
 }
 
 func New() (*DatabaseService, error) {
@@ -34,9 +35,7 @@ func New() (*DatabaseService, error) {
 	}
 
 	if isTableExists {
-		return &DatabaseService{
-			Client: svc,
-		}, nil
+		return new(tableName, svc), nil
 	}
 
 	err = createTable(ctx, svc, tableName)
@@ -44,9 +43,14 @@ func New() (*DatabaseService, error) {
 		return nil, err
 	}
 
+	return new(tableName, svc), nil
+}
+
+func new(tableName string, client *dynamodb.Client) *DatabaseService {
 	return &DatabaseService{
-		Client: svc,
-	}, nil
+		TableName: tableName,
+		Client:    client,
+	}
 }
 
 func tableExists(ctx context.Context, svc *dynamodb.Client, tableName string) (bool, error) {

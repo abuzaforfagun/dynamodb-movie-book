@@ -1,7 +1,6 @@
 package main
 
 import (
-	"context"
 	"log"
 
 	_ "github.com/abuzaforfagun/dynamodb-movie-book/docs"
@@ -11,8 +10,7 @@ import (
 	movies_handler "github.com/abuzaforfagun/dynamodb-movie-book/pkg/handlers/movies"
 	reviews_handler "github.com/abuzaforfagun/dynamodb-movie-book/pkg/handlers/reviews"
 	users_handler "github.com/abuzaforfagun/dynamodb-movie-book/pkg/handlers/users"
-	"github.com/aws/aws-sdk-go-v2/aws"
-	"github.com/aws/aws-sdk-go-v2/service/dynamodb"
+	"github.com/abuzaforfagun/dynamodb-movie-book/pkg/repositories"
 	"github.com/gin-gonic/gin"
 	swaggerFiles "github.com/swaggo/files"
 	ginSwagger "github.com/swaggo/gin-swagger"
@@ -34,17 +32,7 @@ func main() {
 	if err != nil {
 		log.Fatalf("failed to connect database %x", err)
 	}
-
-	svc := dbService.Client
-
-	ctx := context.TODO()
-	output, err := svc.DescribeTable(ctx, &dynamodb.DescribeTableInput{
-		TableName: aws.String("MovieBook_local"),
-	})
-	if err != nil {
-		log.Println(err)
-	}
-	log.Println(output)
+	userRepository := repositories.New(dbService.Client, dbService.TableName)
 
 	router := gin.Default()
 	router.GET("/swagger/*any", ginSwagger.WrapHandler(swaggerFiles.Handler))
@@ -61,7 +49,7 @@ func main() {
 	router.POST("/movies/:id/reviews", reviewHandler.AddReview)
 	router.DELETE("/movies:id/reviews:review_id", reviewHandler.DeleteReview)
 
-	userHandler := users_handler.New()
+	userHandler := users_handler.New(userRepository)
 	router.GET("/users/:id", userHandler.GetUser)
 	router.POST("/users/", userHandler.AddUser)
 	router.PUT("/users/:id", userHandler.UpdateUser)
