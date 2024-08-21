@@ -1,5 +1,6 @@
 {
     "connection_strings": {
-        "dynamoDb":"hello"
+        "region": "local",
+        "table_name": "MovieBook_local"
     }
 }

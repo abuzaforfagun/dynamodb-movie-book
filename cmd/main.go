@@ -1,16 +1,18 @@
 package main
 
 import (
-	"fmt"
+	"context"
 	"log"
-	"path/filepath"
 
 	_ "github.com/abuzaforfagun/dynamodb-movie-book/docs"
-	"github.com/abuzaforfagun/dynamodb-movie-book/pkg/config"
+	"github.com/abuzaforfagun/dynamodb-movie-book/initializers"
+	"github.com/abuzaforfagun/dynamodb-movie-book/pkg/database"
 	actors_handler "github.com/abuzaforfagun/dynamodb-movie-book/pkg/handlers/actors"
 	movies_handler "github.com/abuzaforfagun/dynamodb-movie-book/pkg/handlers/movies"
 	reviews_handler "github.com/abuzaforfagun/dynamodb-movie-book/pkg/handlers/reviews"
 	users_handler "github.com/abuzaforfagun/dynamodb-movie-book/pkg/handlers/users"
+	"github.com/aws/aws-sdk-go-v2/aws"
+	"github.com/aws/aws-sdk-go-v2/service/dynamodb"
 	"github.com/gin-gonic/gin"
 	swaggerFiles "github.com/swaggo/files"
 	ginSwagger "github.com/swaggo/gin-swagger"
@@ -27,15 +29,23 @@ import (
 
 // @host      localhost:5001
 func main() {
-	configPath := filepath.Join("..", "pkg", "config", "config.json")
-	var config config.Config
-	err := config.LoadConfig(configPath)
+	initializers.LoadEnvVariables()
+	dbService, err := database.New()
 	if err != nil {
-		fmt.Println(err)
-		log.Fatalf("failed to load config. Error: %x", err)
+		log.Fatalf("failed to connect database %x", err)
 	}
 
-	log.Println(config)
+	svc := dbService.Client
+
+	ctx := context.TODO()
+	output, err := svc.DescribeTable(ctx, &dynamodb.DescribeTableInput{
+		TableName: aws.String("MovieBook_local"),
+	})
+	if err != nil {
+		log.Println(err)
+	}
+	log.Println(output)
+
 	router := gin.Default()
 	router.GET("/swagger/*any", ginSwagger.WrapHandler(swaggerFiles.Handler))
 
