@@ -1,0 +1,494 @@
+definitions:
+  core_models.ActorRole:
+    enum:
+    - 0
+    - 1
+    - 2
+    - 3
+    - 4
+    - 5
+    - 6
+    type: integer
+    x-enum-varnames:
+    - LeadHero
+    - LeadHeroin
+    - LeadBillen
+    - Hero
+    - Heroin
+    - Billen
+    - Other
+  request_model.ActorRole:
+    properties:
+      actor_id:
+        type: string
+      role:
+        $ref: '#/definitions/core_models.ActorRole'
+    type: object
+  request_model.AddActor:
+    properties:
+      date_of_birth:
+        type: string
+      name:
+        type: string
+    type: object
+  request_model.AddMovie:
+    properties:
+      actors:
+        items:
+          $ref: '#/definitions/request_model.ActorRole'
+        type: array
+      release_year:
+        type: integer
+      title:
+        type: string
+    type: object
+  request_model.AddUser:
+    properties:
+      email:
+        type: string
+      name:
+        type: string
+    type: object
+  request_model.UpdateUser:
+    properties:
+      name:
+        type: string
+    type: object
+  response_model.ActorDetails:
+    properties:
+      id:
+        type: integer
+      movies:
+        items:
+          $ref: '#/definitions/response_model.MovieOfActor'
+        type: array
+      pictures:
+        items:
+          type: string
+        type: array
+      string:
+        type: string
+      thumbnail_url:
+        type: string
+    type: object
+  response_model.Creator:
+    properties:
+      id:
+        type: string
+      name:
+        type: string
+    type: object
+  response_model.Movie:
+    properties:
+      id:
+        type: string
+      release_year:
+        type: integer
+      score:
+        type: number
+      thumbnail_url:
+        type: string
+      title:
+        type: string
+      total_reviews:
+        type: integer
+    type: object
+  response_model.MovieActor:
+    properties:
+      id:
+        type: string
+      name:
+        type: string
+      role:
+        type: string
+    type: object
+  response_model.MovieDetails:
+    properties:
+      actors:
+        items:
+          $ref: '#/definitions/response_model.MovieActor'
+        type: array
+      genre:
+        type: string
+      id:
+        type: string
+      pictures:
+        items:
+          type: string
+        type: array
+      rating:
+        type: number
+      release_year:
+        type: string
+      reviews:
+        items:
+          $ref: '#/definitions/response_model.Review'
+        type: array
+      title:
+        type: string
+    type: object
+  response_model.MovieOfActor:
+    properties:
+      id:
+        type: string
+      name:
+        type: string
+      score:
+        type: number
+      thumbnail_url:
+        type: string
+    type: object
+  response_model.Review:
+    properties:
+      comment:
+        type: string
+      created_by:
+        $ref: '#/definitions/response_model.Creator'
+      id:
+        type: integer
+      score:
+        type: number
+    type: object
+  response_model.ReviewOfUser:
+    properties:
+      comment:
+        type: string
+      id:
+        type: string
+      movie_id:
+        type: string
+      movie_thumbnail:
+        type: string
+      movie_title:
+        type: string
+      rating:
+        type: integer
+    type: object
+  response_model.User:
+    properties:
+      email:
+        type: string
+      id:
+        type: string
+      name:
+        type: string
+      reviews:
+        items:
+          $ref: '#/definitions/response_model.ReviewOfUser'
+        type: array
+      watch_list:
+        items:
+          $ref: '#/definitions/response_model.WatchListMovie'
+        type: array
+    type: object
+  response_model.WatchListMovie:
+    properties:
+      id:
+        type: string
+      thumbnail_url:
+        type: string
+      title:
+        type: string
+    type: object
+host: localhost:5001
+info:
+  contact:
+    email: support@swagger.io
+    name: API Support
+    url: http://www.swagger.io/support
+  description: This is a sample server Petstore server.
+  termsOfService: http://swagger.io/terms/
+  title: Swagger Example API
+  version: "1.0"
+paths:
+  /actors:
+    post:
+      consumes:
+      - multipart/form-data
+      description: Add acotr with thumbnail image and multiple picture files
+      parameters:
+      - description: movie payload
+        in: body
+        name: payload
+        required: true
+        schema:
+          $ref: '#/definitions/request_model.AddActor'
+      - description: Upload thumbnail image
+        in: formData
+        name: thumbnail
+        required: true
+        type: file
+      - description: Upload multiple pictures (Swagger 2.0 UI does not support multiple
+          file upload, use curl or Postman)
+        in: formData
+        name: pictures
+        type: file
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+      summary: Add new actor
+      tags:
+      - actors
+  /actors/{id}:
+    get:
+      description: Get actor details
+      parameters:
+      - description: Actor id
+        in: query
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/response_model.ActorDetails'
+            type: array
+      summary: Get actor details
+      tags:
+      - actors
+  /actors/{id}/photos:
+    post:
+      consumes:
+      - multipart/form-data
+      description: Add pictures of the actor
+      parameters:
+      - description: actor id
+        in: query
+        name: id
+        required: true
+        type: integer
+      - description: Upload multiple pictures (Swagger 2.0 UI does not support multiple
+          file upload, use curl or Postman)
+        in: formData
+        name: pictures
+        type: file
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+      summary: Add picture of actor
+      tags:
+      - actors
+  /movie/{id}/reviews:
+    post:
+      description: Add review
+      parameters:
+      - description: Movie Id
+        in: query
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+      summary: Add movie review
+      tags:
+      - reviews
+  /movie/{id}/reviews/{review_id}:
+    delete:
+      description: Add review
+      parameters:
+      - description: Movie Id
+        in: query
+        name: id
+        required: true
+        type: integer
+      - description: Review Id
+        in: query
+        name: review_id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+      summary: Add movie review
+      tags:
+      - reviews
+  /movies:
+    get:
+      description: Get all movies
+      parameters:
+      - description: search
+        in: query
+        name: search
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/response_model.Movie'
+            type: array
+      summary: Get movies
+      tags:
+      - movies
+    post:
+      description: Add new movie
+      parameters:
+      - description: movie payload
+        in: body
+        name: AddMovieRequest
+        required: true
+        schema:
+          $ref: '#/definitions/request_model.AddMovie'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+      summary: Add movie
+      tags:
+      - movies
+  /movies/{id}:
+    delete:
+      description: Delete movie by id
+      parameters:
+      - description: Movie Id
+        in: query
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "204":
+          description: No Content
+      summary: Delete movie
+      tags:
+      - movies
+    get:
+      description: Get all movies
+      parameters:
+      - description: Movie id
+        in: query
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/response_model.MovieDetails'
+      summary: Get movie
+      tags:
+      - movies
+  /movies/{id}/photos:
+    post:
+      description: Add pictures to the movie
+      parameters:
+      - description: movie id
+        in: query
+        name: id
+        required: true
+        type: string
+      - description: Upload multiple pictures (Swagger 2.0 UI does not support multiple
+          file upload, use curl or Postman)
+        in: formData
+        name: pictures
+        type: file
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+      summary: Add pictures to the movie
+      tags:
+      - movies
+  /movies/genre/{id}:
+    get:
+      description: Get movies by genre
+      parameters:
+      - description: Genre Id
+        in: query
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/response_model.Movie'
+            type: array
+      summary: Get movies by genre
+      tags:
+      - movies
+  /users:
+    post:
+      description: Add new user
+      parameters:
+      - description: User payload
+        in: body
+        name: AddUserRequest
+        required: true
+        schema:
+          $ref: '#/definitions/request_model.AddUser'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+      summary: Add user
+      tags:
+      - users
+  /users/{id}:
+    get:
+      description: Get user details
+      parameters:
+      - description: User id
+        in: query
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/response_model.User'
+            type: array
+      summary: Get user details
+      tags:
+      - users
+    put:
+      description: Update existing user
+      parameters:
+      - description: User id
+        in: query
+        name: id
+        required: true
+        type: string
+      - description: Update user payload
+        in: body
+        name: UpdateUserRequest
+        required: true
+        schema:
+          $ref: '#/definitions/request_model.UpdateUser'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+      summary: Update user
+      tags:
+      - users
+swagger: "2.0"
