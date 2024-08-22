@@ -21,7 +21,7 @@ type DatabaseService struct {
 func New() (*DatabaseService, error) {
 	tableName := os.Getenv("TABLE_NAME")
 	if tableName == "" {
-		fmt.Errorf("failed to load the table name")
+		log.Println("failed to load the table name")
 	}
 
 	awsConfig := infrastructure.NewAWSConfig()

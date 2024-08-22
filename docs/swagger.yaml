@@ -24,13 +24,6 @@ definitions:
       role:
         $ref: '#/definitions/core_models.ActorRole'
     type: object
-  request_model.AddActor:
-    properties:
-      date_of_birth:
-        type: string
-      name:
-        type: string
-    type: object
   request_model.AddMovie:
     properties:
       actors:
@@ -207,12 +200,12 @@ paths:
       - multipart/form-data
       description: Add acotr with thumbnail image and multiple picture files
       parameters:
-      - description: movie payload
-        in: body
-        name: payload
-        required: true
-        schema:
-          $ref: '#/definitions/request_model.AddActor'
+      - in: formData
+        name: date_of_birth
+        type: string
+      - in: formData
+        name: name
+        type: string
       - description: Upload thumbnail image
         in: formData
         name: thumbnail

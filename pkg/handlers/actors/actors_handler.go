@@ -1,13 +1,25 @@
 package actors_handler
 
 import (
+	"log"
+	"net/http"
+	"time"
+
+	db_model "github.com/abuzaforfagun/dynamodb-movie-book/pkg/models/db"
+	request_model "github.com/abuzaforfagun/dynamodb-movie-book/pkg/models/requests"
+	"github.com/abuzaforfagun/dynamodb-movie-book/pkg/repositories"
 	"github.com/gin-gonic/gin"
+	"github.com/google/uuid"
 )
 
-type ActorsHandler struct{}
+type ActorsHandler struct {
+	actorRepository repositories.ActorRepository
+}
 
-func New() ActorsHandler {
-	return ActorsHandler{}
+func New(actorRepository repositories.ActorRepository) ActorsHandler {
+	return ActorsHandler{
+		actorRepository: actorRepository,
+	}
 }
 
 // @Summary Get actor details
@@ -25,12 +37,81 @@ func (ah *ActorsHandler) GetDetails(c *gin.Context) {
 // @Tags actors
 // @Accept multipart/form-data
 // @Produce json
-// @Param payload body request_model.AddActor true "movie payload"
+// @Param payload formData request_model.AddActor true "movie payload"
 // @Param thumbnail formData file true "Upload thumbnail image"
 // @Param pictures formData file false "Upload multiple pictures (Swagger 2.0 UI does not support multiple file upload, use curl or Postman)"
 // @Success 200
 // @Router /actors [post]
-func (ah *ActorsHandler) Add(c *gin.Context) {}
+func (h *ActorsHandler) Add(c *gin.Context) {
+
+	name := c.PostForm("name")
+	dateOfBirthStr := c.PostForm("date_of_birth")
+
+	dateOfBirth, err := time.Parse("2006-01-02", dateOfBirthStr)
+
+	if name == "" || err != nil {
+		log.Println(err)
+		c.JSON(http.StatusBadRequest, gin.H{})
+		return
+	}
+
+	actorRequest := &request_model.AddActor{
+		Name:        c.PostForm("name"),
+		DateOfBirth: dateOfBirth,
+	}
+
+	actorId := uuid.New().String()
+
+	thumbnailUrl, err := uploadThumbnail(c)
+	if err != nil {
+		log.Println("ERROR: unable to upload thumbnail", err)
+		c.JSON(http.StatusInternalServerError, gin.H{})
+		return
+	}
+
+	photosUrl, err := uploadPictures(c)
+	if err != nil {
+		log.Println("ERROR: unable to upload pictures", err)
+		c.JSON(http.StatusInternalServerError, gin.H{})
+		go deleteUploadedPhotos([]string{thumbnailUrl})
+		return
+	}
+
+	actorDbModel := db_model.AddActor{
+		PK:           "ACTOR#" + actorId,
+		SK:           "ACTOR#" + actorId,
+		Id:           actorId,
+		Name:         actorRequest.Name,
+		DateOfBirth:  actorRequest.DateOfBirth.Format("2006-01-02"),
+		ThumbnailUrl: thumbnailUrl,
+		Pictures:     photosUrl,
+	}
+
+	err = h.actorRepository.Add(actorDbModel)
+	if err != nil {
+		log.Println("ERROR: unable to create actor", err)
+		go deleteUploadedPhotos(append(photosUrl, thumbnailUrl))
+
+		c.JSON(http.StatusBadRequest, gin.H{})
+		return
+	}
+
+	c.JSON(http.StatusAccepted, gin.H{})
+}
+
+func deleteUploadedPhotos(photos []string) {
+	//TODO: Delete photos
+}
+
+func uploadThumbnail(c *gin.Context) (string, error) {
+	//TODO: Upload photos
+	return "", nil
+}
+
+func uploadPictures(c *gin.Context) ([]string, error) {
+	//TODO: Upload picture
+	return []string{}, nil
+}
 
 // @Summary Add picture of actor
 // @Description Add pictures of the actor

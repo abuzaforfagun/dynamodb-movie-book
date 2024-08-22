@@ -32,7 +32,8 @@ func main() {
 	if err != nil {
 		log.Fatalf("failed to connect database %x", err)
 	}
-	userRepository := repositories.New(dbService.Client, dbService.TableName)
+	userRepository := repositories.NewUserRepository(dbService.Client, dbService.TableName)
+	actorRepository := repositories.NewActorRepository(dbService.Client, dbService.TableName)
 
 	router := gin.Default()
 	router.GET("/swagger/*any", ginSwagger.WrapHandler(swaggerFiles.Handler))
@@ -54,7 +55,7 @@ func main() {
 	router.POST("/users/", userHandler.AddUser)
 	router.PUT("/users/:id", userHandler.UpdateUser)
 
-	actorHandler := actors_handler.New()
+	actorHandler := actors_handler.New(actorRepository)
 	router.POST("/actors", actorHandler.Add)
 	router.GET("/actors/:id", actorHandler.GetDetails)
 	router.POST("/actors/:id/photos", actorHandler.AddPictures)

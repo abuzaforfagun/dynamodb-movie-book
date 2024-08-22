@@ -35,13 +35,14 @@ const docTemplate = `{
                 "summary": "Add new actor",
                 "parameters": [
                     {
-                        "description": "movie payload",
-                        "name": "payload",
-                        "in": "body",
-                        "required": true,
-                        "schema": {
-                            "$ref": "#/definitions/request_model.AddActor"
-                        }
+                        "type": "string",
+                        "name": "date_of_birth",
+                        "in": "formData"
+                    },
+                    {
+                        "type": "string",
+                        "name": "name",
+                        "in": "formData"
                     },
                     {
                         "type": "file",
@@ -488,17 +489,6 @@ const docTemplate = `{
                 },
                 "role": {
                     "$ref": "#/definitions/core_models.ActorRole"
-                }
-            }
-        },
-        "request_model.AddActor": {
-            "type": "object",
-            "properties": {
-                "date_of_birth": {
-                    "type": "string"
-                },
-                "name": {
-                    "type": "string"
                 }
             }
         },
