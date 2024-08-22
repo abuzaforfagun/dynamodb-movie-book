@@ -43,7 +43,7 @@ func (h *MoviesHandler) GetAllMovies(c *gin.Context) {
 // @Summary Get movie
 // @Description Get all movies
 // @Tags movies
-// @Param id query int true "Movie id"
+// @Param id path int true "Movie id"
 // @Produce json
 // @Success 200 {object} response_model.MovieDetails
 // @Router /movies/{id} [get]

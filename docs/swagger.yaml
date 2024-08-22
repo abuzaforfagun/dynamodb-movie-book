@@ -357,7 +357,7 @@ paths:
       description: Get all movies
       parameters:
       - description: Movie id
-        in: query
+        in: path
         name: id
         required: true
         type: integer

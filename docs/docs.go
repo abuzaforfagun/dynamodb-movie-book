@@ -269,7 +269,7 @@ const docTemplate = `{
                         "type": "integer",
                         "description": "Movie id",
                         "name": "id",
-                        "in": "query",
+                        "in": "path",
                         "required": true
                     }
                 ],
