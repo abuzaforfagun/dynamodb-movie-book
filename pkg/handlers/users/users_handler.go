@@ -3,6 +3,7 @@ package users_handler
 import (
 	"log"
 	"net/http"
+	"time"
 
 	db_model "github.com/abuzaforfagun/dynamodb-movie-book/pkg/models/db"
 	request_model "github.com/abuzaforfagun/dynamodb-movie-book/pkg/models/requests"
@@ -41,11 +42,12 @@ func (uh *UserHandler) AddUser(c *gin.Context) {
 
 	userId := uuid.New().String()
 	dbModel := db_model.AddUser{
-		PK:    "USER#" + userId,
-		SK:    "USER#" + userId,
-		Id:    uuid.New().String(),
-		Name:  requestModel.Name,
-		Email: requestModel.Email,
+		PK:        "USER#" + userId,
+		SK:        "USER#" + userId,
+		Id:        uuid.New().String(),
+		Name:      requestModel.Name,
+		Email:     requestModel.Email,
+		CreatedAt: time.Now().UTC().String(),
 	}
 
 	err = uh.userRepository.Add(dbModel)

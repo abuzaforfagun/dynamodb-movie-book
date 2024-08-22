@@ -8,4 +8,6 @@ type AddActor struct {
 	DateOfBirth  string   `dynamodbav:"DateOfBirth"`
 	ThumbnailUrl string   `dynamodbav:"ThumbnailUrl"`
 	Pictures     []string `dynamodbav:"Pictures"`
+	Type         string   `dynamodbav:"Type"`
+	CreatedAt    string   `dynamodbav:"CreatedAt"`
 }

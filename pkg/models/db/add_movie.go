@@ -8,6 +8,8 @@ type AddMovie struct {
 	Id          string `dynamodbav:"MovieId"`
 	Title       string `dynamodbav:"Title"`
 	ReleaseYear int    `dynamodbav:"ReleaseYear"`
+	Type        string `dynamodbav:"Type"`
+	CreatedAt   string `dynamodbav:"CreatedAt"`
 }
 
 type AddMovieActor struct {

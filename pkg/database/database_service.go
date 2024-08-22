@@ -34,12 +34,27 @@ func New() (*DatabaseService, error) {
 		return nil, err
 	}
 
-	if isTableExists {
+	if !isTableExists {
+		err = createTable(ctx, svc, tableName)
+		if err != nil {
+			return nil, err
+		}
+	}
+	gsiName := "GSI-TYPE"
+	partitionKey := "Type"
+	sortKey := "CreatedAt"
+	isGsiExists, err := existGsi(ctx, svc, tableName, gsiName)
+	if err != nil {
+		log.Fatalf("failed to check existing gsi: %v", err)
+		return nil, err
+	}
+	if isGsiExists {
 		return new(tableName, svc), nil
 	}
 
-	err = createTable(ctx, svc, tableName)
+	err = createGsi(svc, tableName, gsiName, partitionKey, sortKey)
 	if err != nil {
+		log.Fatalf("failed to create gsi: %v", err)
 		return nil, err
 	}
 
@@ -100,4 +115,67 @@ func createTable(ctx context.Context, svc *dynamodb.Client, tableName string) er
 	}
 
 	return nil
+}
+
+func createGsi(svc *dynamodb.Client, tableName string, gsiName string, partitionKey string, sortKey string) error {
+	gsi := types.GlobalSecondaryIndexUpdate{
+		Create: &types.CreateGlobalSecondaryIndexAction{
+			IndexName: aws.String(gsiName),
+			KeySchema: []types.KeySchemaElement{
+				{
+					AttributeName: aws.String(partitionKey),
+					KeyType:       types.KeyTypeHash,
+				},
+				{
+					AttributeName: aws.String(sortKey),
+					KeyType:       types.KeyTypeRange,
+				},
+			},
+			Projection: &types.Projection{
+				ProjectionType: types.ProjectionTypeAll,
+			},
+			ProvisionedThroughput: &types.ProvisionedThroughput{
+				ReadCapacityUnits:  aws.Int64(5),
+				WriteCapacityUnits: aws.Int64(5),
+			},
+		},
+	}
+
+	_, err := svc.UpdateTable(context.TODO(), &dynamodb.UpdateTableInput{
+		TableName: aws.String(tableName),
+		AttributeDefinitions: []types.AttributeDefinition{
+			{
+				AttributeName: aws.String(partitionKey),
+				AttributeType: types.ScalarAttributeTypeS,
+			},
+			{
+				AttributeName: aws.String(sortKey),
+				AttributeType: types.ScalarAttributeTypeS,
+			},
+		},
+		GlobalSecondaryIndexUpdates: []types.GlobalSecondaryIndexUpdate{gsi},
+	})
+
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
+func existGsi(ctx context.Context, svc *dynamodb.Client, tableName string, gsiName string) (bool, error) {
+	result, err := svc.DescribeTable(ctx, &dynamodb.DescribeTableInput{
+		TableName: aws.String(tableName),
+	})
+
+	if err != nil {
+		log.Fatalf("Unable to retrieve table description", err)
+	}
+
+	for _, gsi := range result.Table.GlobalSecondaryIndexes {
+		if *gsi.IndexName == gsiName {
+			return true, nil
+		}
+	}
+
+	return false, nil
 }

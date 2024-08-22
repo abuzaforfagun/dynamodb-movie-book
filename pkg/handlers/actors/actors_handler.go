@@ -85,6 +85,8 @@ func (h *ActorsHandler) Add(c *gin.Context) {
 		DateOfBirth:  actorRequest.DateOfBirth.Format("2006-01-02"),
 		ThumbnailUrl: thumbnailUrl,
 		Pictures:     photosUrl,
+		Type:         "ACTOR",
+		CreatedAt:    time.Now().UTC().String(),
 	}
 
 	err = h.actorRepository.Add(actorDbModel)
