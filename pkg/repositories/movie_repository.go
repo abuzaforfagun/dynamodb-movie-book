@@ -5,7 +5,6 @@ import (
 	"encoding/json"
 	"fmt"
 	"log"
-	"strings"
 	"time"
 
 	db_model "github.com/abuzaforfagun/dynamodb-movie-book/pkg/models/db"
@@ -13,9 +12,9 @@ import (
 	"github.com/abuzaforfagun/dynamodb-movie-book/pkg/models/response_model"
 	"github.com/aws/aws-sdk-go-v2/aws"
 	"github.com/aws/aws-sdk-go-v2/feature/dynamodb/attributevalue"
+	"github.com/aws/aws-sdk-go-v2/feature/dynamodb/expression"
 	"github.com/aws/aws-sdk-go-v2/service/dynamodb"
 	"github.com/aws/aws-sdk-go-v2/service/dynamodb/types"
-	"github.com/aws/aws-sdk-go-v2/service/dynamodbstreams/types"
 	"github.com/google/uuid"
 )
 
@@ -28,6 +27,7 @@ type MovieRepository interface {
 	Add(movie request_model.AddMovie) (string, error)
 	AssignActors(actor []db_model.AssignActor) error
 	GetAll() ([]response_model.Movie, error)
+	UpdateScore(movieId string, score float64) error
 }
 
 func NewMovieRepository(client *dynamodb.Client, tableName string) MovieRepository {
@@ -97,67 +97,97 @@ func (r *movieRepository) AssignActors(actors []db_model.AssignActor) error {
 	return nil
 }
 
-func (r *movieRepository) GetAll() ([]response_model.Movie, error) {
-	gsiName := "GSI-TYPE"
-	gsiPartitionKey := "Type"
-	// gsiSortKey := "CreatedAt"
-	partitionKeyValue := "MOVIE"
-	queryInput := &dynamodb.QueryInput{
-		TableName:              aws.String(r.tableName),
-		IndexName:              aws.String(gsiName), // Name of your GSI
-		KeyConditionExpression: aws.String("#pk = :v"),
-		ExpressionAttributeNames: map[string]string{
-			"#pk": gsiPartitionKey,
-		},
-		ExpressionAttributeValues: map[string]types.AttributeValue{
-			":v": &types.AttributeValueMemberS{Value: partitionKeyValue},
-		},
-	}
+func (r *movieRepository) UpdateScore(movieId string, score float64) error {
+	pk := "MOVIE#" + movieId
+	sk := "MOVIE#" + movieId
+	update := expression.Set(expression.Name("Score"), expression.Value(score))
 
-	// Execute the query
-	result, err := r.client.Query(context.TODO(), queryInput)
+	expr, err := expression.NewBuilder().WithUpdate(update).Build()
 	if err != nil {
-		fmt.Println("Got error calling Query:", err)
-		return nil, err
+		return fmt.Errorf("failed to build expression: %w", err)
 	}
 
-	json, _ := json.Marshal(result.Items)
-	fmt.Println(string(json))
-
-	var movieDetails db_model.GetMovie
-	var movieReviews []db_model.GetReview
-
-	numberOfReviews := 0
-
-	for _, item := range result.Items {
-		if strings.HasPrefix(item["SK"].(*types.AttributeValueMemberS).Value, "MOVIE#") {
-			// movieDetails.Id = item["MovieId"].(*types.AttributeValueMemberS).Value
-			// movieDetails.Genre = item["Genre"].(*types.AttributeValueMemberS).Value
-			// movieDetails.Title = item["Title"].(*types.AttributeValueMemberS).Value
-			// movieDetails.ReleaseYear = item["ReleaseYear"].(*types.AttributeValueMemberS).Value
-
-			attributevalue.UnmarshalMap(item, &movieDetails)
-		} else if strings.HasPrefix(item["SK"].(*types.AttributeValueMemberS).Value, "USER#") {
-			var movieReview db_model.GetReview
-			attributevalue.UnmarshalMap(item, &movieReview)
-
-			movieReviews = append(movieReviews, movieReview)
-		}
+	input := &dynamodb.UpdateItemInput{
+		TableName: aws.String(r.tableName),
+		Key: map[string]types.AttributeValue{
+			"PK": &types.AttributeValueMemberS{Value: pk},
+			"SK": &types.AttributeValueMemberS{Value: sk},
+		},
+		ExpressionAttributeNames:  expr.Names(),
+		ExpressionAttributeValues: expr.Values(),
+		UpdateExpression:          expr.Update(),
+		ReturnValues:              types.ReturnValueUpdatedNew, // To get the updated attributes back
 	}
 
-	totalScore := 0
-	for _, r := range movieReviews {
-		totalScore += r.Rating
+	_, err = r.client.UpdateItem(context.TODO(), input)
+	if err != nil {
+		log.Println("ERROR: Unable to update score", err)
+		return err
 	}
-	averageScore := totalScore / len(movieReviews)
-	result := &response_model.Movie{
-		Id: movieDetails.Id,
-		Title: movieDetails.Title,
-		ReleaseYear: movieDetails.ReleaseYear,
-		TotalReviews: len(movieReviews),
-		Score: float32(averageScore),
-		Actors: ,
+	return nil
+}
 
-	}
+func (r *movieRepository) GetAll() ([]response_model.Movie, error) {
+	// gsiName := "GSI-TYPE"
+	// gsiPartitionKey := "Type"
+	// // gsiSortKey := "CreatedAt"
+	// partitionKeyValue := "MOVIE"
+	// queryInput := &dynamodb.QueryInput{
+	// 	TableName:              aws.String(r.tableName),
+	// 	IndexName:              aws.String(gsiName), // Name of your GSI
+	// 	KeyConditionExpression: aws.String("#pk = :v"),
+	// 	ExpressionAttributeNames: map[string]string{
+	// 		"#pk": gsiPartitionKey,
+	// 	},
+	// 	ExpressionAttributeValues: map[string]types.AttributeValue{
+	// 		":v": &types.AttributeValueMemberS{Value: partitionKeyValue},
+	// 	},
+	// }
+
+	// // Execute the query
+	// result, err := r.client.Query(context.TODO(), queryInput)
+	// if err != nil {
+	// 	fmt.Println("Got error calling Query:", err)
+	// 	return nil, err
+	// }
+
+	// json, _ := json.Marshal(result.Items)
+	// fmt.Println(string(json))
+
+	// var movieDetails db_model.GetMovie
+	// var movieReviews []db_model.GetReview
+
+	// numberOfReviews := 0
+
+	// for _, item := range result.Items {
+	// 	if strings.HasPrefix(item["SK"].(*types.AttributeValueMemberS).Value, "MOVIE#") {
+	// 		// movieDetails.Id = item["MovieId"].(*types.AttributeValueMemberS).Value
+	// 		// movieDetails.Genre = item["Genre"].(*types.AttributeValueMemberS).Value
+	// 		// movieDetails.Title = item["Title"].(*types.AttributeValueMemberS).Value
+	// 		// movieDetails.ReleaseYear = item["ReleaseYear"].(*types.AttributeValueMemberS).Value
+
+	// 		attributevalue.UnmarshalMap(item, &movieDetails)
+	// 	} else if strings.HasPrefix(item["SK"].(*types.AttributeValueMemberS).Value, "USER#") {
+	// 		var movieReview db_model.GetReview
+	// 		attributevalue.UnmarshalMap(item, &movieReview)
+
+	// 		movieReviews = append(movieReviews, movieReview)
+	// 	}
+	// }
+
+	// totalScore := 0
+	// for _, r := range movieReviews {
+	// 	totalScore += r.Rating
+	// }
+	// averageScore := totalScore / len(movieReviews)
+	// result := &response_model.Movie{
+	// 	Id: movieDetails.Id,
+	// 	Title: movieDetails.Title,
+	// 	ReleaseYear: movieDetails.ReleaseYear,
+	// 	TotalReviews: len(movieReviews),
+	// 	Score: float32(averageScore),
+	// 	Actors: ,
+
+	// }
 	return nil, nil
 }

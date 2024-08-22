@@ -36,9 +36,9 @@ func main() {
 	userRepository := repositories.NewUserRepository(dbService.Client, dbService.TableName)
 	actorRepository := repositories.NewActorRepository(dbService.Client, dbService.TableName)
 	movieRepository := repositories.NewMovieRepository(dbService.Client, dbService.TableName)
-	movieService := services.NewMovieService(movieRepository, actorRepository)
-
 	reviewRepository := repositories.NewReviewRepository(dbService.Client, dbService.TableName)
+
+	movieService := services.NewMovieService(movieRepository, actorRepository, reviewRepository)
 
 	router := gin.Default()
 	router.GET("/swagger/*any", ginSwagger.WrapHandler(swaggerFiles.Handler))
@@ -51,7 +51,7 @@ func main() {
 	router.DELETE("/movies/:id", movieHandler.DeleteMovie)
 	router.GET("/movies/genre:id", movieHandler.GetMoviesByGenre)
 
-	reviewHandler := reviews_handler.New(reviewRepository)
+	reviewHandler := reviews_handler.New(reviewRepository, movieService)
 	router.POST("/movies/:id/reviews", reviewHandler.AddReview)
 	router.DELETE("/movies:id/reviews:review_id", reviewHandler.DeleteReview)
 

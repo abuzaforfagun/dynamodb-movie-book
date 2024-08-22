@@ -7,16 +7,19 @@ import (
 
 	request_model "github.com/abuzaforfagun/dynamodb-movie-book/pkg/models/requests"
 	"github.com/abuzaforfagun/dynamodb-movie-book/pkg/repositories"
+	"github.com/abuzaforfagun/dynamodb-movie-book/pkg/services"
 	"github.com/gin-gonic/gin"
 )
 
 type ReviewHandler struct {
 	reviewRepository repositories.ReviewRepository
+	movieService     services.MovieService
 }
 
-func New(reviewRepository repositories.ReviewRepository) *ReviewHandler {
+func New(reviewRepository repositories.ReviewRepository, movieService services.MovieService) *ReviewHandler {
 	return &ReviewHandler{
 		reviewRepository: reviewRepository,
+		movieService:     movieService,
 	}
 }
 
@@ -44,13 +47,36 @@ func (h *ReviewHandler) AddReview(c *gin.Context) {
 		return
 	}
 
+	hasReview, err := h.reviewRepository.HasReview(movieId, reviewRequest.UserId)
+	if err != nil {
+		log.Println("ERROR: unable to get review", err)
+		c.JSON(http.StatusInternalServerError, gin.H{})
+		return
+	}
+
+	if hasReview {
+		err = h.reviewRepository.Delete(movieId, reviewRequest.UserId)
+
+		if err != nil {
+			log.Println("ERROR: unable to delete review", err)
+			c.JSON(http.StatusInternalServerError, gin.H{})
+			return
+		}
+	}
+
 	err = h.reviewRepository.Add(movieId, reviewRequest)
+
 	if err != nil {
 		jsonPayload, _ := json.Marshal(reviewRequest)
 		log.Printf("ERROR: unable to add review for [Movie=%s]. [Payload=%s]\n", movieId, jsonPayload)
 
 		c.JSON(http.StatusInternalServerError, gin.H{})
 		return
+	}
+
+	err = h.movieService.UpdateMovieScore(movieId)
+	if err != nil {
+		log.Println("ERROR: unable to update the movie score")
 	}
 
 	c.JSON(http.StatusCreated, gin.H{})
