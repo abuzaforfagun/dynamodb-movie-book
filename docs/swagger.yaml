@@ -35,6 +35,16 @@ definitions:
       title:
         type: string
     type: object
+  request_model.AddReview:
+    properties:
+      comment:
+        type: string
+      rating:
+        type: number
+      userId:
+        description: 'TODO: Need to get from the logged in user'
+        type: string
+    type: object
   request_model.AddUser:
     properties:
       email:
@@ -269,23 +279,6 @@ paths:
       summary: Add picture of actor
       tags:
       - actors
-  /movie/{id}/reviews:
-    post:
-      description: Add review
-      parameters:
-      - description: Movie Id
-        in: query
-        name: id
-        required: true
-        type: integer
-      produces:
-      - application/json
-      responses:
-        "201":
-          description: Created
-      summary: Add movie review
-      tags:
-      - reviews
   /movie/{id}/reviews/{review_id}:
     delete:
       description: Add review
@@ -402,6 +395,29 @@ paths:
       summary: Add pictures to the movie
       tags:
       - movies
+  /movies/{id}/reviews:
+    post:
+      description: Add review
+      parameters:
+      - description: Movie Id
+        in: path
+        name: id
+        required: true
+        type: string
+      - description: Review payload
+        in: body
+        name: payload
+        required: true
+        schema:
+          $ref: '#/definitions/request_model.AddReview'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+      summary: Add movie review
+      tags:
+      - reviews
   /movies/genre/{id}:
     get:
       description: Get movies by genre

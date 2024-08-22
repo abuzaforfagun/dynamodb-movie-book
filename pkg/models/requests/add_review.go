@@ -1,7 +1,7 @@
 package request_model
 
 type AddReview struct {
-	MovieId string  `json:"movie_id"`
+	UserId  string  `json:"user_id` //TODO: Need to get from the logged in user
 	Rating  float32 `json:"rating"`
 	Comment string  `json:"comment"`
 }

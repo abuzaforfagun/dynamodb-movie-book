@@ -132,32 +132,6 @@ const docTemplate = `{
                 }
             }
         },
-        "/movie/{id}/reviews": {
-            "post": {
-                "description": "Add review",
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "reviews"
-                ],
-                "summary": "Add movie review",
-                "parameters": [
-                    {
-                        "type": "integer",
-                        "description": "Movie Id",
-                        "name": "id",
-                        "in": "query",
-                        "required": true
-                    }
-                ],
-                "responses": {
-                    "201": {
-                        "description": "Created"
-                    }
-                }
-            }
-        },
         "/movie/{id}/reviews/{review_id}": {
             "delete": {
                 "description": "Add review",
@@ -365,6 +339,41 @@ const docTemplate = `{
                 }
             }
         },
+        "/movies/{id}/reviews": {
+            "post": {
+                "description": "Add review",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "reviews"
+                ],
+                "summary": "Add movie review",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Movie Id",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "description": "Review payload",
+                        "name": "payload",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/request_model.AddReview"
+                        }
+                    }
+                ],
+                "responses": {
+                    "201": {
+                        "description": "Created"
+                    }
+                }
+            }
+        },
         "/users": {
             "post": {
                 "description": "Add new user",
@@ -505,6 +514,21 @@ const docTemplate = `{
                     "type": "integer"
                 },
                 "title": {
+                    "type": "string"
+                }
+            }
+        },
+        "request_model.AddReview": {
+            "type": "object",
+            "properties": {
+                "comment": {
+                    "type": "string"
+                },
+                "rating": {
+                    "type": "number"
+                },
+                "userId": {
+                    "description": "TODO: Need to get from the logged in user",
                     "type": "string"
                 }
             }
