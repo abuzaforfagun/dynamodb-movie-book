@@ -7,6 +7,7 @@ import (
 	"log"
 	"strings"
 
+	"github.com/abuzaforfagun/dynamodb-movie-book/pkg/database"
 	db_model "github.com/abuzaforfagun/dynamodb-movie-book/pkg/models/db"
 	request_model "github.com/abuzaforfagun/dynamodb-movie-book/pkg/models/requests"
 	"github.com/abuzaforfagun/dynamodb-movie-book/pkg/models/response_model"
@@ -28,6 +29,7 @@ type MovieRepository interface {
 	AssignActors(actor []db_model.AssignActor) error
 	GetAll(searchQuery string) ([]response_model.Movie, error)
 	UpdateScore(movieId string, score float64) error
+	HasMovie(movieId string) (bool, error)
 }
 
 func NewMovieRepository(client *dynamodb.Client, tableName string) MovieRepository {
@@ -35,6 +37,14 @@ func NewMovieRepository(client *dynamodb.Client, tableName string) MovieReposito
 		client:    client,
 		tableName: tableName,
 	}
+}
+
+func (r *movieRepository) HasMovie(movieId string) (bool, error) {
+	key := "MOVIE#" + movieId
+
+	hasMovie, err := database.HasItem(context.TODO(), r.client, r.tableName, key, key)
+
+	return hasMovie, err
 }
 
 func (r *movieRepository) Add(movie request_model.AddMovie) (string, error) {

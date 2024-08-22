@@ -14,6 +14,7 @@ type MovieService interface {
 	Add(movie request_model.AddMovie) error
 	GetAll(searchQuery string) ([]response_model.Movie, error)
 	UpdateMovieScore(movieId string) error
+	HasMovie(movieId string) (bool, error)
 }
 
 type movieService struct {
@@ -30,6 +31,10 @@ func NewMovieService(movieRepository repositories.MovieRepository,
 		actorRepository:  actorRepository,
 		reviewRepository: reviewRepository,
 	}
+}
+
+func (s *movieService) HasMovie(movieId string) (bool, error) {
+	return s.movieRepository.HasMovie(movieId)
 }
 
 func (s *movieService) Add(movie request_model.AddMovie) error {

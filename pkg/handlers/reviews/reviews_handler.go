@@ -47,6 +47,17 @@ func (h *ReviewHandler) AddReview(c *gin.Context) {
 		return
 	}
 
+	hasMovie, err := h.movieService.HasMovie(movieId)
+
+	if err != nil {
+		log.Println("ERROR: unable to check movie does exist", err)
+		c.JSON(http.StatusInternalServerError, gin.H{})
+		return
+	}
+	if !hasMovie {
+		c.JSON(http.StatusBadRequest, gin.H{})
+	}
+
 	hasReview, err := h.reviewRepository.HasReview(movieId, reviewRequest.UserId)
 	if err != nil {
 		log.Println("ERROR: unable to get review", err)

@@ -5,6 +5,7 @@ import (
 	"log"
 	"time"
 
+	"github.com/abuzaforfagun/dynamodb-movie-book/pkg/database"
 	db_model "github.com/abuzaforfagun/dynamodb-movie-book/pkg/models/db"
 	request_model "github.com/abuzaforfagun/dynamodb-movie-book/pkg/models/requests"
 	"github.com/aws/aws-sdk-go-v2/aws"
@@ -97,24 +98,12 @@ func (r *reviewRepository) GetAll(movieId string) ([]db_model.Review, error) {
 func (r *reviewRepository) HasReview(movieId string, userId string) (bool, error) {
 	pk := "MOVIE#" + movieId
 	sk := "USER#" + userId
+	hasReview, err := database.HasItem(context.TODO(), r.client, r.tableName, pk, sk)
 
-	key := map[string]types.AttributeValue{
-		"PK": &types.AttributeValueMemberS{Value: pk},
-		"SK": &types.AttributeValueMemberS{Value: sk},
-	}
-
-	getItemInput := &dynamodb.GetItemInput{
-		TableName: aws.String(r.tableName),
-		Key:       key,
-	}
-
-	result, err := r.client.GetItem(context.TODO(), getItemInput)
 	if err != nil {
 		log.Printf("ERROR: unable to get item: %v\n", err)
 		return false, err
 	}
-
-	hasReview := result.Item != nil
 
 	return hasReview, nil
 }

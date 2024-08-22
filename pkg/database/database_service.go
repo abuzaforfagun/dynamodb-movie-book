@@ -179,3 +179,24 @@ func existGsi(ctx context.Context, svc *dynamodb.Client, tableName string, gsiNa
 
 	return false, nil
 }
+
+func HasItem(ctx context.Context, svc *dynamodb.Client, tableName string, pk string, sk string) (bool, error) {
+	key := map[string]types.AttributeValue{
+		"PK": &types.AttributeValueMemberS{Value: pk},
+	}
+
+	getItemInput := &dynamodb.GetItemInput{
+		TableName: aws.String(tableName),
+		Key:       key,
+	}
+
+	result, err := svc.GetItem(context.TODO(), getItemInput)
+	if err != nil {
+		log.Printf("ERROR: unable to get item: %v\n", err)
+		return false, err
+	}
+
+	hasItem := result.Item != nil
+
+	return hasItem, nil
+}
