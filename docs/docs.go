@@ -606,9 +606,6 @@ const docTemplate = `{
                 },
                 "title": {
                     "type": "string"
-                },
-                "total_reviews": {
-                    "type": "integer"
                 }
             }
         },

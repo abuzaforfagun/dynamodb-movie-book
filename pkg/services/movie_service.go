@@ -56,8 +56,12 @@ func (s *movieService) Add(movie request_model.AddMovie) error {
 }
 
 func (s *movieService) GetAll() ([]response_model.Movie, error) {
-	s.movieRepository.GetAll()
-	return nil, nil
+	movies, err := s.movieRepository.GetAll()
+	if err != nil {
+		return nil, err
+	}
+
+	return movies, nil
 }
 
 func (s *movieService) UpdateMovieScore(movieId string) error {

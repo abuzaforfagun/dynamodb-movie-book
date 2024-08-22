@@ -26,7 +26,17 @@ func New(movieService services.MovieService) *MoviesHandler {
 // @Produce json
 // @Success 200 {array} response_model.Movie
 // @Router /movies [get]
-func (mh *MoviesHandler) GetAllMovies(c *gin.Context) {}
+func (h *MoviesHandler) GetAllMovies(c *gin.Context) {
+	movies, err := h.movieService.GetAll()
+
+	if err != nil {
+		log.Println("ERROR: Unable to get movies", err)
+		c.JSON(http.StatusInternalServerError, gin.H{})
+		return
+	}
+
+	c.JSON(http.StatusOK, movies)
+}
 
 // @Summary Get movie
 // @Description Get all movies

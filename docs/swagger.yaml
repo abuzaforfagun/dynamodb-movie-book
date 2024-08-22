@@ -93,8 +93,6 @@ definitions:
         type: string
       title:
         type: string
-      total_reviews:
-        type: integer
     type: object
   response_model.MovieActor:
     properties:

@@ -128,66 +128,34 @@ func (r *movieRepository) UpdateScore(movieId string, score float64) error {
 }
 
 func (r *movieRepository) GetAll() ([]response_model.Movie, error) {
-	// gsiName := "GSI-TYPE"
-	// gsiPartitionKey := "Type"
-	// // gsiSortKey := "CreatedAt"
-	// partitionKeyValue := "MOVIE"
-	// queryInput := &dynamodb.QueryInput{
-	// 	TableName:              aws.String(r.tableName),
-	// 	IndexName:              aws.String(gsiName), // Name of your GSI
-	// 	KeyConditionExpression: aws.String("#pk = :v"),
-	// 	ExpressionAttributeNames: map[string]string{
-	// 		"#pk": gsiPartitionKey,
-	// 	},
-	// 	ExpressionAttributeValues: map[string]types.AttributeValue{
-	// 		":v": &types.AttributeValueMemberS{Value: partitionKeyValue},
-	// 	},
-	// }
+	gsiName := "GSI-TYPE"
+	gsiPartitionKey := "Type"
+	// gsiSortKey := "CreatedAt"
+	partitionKeyValue := "MOVIE"
+	queryInput := &dynamodb.QueryInput{
+		TableName:              aws.String(r.tableName),
+		IndexName:              aws.String(gsiName), // Name of your GSI
+		KeyConditionExpression: aws.String("#pk = :v"),
+		ExpressionAttributeNames: map[string]string{
+			"#pk": gsiPartitionKey,
+		},
+		ExpressionAttributeValues: map[string]types.AttributeValue{
+			":v": &types.AttributeValueMemberS{Value: partitionKeyValue},
+		},
+	}
 
-	// // Execute the query
-	// result, err := r.client.Query(context.TODO(), queryInput)
-	// if err != nil {
-	// 	fmt.Println("Got error calling Query:", err)
-	// 	return nil, err
-	// }
+	result, err := r.client.Query(context.TODO(), queryInput)
+	if err != nil {
+		fmt.Println("Got error calling Query:", err)
+		return nil, err
+	}
 
-	// json, _ := json.Marshal(result.Items)
-	// fmt.Println(string(json))
+	var movies []response_model.Movie
 
-	// var movieDetails db_model.GetMovie
-	// var movieReviews []db_model.GetReview
+	err = attributevalue.UnmarshalListOfMaps(result.Items, &movies)
 
-	// numberOfReviews := 0
-
-	// for _, item := range result.Items {
-	// 	if strings.HasPrefix(item["SK"].(*types.AttributeValueMemberS).Value, "MOVIE#") {
-	// 		// movieDetails.Id = item["MovieId"].(*types.AttributeValueMemberS).Value
-	// 		// movieDetails.Genre = item["Genre"].(*types.AttributeValueMemberS).Value
-	// 		// movieDetails.Title = item["Title"].(*types.AttributeValueMemberS).Value
-	// 		// movieDetails.ReleaseYear = item["ReleaseYear"].(*types.AttributeValueMemberS).Value
-
-	// 		attributevalue.UnmarshalMap(item, &movieDetails)
-	// 	} else if strings.HasPrefix(item["SK"].(*types.AttributeValueMemberS).Value, "USER#") {
-	// 		var movieReview db_model.GetReview
-	// 		attributevalue.UnmarshalMap(item, &movieReview)
-
-	// 		movieReviews = append(movieReviews, movieReview)
-	// 	}
-	// }
-
-	// totalScore := 0
-	// for _, r := range movieReviews {
-	// 	totalScore += r.Rating
-	// }
-	// averageScore := totalScore / len(movieReviews)
-	// result := &response_model.Movie{
-	// 	Id: movieDetails.Id,
-	// 	Title: movieDetails.Title,
-	// 	ReleaseYear: movieDetails.ReleaseYear,
-	// 	TotalReviews: len(movieReviews),
-	// 	Score: float32(averageScore),
-	// 	Actors: ,
-
-	// }
-	return nil, nil
+	if err != nil {
+		return nil, err
+	}
+	return movies, nil
 }
