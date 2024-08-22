@@ -12,7 +12,7 @@ import (
 
 type MovieService interface {
 	Add(movie request_model.AddMovie) error
-	GetAll() ([]response_model.Movie, error)
+	GetAll(searchQuery string) ([]response_model.Movie, error)
 	UpdateMovieScore(movieId string) error
 }
 
@@ -55,8 +55,8 @@ func (s *movieService) Add(movie request_model.AddMovie) error {
 	return err
 }
 
-func (s *movieService) GetAll() ([]response_model.Movie, error) {
-	movies, err := s.movieRepository.GetAll()
+func (s *movieService) GetAll(searchQuery string) ([]response_model.Movie, error) {
+	movies, err := s.movieRepository.GetAll(searchQuery)
 	if err != nil {
 		return nil, err
 	}

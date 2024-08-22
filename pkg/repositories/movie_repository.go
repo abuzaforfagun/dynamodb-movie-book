@@ -5,7 +5,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"log"
-	"time"
+	"strings"
 
 	db_model "github.com/abuzaforfagun/dynamodb-movie-book/pkg/models/db"
 	request_model "github.com/abuzaforfagun/dynamodb-movie-book/pkg/models/requests"
@@ -26,7 +26,7 @@ type movieRepository struct {
 type MovieRepository interface {
 	Add(movie request_model.AddMovie) (string, error)
 	AssignActors(actor []db_model.AssignActor) error
-	GetAll() ([]response_model.Movie, error)
+	GetAll(searchQuery string) ([]response_model.Movie, error)
 	UpdateScore(movieId string, score float64) error
 }
 
@@ -39,15 +39,7 @@ func NewMovieRepository(client *dynamodb.Client, tableName string) MovieReposito
 
 func (r *movieRepository) Add(movie request_model.AddMovie) (string, error) {
 	movieId := uuid.New().String()
-	dbModel := db_model.AddMovie{
-		PK:          "MOVIE#" + movieId,
-		SK:          "MOVIE#" + movieId,
-		Id:          movieId,
-		Title:       movie.Title,
-		ReleaseYear: movie.ReleaseYear,
-		Type:        "MOVIE",
-		CreatedAt:   time.Now().UTC().String(),
-	}
+	dbModel := db_model.NewAddMovie(movieId, movie.Title, movie.ReleaseYear)
 
 	av, err := attributevalue.MarshalMap(dbModel)
 	if err != nil {
@@ -127,21 +119,33 @@ func (r *movieRepository) UpdateScore(movieId string, score float64) error {
 	return nil
 }
 
-func (r *movieRepository) GetAll() ([]response_model.Movie, error) {
+func (r *movieRepository) GetAll(movieName string) ([]response_model.Movie, error) {
 	gsiName := "GSI-TYPE"
 	gsiPartitionKey := "Type"
 	// gsiSortKey := "CreatedAt"
 	partitionKeyValue := "MOVIE"
+
+	var filterExpression *string
+	attributeNames := map[string]string{}
+	attributeNames["#pk"] = gsiPartitionKey
+
+	attributeValues := map[string]types.AttributeValue{}
+	attributeValues[":v"] = &types.AttributeValueMemberS{Value: partitionKeyValue}
+
+	filterExpression = nil
+	if movieName != "" {
+		filterExpression = aws.String("contains(#title, :movieName)")
+		attributeNames["#title"] = "NormalizedTitle"
+		attributeValues[":movieName"] = &types.AttributeValueMemberS{Value: strings.ToLower(movieName)}
+	}
+
 	queryInput := &dynamodb.QueryInput{
-		TableName:              aws.String(r.tableName),
-		IndexName:              aws.String(gsiName), // Name of your GSI
-		KeyConditionExpression: aws.String("#pk = :v"),
-		ExpressionAttributeNames: map[string]string{
-			"#pk": gsiPartitionKey,
-		},
-		ExpressionAttributeValues: map[string]types.AttributeValue{
-			":v": &types.AttributeValueMemberS{Value: partitionKeyValue},
-		},
+		TableName:                 aws.String(r.tableName),
+		IndexName:                 aws.String(gsiName), // Name of your GSI
+		KeyConditionExpression:    aws.String("#pk = :v"),
+		FilterExpression:          filterExpression,
+		ExpressionAttributeNames:  attributeNames,
+		ExpressionAttributeValues: attributeValues,
 	}
 
 	result, err := r.client.Query(context.TODO(), queryInput)

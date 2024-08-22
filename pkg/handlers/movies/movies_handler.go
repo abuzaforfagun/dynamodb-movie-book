@@ -27,7 +27,9 @@ func New(movieService services.MovieService) *MoviesHandler {
 // @Success 200 {array} response_model.Movie
 // @Router /movies [get]
 func (h *MoviesHandler) GetAllMovies(c *gin.Context) {
-	movies, err := h.movieService.GetAll()
+	searchQuery := c.Query("search")
+
+	movies, err := h.movieService.GetAll(searchQuery)
 
 	if err != nil {
 		log.Println("ERROR: Unable to get movies", err)
