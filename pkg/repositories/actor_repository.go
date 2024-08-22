@@ -40,6 +40,7 @@ func (r *actorRepository) Add(actor db_model.AddActor) error {
 	})
 	if err != nil {
 		log.Printf("Couldn't add item to table.: %v\n", err)
+		return err
 	}
 
 	return nil
@@ -70,5 +71,9 @@ func (r *actorRepository) GetActorInfo(actorId string) (db_model.ActorInfo, erro
 
 	var actorInfo db_model.ActorInfo
 	err = attributevalue.UnmarshalMap(result.Item, &actorInfo)
+	if err != nil {
+		log.Println("ERROR: unable to unmarshal actor info", err)
+		return db_model.ActorInfo{}, err
+	}
 	return actorInfo, nil
 }

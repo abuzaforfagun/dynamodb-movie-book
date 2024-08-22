@@ -1,6 +1,0 @@
-{
-    "connection_strings": {
-        "region": "local",
-        "table_name": "MovieBook_local"
-    }
-}

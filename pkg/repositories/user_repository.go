@@ -71,6 +71,7 @@ func (r *userRepository) Add(userData db_model.AddUser) error {
 	})
 	if err != nil {
 		fmt.Printf("Couldn't add item to table.: %v\n", err)
+		return err
 	}
 
 	return nil

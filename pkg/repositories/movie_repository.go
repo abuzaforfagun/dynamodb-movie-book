@@ -64,6 +64,7 @@ func (r *movieRepository) AssignActors(actors []db_model.AssignActor) error {
 		av, err := attributevalue.MarshalMap(actor)
 		if err != nil {
 			log.Fatalf("Failed to marshal item: %v", err)
+			return err
 		}
 		writeRequests = append(writeRequests, types.WriteRequest{
 			PutRequest: &types.PutRequest{
