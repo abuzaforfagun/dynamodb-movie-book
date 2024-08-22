@@ -11,6 +11,7 @@ import (
 	reviews_handler "github.com/abuzaforfagun/dynamodb-movie-book/pkg/handlers/reviews"
 	users_handler "github.com/abuzaforfagun/dynamodb-movie-book/pkg/handlers/users"
 	"github.com/abuzaforfagun/dynamodb-movie-book/pkg/repositories"
+	"github.com/abuzaforfagun/dynamodb-movie-book/pkg/services"
 	"github.com/gin-gonic/gin"
 	swaggerFiles "github.com/swaggo/files"
 	ginSwagger "github.com/swaggo/gin-swagger"
@@ -34,11 +35,13 @@ func main() {
 	}
 	userRepository := repositories.NewUserRepository(dbService.Client, dbService.TableName)
 	actorRepository := repositories.NewActorRepository(dbService.Client, dbService.TableName)
+	movieRepository := repositories.NewMovieRepository(dbService.Client, dbService.TableName)
+	movieService := services.NewMovieService(movieRepository, actorRepository)
 
 	router := gin.Default()
 	router.GET("/swagger/*any", ginSwagger.WrapHandler(swaggerFiles.Handler))
 
-	movieHandler := movies_handler.New()
+	movieHandler := movies_handler.New(movieService)
 	router.GET("/movies", movieHandler.GetAllMovies)
 	router.POST("/movies", movieHandler.AddMovie)
 	router.POST("/movies/:id/photos", movieHandler.AddPictures)

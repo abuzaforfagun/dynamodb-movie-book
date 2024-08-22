@@ -40,7 +40,7 @@ func (uh *UserHandler) AddUser(c *gin.Context) {
 	}
 
 	userId := uuid.New().String()
-	dbModel := db_model.User{
+	dbModel := db_model.AddUser{
 		PK:    "USER#" + userId,
 		SK:    "USER#" + userId,
 		Id:    uuid.New().String(),

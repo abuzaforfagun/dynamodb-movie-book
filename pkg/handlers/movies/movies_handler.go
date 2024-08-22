@@ -1,14 +1,22 @@
 package movies_handler
 
 import (
+	"log"
+	"net/http"
+
+	request_model "github.com/abuzaforfagun/dynamodb-movie-book/pkg/models/requests"
+	"github.com/abuzaforfagun/dynamodb-movie-book/pkg/services"
 	"github.com/gin-gonic/gin"
 )
 
 type MoviesHandler struct {
+	movieService services.MovieService
 }
 
-func New() *MoviesHandler {
-	return &MoviesHandler{}
+func New(movieService services.MovieService) *MoviesHandler {
+	return &MoviesHandler{
+		movieService: movieService,
+	}
 }
 
 // @Summary Get movies
@@ -45,7 +53,21 @@ func (mh *MoviesHandler) GetMoviesByGenre(c *gin.Context) {}
 // @Produce json
 // @Success 201
 // @Router /movies [post]
-func (mh *MoviesHandler) AddMovie(c *gin.Context) {}
+func (h *MoviesHandler) AddMovie(c *gin.Context) {
+	var requestModel request_model.AddMovie
+
+	err := c.BindJSON(&requestModel)
+
+	if err != nil {
+		log.Printf("WARNING: unable to bind %v", err.Error())
+		c.JSON(http.StatusBadRequest, gin.H{})
+		return
+	}
+
+	h.movieService.Add(requestModel)
+
+	c.JSON(http.StatusCreated, gin.H{})
+}
 
 // @Summary Add pictures to the movie
 // @Description Add pictures to the movie
