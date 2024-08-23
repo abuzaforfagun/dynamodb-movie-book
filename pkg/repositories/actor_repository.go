@@ -14,7 +14,7 @@ import (
 
 type ActorRepository interface {
 	Add(actor db_model.AddActor) error
-	GetActorInfo(actorId string) (db_model.ActorInfo, error)
+	GetInfo(actorId string) (db_model.ActorInfo, error)
 }
 
 type actorRepository struct {
@@ -46,7 +46,7 @@ func (r *actorRepository) Add(actor db_model.AddActor) error {
 	return nil
 }
 
-func (r *actorRepository) GetActorInfo(actorId string) (db_model.ActorInfo, error) {
+func (r *actorRepository) GetInfo(actorId string) (db_model.ActorInfo, error) {
 	actorDbId := "ACTOR#" + actorId
 	key := map[string]types.AttributeValue{
 		"PK": &types.AttributeValueMemberS{Value: actorDbId},

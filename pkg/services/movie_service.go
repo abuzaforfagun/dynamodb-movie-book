@@ -58,7 +58,7 @@ func (s *movieService) Add(movie request_model.AddMovie) error {
 
 	var dbActors []db_model.AssignActor
 	for _, movieActor := range movie.Actors {
-		actorInfo, err := s.actorRepository.GetActorInfo(movieActor.ActorId)
+		actorInfo, err := s.actorRepository.GetInfo(movieActor.ActorId)
 
 		if err != nil {
 			return err
