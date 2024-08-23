@@ -32,6 +32,7 @@ type MovieRepository interface {
 	UpdateScore(movieId string, score float64) error
 	HasMovie(movieId string) (bool, error)
 	Delete(movieId string) error
+	Get(movieId string) (response_model.MovieDetails, error)
 }
 
 func NewMovieRepository(client *dynamodb.Client, tableName string) MovieRepository {
@@ -288,4 +289,47 @@ func (r *movieRepository) getMovieRelatedItems(movieId string) ([]map[string]typ
 		},
 	)
 	return response.Items, err
+}
+
+func (r *movieRepository) Get(movieId string) (response_model.MovieDetails, error) {
+	movieItems, err := r.getMovieRelatedItems(movieId)
+
+	if err != nil {
+		return response_model.MovieDetails{}, err
+	}
+
+	var movieDetails response_model.MovieDetails
+	var reviews []response_model.Review
+	var actors []response_model.MovieActor
+	for _, item := range movieItems {
+		var typeStruct struct {
+			GSI_PK string `dynamodbav:"GSI_PK"`
+		}
+
+		attributevalue.UnmarshalMap(item, &typeStruct)
+		switch typeStruct.GSI_PK {
+		case "MOVIE":
+			attributevalue.UnmarshalMap(item, &movieDetails)
+		case "REVIEW":
+			var review db_model.GetReview
+			attributevalue.UnmarshalMap(item, &review)
+			reviews = append(reviews, response_model.Review{
+				Rating:  review.Rating,
+				Comment: review.Comment,
+				CreatedBy: response_model.Creator{
+					Id:   review.UserId,
+					Name: review.CreatorName,
+				},
+			})
+		case "ACTOR-MOVIE":
+			var actor response_model.MovieActor
+			attributevalue.UnmarshalMap(item, &actor)
+			actors = append(actors, actor)
+		}
+	}
+
+	movieDetails.Actors = actors
+	movieDetails.Reviews = reviews
+
+	return movieDetails, nil
 }

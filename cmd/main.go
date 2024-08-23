@@ -51,7 +51,7 @@ func main() {
 	router.DELETE("/movies/:id", movieHandler.DeleteMovie)
 	router.GET("/movies/genre/:genre", movieHandler.GetMoviesByGenre)
 
-	reviewHandler := reviews_handler.New(reviewRepository, movieService)
+	reviewHandler := reviews_handler.New(reviewRepository, movieService, userRepository)
 	router.POST("/movies/:id/reviews", reviewHandler.AddReview)
 	router.DELETE("/movies:id/reviews:review_id", reviewHandler.DeleteReview)
 

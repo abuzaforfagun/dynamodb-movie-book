@@ -113,8 +113,10 @@ definitions:
         items:
           $ref: '#/definitions/response_model.MovieActor'
         type: array
-      genre:
-        type: string
+      genres:
+        items:
+          type: string
+        type: array
       id:
         type: string
       pictures:
@@ -149,9 +151,7 @@ definitions:
         type: string
       created_by:
         $ref: '#/definitions/response_model.Creator'
-      id:
-        type: integer
-      score:
+      rating:
         type: number
     type: object
   response_model.ReviewOfUser:
@@ -364,7 +364,7 @@ paths:
         in: path
         name: id
         required: true
-        type: integer
+        type: string
       produces:
       - application/json
       responses:

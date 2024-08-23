@@ -19,6 +19,7 @@ type MovieService interface {
 	UpdateMovieScore(movieId string) error
 	HasMovie(movieId string) (bool, error)
 	Delete(movieId string) error
+	Get(movieId string) (response_model.MovieDetails, error)
 }
 
 type movieService struct {
@@ -131,4 +132,8 @@ func (s *movieService) Delete(movieId string) error {
 		return err
 	}
 	return nil
+}
+
+func (s *movieService) Get(movieId string) (response_model.MovieDetails, error) {
+	return s.movieRepository.Get(movieId)
 }

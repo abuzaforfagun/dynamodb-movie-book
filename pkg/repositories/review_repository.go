@@ -15,7 +15,7 @@ import (
 )
 
 type ReviewRepository interface {
-	Add(movieId string, review request_model.AddReview) error
+	Add(movieId string, userName string, review request_model.AddReview) error
 	GetAll(movieId string) ([]db_model.Review, error)
 	HasReview(movieId string, userId string) (bool, error)
 	Delete(movieId string, userId string) error
@@ -33,8 +33,8 @@ func NewReviewRepository(client *dynamodb.Client, tableName string) ReviewReposi
 	}
 }
 
-func (r *reviewRepository) Add(movieId string, review request_model.AddReview) error {
-	dbRviewModel := db_model.NewAddReview(movieId, review.UserId, review.Rating, review.Comment)
+func (r *reviewRepository) Add(movieId string, userName string, review request_model.AddReview) error {
+	dbRviewModel := db_model.NewAddReview(movieId, review.UserId, userName, review.Rating, review.Comment)
 
 	av, err := attributevalue.MarshalMap(dbRviewModel)
 	if err != nil {

@@ -20,6 +20,7 @@ func NewAssignActor(actorId, movieId, name, role string) AssignActor {
 		SK:        "ACTOR#" + actorId,
 		GSI_PK:    "ACTOR-MOVIE",
 		GSI_SK:    "MOVIE#" + movieId + "_ACTOR#" + actorId,
+		Id:        actorId,
 		MovieId:   movieId,
 		Name:      name,
 		Role:      role,

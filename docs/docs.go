@@ -266,7 +266,7 @@ const docTemplate = `{
                 "summary": "Get movie",
                 "parameters": [
                     {
-                        "type": "integer",
+                        "type": "string",
                         "description": "Movie id",
                         "name": "id",
                         "in": "path",
@@ -638,8 +638,11 @@ const docTemplate = `{
                         "$ref": "#/definitions/response_model.MovieActor"
                     }
                 },
-                "genre": {
-                    "type": "string"
+                "genres": {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
                 },
                 "id": {
                     "type": "string"
@@ -693,10 +696,7 @@ const docTemplate = `{
                 "created_by": {
                     "$ref": "#/definitions/response_model.Creator"
                 },
-                "id": {
-                    "type": "integer"
-                },
-                "score": {
+                "rating": {
                     "type": "number"
                 }
             }

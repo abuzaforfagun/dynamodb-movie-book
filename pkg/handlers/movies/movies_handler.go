@@ -44,16 +44,22 @@ func (h *MoviesHandler) GetAllMovies(c *gin.Context) {
 // @Summary Get movie
 // @Description Get all movies
 // @Tags movies
-// @Param id path int true "Movie id"
+// @Param id path string true "Movie id"
 // @Produce json
 // @Success 200 {object} response_model.MovieDetails
 // @Router /movies/{id} [get]
-func (mh *MoviesHandler) GetMovieDetails(c *gin.Context) {
+func (h *MoviesHandler) GetMovieDetails(c *gin.Context) {
 	movieId := c.Param("id")
 	if movieId == "" {
 		c.JSON(http.StatusBadRequest, gin.H{})
 	}
+	movieDetails, err := h.movieService.Get(movieId)
 
+	if err != nil {
+		log.Printf("ERROR: unable to get [MovieId=%s]. Error: %v", movieId, err)
+	}
+
+	c.JSON(http.StatusOK, movieDetails)
 }
 
 // @Summary Get movies by genre

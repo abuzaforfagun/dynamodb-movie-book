@@ -14,12 +14,15 @@ import (
 type ReviewHandler struct {
 	reviewRepository repositories.ReviewRepository
 	movieService     services.MovieService
+	userRepository   repositories.UserRepository
 }
 
-func New(reviewRepository repositories.ReviewRepository, movieService services.MovieService) *ReviewHandler {
+func New(reviewRepository repositories.ReviewRepository, movieService services.MovieService,
+	userRepository repositories.UserRepository) *ReviewHandler {
 	return &ReviewHandler{
 		reviewRepository: reviewRepository,
 		movieService:     movieService,
+		userRepository:   userRepository,
 	}
 }
 
@@ -56,26 +59,16 @@ func (h *ReviewHandler) AddReview(c *gin.Context) {
 	}
 	if !hasMovie {
 		c.JSON(http.StatusBadRequest, gin.H{})
-	}
-
-	hasReview, err := h.reviewRepository.HasReview(movieId, reviewRequest.UserId)
-	if err != nil {
-		log.Println("ERROR: unable to get review", err)
-		c.JSON(http.StatusInternalServerError, gin.H{})
 		return
 	}
 
-	if hasReview {
-		err = h.reviewRepository.Delete(movieId, reviewRequest.UserId)
-
-		if err != nil {
-			log.Println("ERROR: unable to delete review", err)
-			c.JSON(http.StatusInternalServerError, gin.H{})
-			return
-		}
+	user, err := h.userRepository.GetInfo(reviewRequest.UserId)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{})
+		return
 	}
 
-	err = h.reviewRepository.Add(movieId, reviewRequest)
+	err = h.reviewRepository.Add(movieId, user.Name, reviewRequest)
 
 	if err != nil {
 		jsonPayload, _ := json.Marshal(reviewRequest)
