@@ -2,14 +2,13 @@ package repositories
 
 import (
 	"context"
-	"errors"
 	"log"
 
+	"github.com/abuzaforfagun/dynamodb-movie-book/pkg/database"
 	db_model "github.com/abuzaforfagun/dynamodb-movie-book/pkg/models/db"
 	"github.com/aws/aws-sdk-go-v2/aws"
 	"github.com/aws/aws-sdk-go-v2/feature/dynamodb/attributevalue"
 	"github.com/aws/aws-sdk-go-v2/service/dynamodb"
-	"github.com/aws/aws-sdk-go-v2/service/dynamodb/types"
 )
 
 type ActorRepository interface {
@@ -47,32 +46,9 @@ func (r *actorRepository) Add(actor db_model.AddActor) error {
 }
 
 func (r *actorRepository) GetInfo(actorId string) (db_model.ActorInfo, error) {
-	actorDbId := "ACTOR#" + actorId
-	key := map[string]types.AttributeValue{
-		"PK": &types.AttributeValueMemberS{Value: actorDbId},
-		"SK": &types.AttributeValueMemberS{Value: actorDbId},
-	}
-
-	getItemInput := &dynamodb.GetItemInput{
-		TableName: aws.String(r.tableName),
-		Key:       key,
-	}
-
-	result, err := r.client.GetItem(context.TODO(), getItemInput)
+	pk := "ACTOR#" + actorId
+	actorInfo, err := database.GetInfo[db_model.ActorInfo](context.TODO(), r.client, r.tableName, pk, pk)
 	if err != nil {
-		log.Printf("ERROR: unable to get item: %v\n", err)
-		return db_model.ActorInfo{}, err
-	}
-
-	if result.Item == nil {
-		log.Printf("ERROR: actor[%s] not found\n", actorId)
-		return db_model.ActorInfo{}, errors.New("not found")
-	}
-
-	var actorInfo db_model.ActorInfo
-	err = attributevalue.UnmarshalMap(result.Item, &actorInfo)
-	if err != nil {
-		log.Println("ERROR: unable to unmarshal actor info", err)
 		return db_model.ActorInfo{}, err
 	}
 	return actorInfo, nil

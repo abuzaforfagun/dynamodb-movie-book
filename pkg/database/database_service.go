@@ -9,6 +9,7 @@ import (
 
 	"github.com/abuzaforfagun/dynamodb-movie-book/infrastructure"
 	"github.com/aws/aws-sdk-go-v2/aws"
+	"github.com/aws/aws-sdk-go-v2/feature/dynamodb/attributevalue"
 	"github.com/aws/aws-sdk-go-v2/service/dynamodb"
 	"github.com/aws/aws-sdk-go-v2/service/dynamodb/types"
 )
@@ -201,4 +202,35 @@ func HasItem(ctx context.Context, svc *dynamodb.Client, tableName string, pk str
 	hasItem := result.Item != nil
 
 	return hasItem, nil
+}
+
+func GetInfo[T any](ctx context.Context, svc *dynamodb.Client, tableName string, pk string, sk string) (value T, error error) {
+	var info T
+	key := map[string]types.AttributeValue{
+		"PK": &types.AttributeValueMemberS{Value: pk},
+		"SK": &types.AttributeValueMemberS{Value: sk},
+	}
+
+	getItemInput := &dynamodb.GetItemInput{
+		TableName: aws.String(tableName),
+		Key:       key,
+	}
+
+	result, err := svc.GetItem(context.TODO(), getItemInput)
+	if err != nil {
+		log.Printf("ERROR: unable to get item: %v\n", err)
+		return info, err
+	}
+
+	if result.Item == nil {
+		log.Printf("ERROR: [pk=%s] [sk=%s] not found\n", pk, sk)
+		return info, errors.New("not found")
+	}
+
+	err = attributevalue.UnmarshalMap(result.Item, &info)
+	if err != nil {
+		log.Println("ERROR: unable to unmarshal result", err)
+		return info, err
+	}
+	return info, nil
 }

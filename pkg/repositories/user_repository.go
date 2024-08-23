@@ -2,17 +2,15 @@ package repositories
 
 import (
 	"context"
-	"errors"
 	"fmt"
-	"log"
 
+	"github.com/abuzaforfagun/dynamodb-movie-book/pkg/database"
 	db_model "github.com/abuzaforfagun/dynamodb-movie-book/pkg/models/db"
 	"github.com/abuzaforfagun/dynamodb-movie-book/pkg/models/response_model"
 	"github.com/aws/aws-sdk-go-v2/aws"
 	"github.com/aws/aws-sdk-go-v2/feature/dynamodb/attributevalue"
 	"github.com/aws/aws-sdk-go-v2/feature/dynamodb/expression"
 	"github.com/aws/aws-sdk-go-v2/service/dynamodb"
-	"github.com/aws/aws-sdk-go-v2/service/dynamodb/types"
 )
 
 type UserRepository interface {
@@ -82,32 +80,10 @@ func (r *userRepository) Add(userData db_model.AddUser) error {
 }
 
 func (r *userRepository) GetInfo(userId string) (db_model.UserInfo, error) {
-	userDbId := "USER#" + userId
-	key := map[string]types.AttributeValue{
-		"PK": &types.AttributeValueMemberS{Value: userDbId},
-		"SK": &types.AttributeValueMemberS{Value: userDbId},
-	}
+	pk := "USER#" + userId
+	userInfo, err := database.GetInfo[db_model.UserInfo](context.TODO(), r.client, r.tableName, pk, pk)
 
-	getItemInput := &dynamodb.GetItemInput{
-		TableName: aws.String(r.tableName),
-		Key:       key,
-	}
-
-	result, err := r.client.GetItem(context.TODO(), getItemInput)
 	if err != nil {
-		log.Printf("ERROR: unable to get item: %v\n", err)
-		return db_model.UserInfo{}, err
-	}
-
-	if result.Item == nil {
-		log.Printf("ERROR: user[%s] not found\n", userId)
-		return db_model.UserInfo{}, errors.New("not found")
-	}
-
-	var userInfo db_model.UserInfo
-	err = attributevalue.UnmarshalMap(result.Item, &userInfo)
-	if err != nil {
-		log.Println("ERROR: unable to unmarshal user info", err)
 		return db_model.UserInfo{}, err
 	}
 	return userInfo, nil
