@@ -28,6 +28,7 @@ type MovieRepository interface {
 	Add(movie request_model.AddMovie) (string, error)
 	AssignActors(actor []db_model.AssignActor) error
 	GetAll(searchQuery string) ([]response_model.Movie, error)
+	GetByGenre(genreName string) ([]response_model.Movie, error)
 	UpdateScore(movieId string, score float64) error
 	HasMovie(movieId string) (bool, error)
 }
@@ -175,6 +176,36 @@ func (r *movieRepository) GetAll(movieName string) ([]response_model.Movie, erro
 		FilterExpression:          filterExpression,
 		ExpressionAttributeNames:  attributeNames,
 		ExpressionAttributeValues: attributeValues,
+	}
+
+	result, err := r.client.Query(context.TODO(), queryInput)
+	if err != nil {
+		fmt.Println("Got error calling Query:", err)
+		return nil, err
+	}
+
+	var movies []response_model.Movie
+
+	err = attributevalue.UnmarshalListOfMaps(result.Items, &movies)
+
+	if err != nil {
+		return nil, err
+	}
+	return movies, nil
+}
+
+func (r *movieRepository) GetByGenre(genreName string) ([]response_model.Movie, error) {
+	pk := "GENRE#" + genreName
+
+	queryInput := &dynamodb.QueryInput{
+		TableName:              aws.String(r.tableName),
+		KeyConditionExpression: aws.String("#pk = :v"),
+		ExpressionAttributeNames: map[string]string{
+			"#pk": "PK",
+		},
+		ExpressionAttributeValues: map[string]types.AttributeValue{
+			":v": &types.AttributeValueMemberS{Value: pk},
+		},
 	}
 
 	result, err := r.client.Query(context.TODO(), queryInput)

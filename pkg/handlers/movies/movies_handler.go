@@ -4,6 +4,7 @@ import (
 	"log"
 	"net/http"
 
+	core_models "github.com/abuzaforfagun/dynamodb-movie-book/pkg/models/core"
 	request_model "github.com/abuzaforfagun/dynamodb-movie-book/pkg/models/requests"
 	"github.com/abuzaforfagun/dynamodb-movie-book/pkg/services"
 	"github.com/gin-gonic/gin"
@@ -58,11 +59,33 @@ func (mh *MoviesHandler) GetMovieDetails(c *gin.Context) {
 // @Summary Get movies by genre
 // @Description Get movies by genre
 // @Tags movies
-// @Param id query int true "Genre Id"
+// @Param genre path string true "Genre name"
 // @Produce json
 // @Success 200 {array} response_model.Movie
-// @Router /movies/genre/{id} [get]
-func (mh *MoviesHandler) GetMoviesByGenre(c *gin.Context) {}
+// @Router /movies/genre/{genre} [get]
+func (h *MoviesHandler) GetMoviesByGenre(c *gin.Context) {
+	movieGenre := c.Param("genre")
+	if movieGenre == "" {
+		c.JSON(http.StatusBadRequest, gin.H{})
+		return
+	}
+
+	_, err := core_models.ToGenre(movieGenre)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{})
+		return
+	}
+
+	movies, err := h.movieService.GetByGenre(movieGenre)
+
+	if err != nil {
+		log.Println("ERROR: Unable to get movies", err)
+		c.JSON(http.StatusInternalServerError, gin.H{})
+		return
+	}
+
+	c.JSON(http.StatusOK, movies)
+}
 
 // @Summary Add movie
 // @Description Add new movie

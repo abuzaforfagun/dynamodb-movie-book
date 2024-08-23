@@ -49,7 +49,7 @@ func main() {
 	router.POST("/movies/:id/photos", movieHandler.AddPictures)
 	router.GET("/movies/:id", movieHandler.GetMovieDetails)
 	router.DELETE("/movies/:id", movieHandler.DeleteMovie)
-	router.GET("/movies/genre:id", movieHandler.GetMoviesByGenre)
+	router.GET("/movies/genre/:genre", movieHandler.GetMoviesByGenre)
 
 	reviewHandler := reviews_handler.New(reviewRepository, movieService)
 	router.POST("/movies/:id/reviews", reviewHandler.AddReview)

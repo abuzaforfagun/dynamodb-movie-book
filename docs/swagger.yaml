@@ -19,6 +19,7 @@ definitions:
     - Other
   core_models.Genre:
     enum:
+    - -1
     - 0
     - 1
     - 2
@@ -27,6 +28,7 @@ definitions:
     - 5
     type: integer
     x-enum-varnames:
+    - NotSupported
     - Unknown
     - Romantic
     - Action
@@ -436,15 +438,15 @@ paths:
       summary: Add movie review
       tags:
       - reviews
-  /movies/genre/{id}:
+  /movies/genre/{genre}:
     get:
       description: Get movies by genre
       parameters:
-      - description: Genre Id
-        in: query
-        name: id
+      - description: Genre name
+        in: path
+        name: genre
         required: true
-        type: integer
+        type: string
       produces:
       - application/json
       responses:

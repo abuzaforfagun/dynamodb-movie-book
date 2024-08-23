@@ -35,7 +35,7 @@ func NewMovieModel(id string, title string, releaseYear int, genre []string) []A
 	}
 	for _, g := range genre {
 		movie := AddMovie{
-			PK:          "GENRE#" + g,
+			PK:          "GENRE#" + strings.ToLower(g),
 			SK:          "MOVIE#" + id,
 			Id:          id,
 			Title:       title,

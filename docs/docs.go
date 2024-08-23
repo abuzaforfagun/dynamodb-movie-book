@@ -222,7 +222,7 @@ const docTemplate = `{
                 }
             }
         },
-        "/movies/genre/{id}": {
+        "/movies/genre/{genre}": {
             "get": {
                 "description": "Get movies by genre",
                 "produces": [
@@ -234,10 +234,10 @@ const docTemplate = `{
                 "summary": "Get movies by genre",
                 "parameters": [
                     {
-                        "type": "integer",
-                        "description": "Genre Id",
-                        "name": "id",
-                        "in": "query",
+                        "type": "string",
+                        "description": "Genre name",
+                        "name": "genre",
+                        "in": "path",
                         "required": true
                     }
                 ],
@@ -493,6 +493,7 @@ const docTemplate = `{
         "core_models.Genre": {
             "type": "integer",
             "enum": [
+                -1,
                 0,
                 1,
                 2,
@@ -501,6 +502,7 @@ const docTemplate = `{
                 5
             ],
             "x-enum-varnames": [
+                "NotSupported",
                 "Unknown",
                 "Romantic",
                 "Action",
