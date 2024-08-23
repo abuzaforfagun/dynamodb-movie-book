@@ -13,6 +13,10 @@ import (
 	"github.com/aws/aws-sdk-go-v2/service/dynamodb/types"
 )
 
+const GSI_NAME = "GSI"
+const GSI_PK = "GSI_PK"
+const GSI_SK = "GSI_SK"
+
 type DatabaseService struct {
 	Client    *dynamodb.Client
 	TableName string
@@ -40,10 +44,7 @@ func New() (*DatabaseService, error) {
 			return nil, err
 		}
 	}
-	gsiName := "GSI-TYPE"
-	partitionKey := "Type"
-	sortKey := "CreatedAt"
-	isGsiExists, err := existGsi(ctx, svc, tableName, gsiName)
+	isGsiExists, err := existGsi(ctx, svc, tableName, GSI_NAME)
 	if err != nil {
 		log.Fatalf("failed to check existing gsi: %v", err)
 		return nil, err
@@ -52,7 +53,7 @@ func New() (*DatabaseService, error) {
 		return new(tableName, svc), nil
 	}
 
-	err = createGsi(svc, tableName, gsiName, partitionKey, sortKey)
+	err = createGsi(svc, tableName, GSI_NAME, GSI_PK, GSI_SK)
 	if err != nil {
 		log.Fatalf("failed to create gsi: %v", err)
 		return nil, err

@@ -5,6 +5,8 @@ import "time"
 type AssignActor struct {
 	PK        string `dynamodbav:"PK"`
 	SK        string `dynamodbav:"SK"`
+	GSI_PK    string `dynamodbav:"GSI_PK"`
+	GSI_SK    string `dynamodbav:"GSI_SK"`
 	Id        string `dynamodbav:"ActorId"`
 	MovieId   string `dynamodbav:"MovieId"`
 	Name      string `dynamodbav:"Name"`
@@ -12,10 +14,12 @@ type AssignActor struct {
 	CreatedAt string `dynamodbav:"CreatedAt"`
 }
 
-func NewAssignActor(id, movieId, name, role string) AssignActor {
+func NewAssignActor(actorId, movieId, name, role string) AssignActor {
 	return AssignActor{
 		PK:        "MOVIE#" + movieId,
-		SK:        "ACTOR#" + id,
+		SK:        "ACTOR#" + actorId,
+		GSI_PK:    "ACTOR-MOVIE",
+		GSI_SK:    "MOVIE#" + movieId + "_ACTOR#" + actorId,
 		MovieId:   movieId,
 		Name:      name,
 		Role:      role,

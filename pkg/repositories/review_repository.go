@@ -3,7 +3,6 @@ package repositories
 import (
 	"context"
 	"log"
-	"time"
 
 	"github.com/abuzaforfagun/dynamodb-movie-book/pkg/database"
 	db_model "github.com/abuzaforfagun/dynamodb-movie-book/pkg/models/db"
@@ -35,14 +34,7 @@ func NewReviewRepository(client *dynamodb.Client, tableName string) ReviewReposi
 }
 
 func (r *reviewRepository) Add(movieId string, review request_model.AddReview) error {
-	dbRviewModel := db_model.AddReview{
-		PK:        "MOVIE#" + movieId,
-		SK:        "USER#" + review.UserId,
-		UserId:    review.UserId,
-		Rating:    review.Rating,
-		Comment:   review.Comment,
-		CreatedAt: time.Now().UTC().String(),
-	}
+	dbRviewModel := db_model.NewAddReview(movieId, review.UserId, review.Rating, review.Comment)
 
 	av, err := attributevalue.MarshalMap(dbRviewModel)
 	if err != nil {

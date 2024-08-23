@@ -59,8 +59,8 @@ const docTemplate = `{
                     }
                 ],
                 "responses": {
-                    "200": {
-                        "description": "OK"
+                    "202": {
+                        "description": "Accepted"
                     }
                 }
             }
@@ -533,7 +533,7 @@ const docTemplate = `{
                 "rating": {
                     "type": "number"
                 },
-                "userId": {
+                "user_id": {
                     "description": "TODO: Need to get from the logged in user",
                     "type": "string"
                 }

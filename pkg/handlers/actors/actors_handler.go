@@ -40,7 +40,7 @@ func (ah *ActorsHandler) GetDetails(c *gin.Context) {
 // @Param payload formData request_model.AddActor true "movie payload"
 // @Param thumbnail formData file true "Upload thumbnail image"
 // @Param pictures formData file false "Upload multiple pictures (Swagger 2.0 UI does not support multiple file upload, use curl or Postman)"
-// @Success 200
+// @Success 202
 // @Router /actors [post]
 func (h *ActorsHandler) Add(c *gin.Context) {
 
@@ -77,17 +77,8 @@ func (h *ActorsHandler) Add(c *gin.Context) {
 		return
 	}
 
-	actorDbModel := db_model.AddActor{
-		PK:           "ACTOR#" + actorId,
-		SK:           "ACTOR#" + actorId,
-		Id:           actorId,
-		Name:         actorRequest.Name,
-		DateOfBirth:  actorRequest.DateOfBirth.Format("2006-01-02"),
-		ThumbnailUrl: thumbnailUrl,
-		Pictures:     photosUrl,
-		Type:         "ACTOR",
-		CreatedAt:    time.Now().UTC().String(),
-	}
+	actorDbModel := db_model.NewAddActor(actorId, actorRequest.Name, actorRequest.DateOfBirth.Format("2006-01-02"),
+		thumbnailUrl, photosUrl)
 
 	err = h.actorRepository.Add(actorDbModel)
 	if err != nil {

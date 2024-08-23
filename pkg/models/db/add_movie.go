@@ -10,11 +10,12 @@ import (
 type AddMovie struct {
 	PK              string   `dynamodbav:"PK"`
 	SK              string   `dynamodbav:"SK"`
+	GSI_PK          string   `dynamodbav:"GSI_PK"`
+	GSI_SK          string   `dynamodbav:"GSI_SK"`
 	Id              string   `dynamodbav:"MovieId"`
 	Title           string   `dynamodbav:"Title"`
 	NormalizedTitle string   `dynamodbav:"NormalizedTitle"`
 	ReleaseYear     int      `dynamodbav:"ReleaseYear"`
-	Type            string   `dynamodbav:"Type"`
 	Genre           []string `dynamodbav:"Genre"`
 	CreatedAt       string   `dynamodbav:"CreatedAt"`
 }
@@ -24,12 +25,13 @@ func NewMovieModel(id string, title string, releaseYear int, genre []string) []A
 		{
 			PK:              "MOVIE#" + id,
 			SK:              "MOVIE#" + id,
+			GSI_PK:          "MOVIE",
+			GSI_SK:          "MOVIE#" + id,
 			Id:              id,
 			Title:           title,
 			NormalizedTitle: strings.ToLower(title),
 			ReleaseYear:     releaseYear,
 			Genre:           genre,
-			Type:            "MOVIE",
 			CreatedAt:       time.Now().UTC().String(),
 		},
 	}
@@ -37,10 +39,11 @@ func NewMovieModel(id string, title string, releaseYear int, genre []string) []A
 		movie := AddMovie{
 			PK:          "GENRE#" + strings.ToLower(g),
 			SK:          "MOVIE#" + id,
+			GSI_PK:      "GENRE",
+			GSI_SK:      "GENRE#" + strings.ToLower(g),
 			Id:          id,
 			Title:       title,
 			ReleaseYear: releaseYear,
-			Type:        "GENRE-ITEM",
 			CreatedAt:   time.Now().UTC().String(),
 		}
 		raws = append(raws, movie)

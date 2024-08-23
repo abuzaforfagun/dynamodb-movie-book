@@ -147,14 +147,11 @@ func (r *movieRepository) UpdateScore(movieId string, score float64) error {
 }
 
 func (r *movieRepository) GetAll(movieName string) ([]response_model.Movie, error) {
-	gsiName := "GSI-TYPE"
-	gsiPartitionKey := "Type"
-	// gsiSortKey := "CreatedAt"
 	partitionKeyValue := "MOVIE"
 
 	var filterExpression *string
 	attributeNames := map[string]string{}
-	attributeNames["#pk"] = gsiPartitionKey
+	attributeNames["#pk"] = database.GSI_PK
 
 	attributeValues := map[string]types.AttributeValue{}
 	attributeValues[":v"] = &types.AttributeValueMemberS{Value: partitionKeyValue}
@@ -168,7 +165,7 @@ func (r *movieRepository) GetAll(movieName string) ([]response_model.Movie, erro
 
 	queryInput := &dynamodb.QueryInput{
 		TableName:                 aws.String(r.tableName),
-		IndexName:                 aws.String(gsiName), // Name of your GSI
+		IndexName:                 aws.String(database.GSI_NAME),
 		KeyConditionExpression:    aws.String("#pk = :v"),
 		FilterExpression:          filterExpression,
 		ExpressionAttributeNames:  attributeNames,
