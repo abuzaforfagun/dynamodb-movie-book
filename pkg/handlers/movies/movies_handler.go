@@ -5,6 +5,7 @@ import (
 	"net/http"
 
 	core_models "github.com/abuzaforfagun/dynamodb-movie-book/pkg/models/core"
+	"github.com/abuzaforfagun/dynamodb-movie-book/pkg/models/custom_errors"
 	request_model "github.com/abuzaforfagun/dynamodb-movie-book/pkg/models/requests"
 	"github.com/abuzaforfagun/dynamodb-movie-book/pkg/services"
 	"github.com/gin-gonic/gin"
@@ -59,6 +60,14 @@ func (h *MoviesHandler) GetMovieDetails(c *gin.Context) {
 		log.Printf("ERROR: unable to get [MovieId=%s]. Error: %v", movieId, err)
 	}
 
+	if movieDetails == nil {
+		err := &custom_errors.BadRequestError{
+			Message: "Invlaid movie",
+		}
+		c.JSON(http.StatusNotFound, err)
+		return
+	}
+
 	c.JSON(http.StatusOK, movieDetails)
 }
 
@@ -72,13 +81,19 @@ func (h *MoviesHandler) GetMovieDetails(c *gin.Context) {
 func (h *MoviesHandler) GetMoviesByGenre(c *gin.Context) {
 	movieGenre := c.Param("genre")
 	if movieGenre == "" {
-		c.JSON(http.StatusBadRequest, gin.H{})
+		err := &custom_errors.BadRequestError{
+			Message: "Invalid request",
+		}
+		c.JSON(http.StatusBadRequest, err)
 		return
 	}
 
 	isSupportedGenre := core_models.IsSupportedGenre(movieGenre)
 	if !isSupportedGenre {
-		c.JSON(http.StatusBadRequest, gin.H{})
+		err := &custom_errors.BadRequestError{
+			Message: "Unsupported genre",
+		}
+		c.JSON(http.StatusBadRequest, err)
 		return
 	}
 
@@ -107,12 +122,20 @@ func (h *MoviesHandler) AddMovie(c *gin.Context) {
 
 	if err != nil {
 		log.Printf("WARNING: unable to bind %v", err.Error())
-		c.JSON(http.StatusBadRequest, gin.H{})
+		err := core_models.ErrorMessage{
+			Error: "Please check your body payload",
+		}
+		c.JSON(http.StatusBadRequest, err)
 		return
 	}
 
 	err = h.movieService.Add(requestModel)
+
 	if err != nil {
+		if err, ok := err.(*custom_errors.BadRequestError); ok {
+			c.JSON(http.StatusBadRequest, err)
+			return
+		}
 		c.JSON(http.StatusBadRequest, gin.H{})
 		return
 	}
@@ -141,14 +164,22 @@ func (h *MoviesHandler) DeleteMovie(c *gin.Context) {
 	movieId := c.Param("id")
 
 	if movieId == "" {
-		c.JSON(http.StatusBadRequest, gin.H{})
+		err := &custom_errors.BadRequestError{
+			Message: "Please check request again",
+		}
+		c.JSON(http.StatusBadRequest, err)
 		return
 	}
 
 	err := h.movieService.Delete(movieId)
 	if err != nil {
 		log.Println("Unable to delete movie", err)
+		if err, ok := err.(*custom_errors.BadRequestError); ok {
+			c.JSON(http.StatusBadGateway, err)
+			return
+		}
 		c.JSON(http.StatusInternalServerError, gin.H{})
+		return
 	}
 	c.JSON(http.StatusNoContent, gin.H{})
 }

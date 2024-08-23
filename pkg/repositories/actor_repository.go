@@ -13,7 +13,7 @@ import (
 
 type ActorRepository interface {
 	Add(actor db_model.AddActor) error
-	GetInfo(actorId string) (db_model.ActorInfo, error)
+	GetInfo(actorId string) (*db_model.ActorInfo, error)
 }
 
 type actorRepository struct {
@@ -45,11 +45,11 @@ func (r *actorRepository) Add(actor db_model.AddActor) error {
 	return nil
 }
 
-func (r *actorRepository) GetInfo(actorId string) (db_model.ActorInfo, error) {
+func (r *actorRepository) GetInfo(actorId string) (*db_model.ActorInfo, error) {
 	pk := "ACTOR#" + actorId
 	actorInfo, err := database.GetInfo[db_model.ActorInfo](context.TODO(), r.client, r.tableName, pk, pk)
 	if err != nil {
-		return db_model.ActorInfo{}, err
+		return nil, err
 	}
-	return actorInfo, nil
+	return &actorInfo, nil
 }

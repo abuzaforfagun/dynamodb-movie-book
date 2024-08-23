@@ -6,6 +6,7 @@ import (
 	"math"
 
 	core_models "github.com/abuzaforfagun/dynamodb-movie-book/pkg/models/core"
+	"github.com/abuzaforfagun/dynamodb-movie-book/pkg/models/custom_errors"
 	db_model "github.com/abuzaforfagun/dynamodb-movie-book/pkg/models/db"
 	request_model "github.com/abuzaforfagun/dynamodb-movie-book/pkg/models/requests"
 	"github.com/abuzaforfagun/dynamodb-movie-book/pkg/models/response_model"
@@ -19,7 +20,7 @@ type MovieService interface {
 	UpdateMovieScore(movieId string) error
 	HasMovie(movieId string) (bool, error)
 	Delete(movieId string) error
-	Get(movieId string) (response_model.MovieDetails, error)
+	Get(movieId string) (*response_model.MovieDetails, error)
 }
 
 type movieService struct {
@@ -47,7 +48,9 @@ func (s *movieService) Add(movie request_model.AddMovie) error {
 		isSupportedGenre := core_models.IsSupportedGenre(genre)
 
 		if !isSupportedGenre {
-			return fmt.Errorf("'%s' is not supported Genre", genre)
+			return &custom_errors.BadRequestError{
+				Message: fmt.Sprintf("'%s' is not supported Genre", genre),
+			}
 		}
 	}
 	movieId, err := s.movieRepository.Add(movie)
@@ -62,6 +65,12 @@ func (s *movieService) Add(movie request_model.AddMovie) error {
 
 		if err != nil {
 			return err
+		}
+
+		if actorInfo == nil {
+			return &custom_errors.BadRequestError{
+				Message: "Invalid actor",
+			}
 		}
 		dbActor := db_model.NewAssignActor(actorInfo.Id, movieId, actorInfo.Name, movieActor.Role.ToString())
 		dbActors = append(dbActors, dbActor)
@@ -124,7 +133,9 @@ func (s *movieService) Delete(movieId string) error {
 	}
 
 	if !isExistingMovie {
-		return fmt.Errorf("Not found")
+		return &custom_errors.BadRequestError{
+			Message: "Invalid movie details",
+		}
 	}
 
 	err = s.movieRepository.Delete(movieId)
@@ -134,6 +145,6 @@ func (s *movieService) Delete(movieId string) error {
 	return nil
 }
 
-func (s *movieService) Get(movieId string) (response_model.MovieDetails, error) {
+func (s *movieService) Get(movieId string) (*response_model.MovieDetails, error) {
 	return s.movieRepository.Get(movieId)
 }

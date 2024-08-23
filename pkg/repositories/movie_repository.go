@@ -32,7 +32,7 @@ type MovieRepository interface {
 	UpdateScore(movieId string, score float64) error
 	HasMovie(movieId string) (bool, error)
 	Delete(movieId string) error
-	Get(movieId string) (response_model.MovieDetails, error)
+	Get(movieId string) (*response_model.MovieDetails, error)
 }
 
 func NewMovieRepository(client *dynamodb.Client, tableName string) MovieRepository {
@@ -291,11 +291,15 @@ func (r *movieRepository) getMovieRelatedItems(movieId string) ([]map[string]typ
 	return response.Items, err
 }
 
-func (r *movieRepository) Get(movieId string) (response_model.MovieDetails, error) {
+func (r *movieRepository) Get(movieId string) (*response_model.MovieDetails, error) {
 	movieItems, err := r.getMovieRelatedItems(movieId)
 
 	if err != nil {
-		return response_model.MovieDetails{}, err
+		return nil, err
+	}
+
+	if len(movieItems) == 0 {
+		return nil, nil
 	}
 
 	var movieDetails response_model.MovieDetails
@@ -331,5 +335,5 @@ func (r *movieRepository) Get(movieId string) (response_model.MovieDetails, erro
 	movieDetails.Actors = actors
 	movieDetails.Reviews = reviews
 
-	return movieDetails, nil
+	return &movieDetails, nil
 }

@@ -4,6 +4,7 @@ import (
 	"log"
 	"net/http"
 
+	"github.com/abuzaforfagun/dynamodb-movie-book/pkg/models/custom_errors"
 	request_model "github.com/abuzaforfagun/dynamodb-movie-book/pkg/models/requests"
 	"github.com/abuzaforfagun/dynamodb-movie-book/pkg/services"
 	"github.com/gin-gonic/gin"
@@ -32,8 +33,10 @@ func (h *UserHandler) AddUser(c *gin.Context) {
 	err := c.BindJSON(&requestModel)
 
 	if err != nil {
-		log.Printf("WARNING: unable to bind %v", err.Error())
-		c.JSON(http.StatusBadRequest, gin.H{})
+		err := &custom_errors.BadRequestError{
+			Message: "Please verify request payload",
+		}
+		c.JSON(http.StatusBadRequest, err)
 		return
 	}
 

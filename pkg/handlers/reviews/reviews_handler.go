@@ -4,6 +4,7 @@ import (
 	"log"
 	"net/http"
 
+	"github.com/abuzaforfagun/dynamodb-movie-book/pkg/models/custom_errors"
 	request_model "github.com/abuzaforfagun/dynamodb-movie-book/pkg/models/requests"
 	"github.com/abuzaforfagun/dynamodb-movie-book/pkg/services"
 	"github.com/gin-gonic/gin"
@@ -34,14 +35,18 @@ func (h *ReviewHandler) AddReview(c *gin.Context) {
 
 	movieId := c.Param("id")
 	if movieId == "" {
-		log.Println("WARNING: unable to get movie id.")
-		c.JSON(http.StatusBadRequest, gin.H{})
+		err := &custom_errors.BadRequestError{
+			Message: "Please verify movie id",
+		}
+		c.JSON(http.StatusBadRequest, err)
 		return
 	}
 	err := c.BindJSON(&reviewRequest)
 	if err != nil {
-		log.Println("WARNING: unable to bind request.", err)
-		c.JSON(http.StatusBadRequest, gin.H{})
+		err := &custom_errors.BadRequestError{
+			Message: "Please verify message body",
+		}
+		c.JSON(http.StatusBadRequest, err)
 		return
 	}
 
@@ -54,15 +59,17 @@ func (h *ReviewHandler) AddReview(c *gin.Context) {
 	}
 
 	if !hasMovie {
-		log.Printf("ERROR: invalid [MovieId=%s]\n", movieId)
-		c.JSON(http.StatusBadRequest, gin.H{})
+		err := &custom_errors.BadRequestError{
+			Message: "Invalid movie id",
+		}
+		c.JSON(http.StatusBadRequest, err)
 		return
 	}
 
 	err = h.reviewService.Add(movieId, reviewRequest)
 
 	if err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{})
+		c.JSON(http.StatusInternalServerError, gin.H{})
 		return
 	}
 

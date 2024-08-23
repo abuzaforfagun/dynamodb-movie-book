@@ -5,6 +5,7 @@ import (
 	"net/http"
 	"time"
 
+	"github.com/abuzaforfagun/dynamodb-movie-book/pkg/models/custom_errors"
 	db_model "github.com/abuzaforfagun/dynamodb-movie-book/pkg/models/db"
 	request_model "github.com/abuzaforfagun/dynamodb-movie-book/pkg/models/requests"
 	"github.com/abuzaforfagun/dynamodb-movie-book/pkg/repositories"
@@ -50,8 +51,10 @@ func (h *ActorsHandler) Add(c *gin.Context) {
 	dateOfBirth, err := time.Parse("2006-01-02", dateOfBirthStr)
 
 	if name == "" || err != nil {
-		log.Println(err)
-		c.JSON(http.StatusBadRequest, gin.H{})
+		err := &custom_errors.BadRequestError{
+			Message: "Please verify date of birth",
+		}
+		c.JSON(http.StatusBadRequest, err)
 		return
 	}
 
@@ -85,7 +88,7 @@ func (h *ActorsHandler) Add(c *gin.Context) {
 		log.Println("ERROR: unable to create actor", err)
 		go deleteUploadedPhotos(append(photosUrl, thumbnailUrl))
 
-		c.JSON(http.StatusBadRequest, gin.H{})
+		c.JSON(http.StatusInternalServerError, gin.H{})
 		return
 	}
 
