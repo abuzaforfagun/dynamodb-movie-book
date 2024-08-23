@@ -231,8 +231,8 @@ paths:
       produces:
       - application/json
       responses:
-        "202":
-          description: Accepted
+        "201":
+          description: Created
       summary: Add new actor
       tags:
       - actors

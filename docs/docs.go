@@ -59,8 +59,8 @@ const docTemplate = `{
                     }
                 ],
                 "responses": {
-                    "202": {
-                        "description": "Accepted"
+                    "201": {
+                        "description": "Created"
                     }
                 }
             }
