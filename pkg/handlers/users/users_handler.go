@@ -4,20 +4,18 @@ import (
 	"log"
 	"net/http"
 
-	db_model "github.com/abuzaforfagun/dynamodb-movie-book/pkg/models/db"
 	request_model "github.com/abuzaforfagun/dynamodb-movie-book/pkg/models/requests"
-	"github.com/abuzaforfagun/dynamodb-movie-book/pkg/repositories"
+	"github.com/abuzaforfagun/dynamodb-movie-book/pkg/services"
 	"github.com/gin-gonic/gin"
-	"github.com/google/uuid"
 )
 
 type UserHandler struct {
-	userRepository repositories.UserRepository
+	userService services.UserService
 }
 
-func New(userRepository repositories.UserRepository) *UserHandler {
+func New(userService services.UserService) *UserHandler {
 	return &UserHandler{
-		userRepository: userRepository,
+		userService: userService,
 	}
 }
 
@@ -28,7 +26,7 @@ func New(userRepository repositories.UserRepository) *UserHandler {
 // @Produce json
 // @Success 201
 // @Router /users [post]
-func (uh *UserHandler) AddUser(c *gin.Context) {
+func (h *UserHandler) AddUser(c *gin.Context) {
 	var requestModel request_model.AddUser
 
 	err := c.BindJSON(&requestModel)
@@ -39,10 +37,7 @@ func (uh *UserHandler) AddUser(c *gin.Context) {
 		return
 	}
 
-	userId := uuid.New().String()
-	dbModel := db_model.NewAddUser(userId, requestModel.Name, requestModel.Email)
-
-	err = uh.userRepository.Add(dbModel)
+	err = h.userService.AddUser(requestModel)
 	if err != nil {
 		log.Printf("ERROR: unable to store new user %x", err)
 		c.JSON(http.StatusInternalServerError, gin.H{})

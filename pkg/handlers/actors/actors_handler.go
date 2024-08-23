@@ -40,7 +40,7 @@ func (ah *ActorsHandler) GetDetails(c *gin.Context) {
 // @Param payload formData request_model.AddActor true "movie payload"
 // @Param thumbnail formData file true "Upload thumbnail image"
 // @Param pictures formData file false "Upload multiple pictures (Swagger 2.0 UI does not support multiple file upload, use curl or Postman)"
-// @Success 202
+// @Success 201
 // @Router /actors [post]
 func (h *ActorsHandler) Add(c *gin.Context) {
 

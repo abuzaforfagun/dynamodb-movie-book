@@ -1,28 +1,23 @@
 package reviews_handler
 
 import (
-	"encoding/json"
 	"log"
 	"net/http"
 
 	request_model "github.com/abuzaforfagun/dynamodb-movie-book/pkg/models/requests"
-	"github.com/abuzaforfagun/dynamodb-movie-book/pkg/repositories"
 	"github.com/abuzaforfagun/dynamodb-movie-book/pkg/services"
 	"github.com/gin-gonic/gin"
 )
 
 type ReviewHandler struct {
-	reviewRepository repositories.ReviewRepository
-	movieService     services.MovieService
-	userRepository   repositories.UserRepository
+	reviewService services.ReviewService
+	movieService  services.MovieService
 }
 
-func New(reviewRepository repositories.ReviewRepository, movieService services.MovieService,
-	userRepository repositories.UserRepository) *ReviewHandler {
+func New(reviewService services.ReviewService, movieService services.MovieService) *ReviewHandler {
 	return &ReviewHandler{
-		reviewRepository: reviewRepository,
-		movieService:     movieService,
-		userRepository:   userRepository,
+		reviewService: reviewService,
+		movieService:  movieService,
 	}
 }
 
@@ -57,30 +52,26 @@ func (h *ReviewHandler) AddReview(c *gin.Context) {
 		c.JSON(http.StatusInternalServerError, gin.H{})
 		return
 	}
+
 	if !hasMovie {
+		log.Printf("ERROR: invalid [MovieId=%s]\n", movieId)
 		c.JSON(http.StatusBadRequest, gin.H{})
 		return
 	}
 
-	user, err := h.userRepository.GetInfo(reviewRequest.UserId)
+	err = h.reviewService.Add(movieId, reviewRequest)
+
 	if err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{})
-		return
-	}
-
-	err = h.reviewRepository.Add(movieId, user.Name, reviewRequest)
-
-	if err != nil {
-		jsonPayload, _ := json.Marshal(reviewRequest)
-		log.Printf("ERROR: unable to add review for [Movie=%s]. [Payload=%s]\n", movieId, jsonPayload)
-
-		c.JSON(http.StatusInternalServerError, gin.H{})
 		return
 	}
 
 	err = h.movieService.UpdateMovieScore(movieId)
 	if err != nil {
-		log.Println("ERROR: unable to update the movie score")
+		h.reviewService.Delete(movieId, reviewRequest.UserId)
+		log.Printf("ERROR: unable to update the movie score. Error: %v", err)
+		c.JSON(http.StatusInternalServerError, gin.H{})
+		return
 	}
 
 	c.JSON(http.StatusCreated, gin.H{})

@@ -23,18 +23,18 @@ type MovieService interface {
 }
 
 type movieService struct {
-	movieRepository  repositories.MovieRepository
-	actorRepository  repositories.ActorRepository
-	reviewRepository repositories.ReviewRepository
+	movieRepository repositories.MovieRepository
+	actorRepository repositories.ActorRepository
+	reviewService   ReviewService
 }
 
 func NewMovieService(movieRepository repositories.MovieRepository,
 	actorRepository repositories.ActorRepository,
-	reviewRepository repositories.ReviewRepository) MovieService {
+	reviewService ReviewService) MovieService {
 	return &movieService{
-		movieRepository:  movieRepository,
-		actorRepository:  actorRepository,
-		reviewRepository: reviewRepository,
+		movieRepository: movieRepository,
+		actorRepository: actorRepository,
+		reviewService:   reviewService,
 	}
 }
 
@@ -91,7 +91,7 @@ func (s *movieService) GetByGenre(genreName string) ([]response_model.Movie, err
 }
 
 func (s *movieService) UpdateMovieScore(movieId string) error {
-	reviews, err := s.reviewRepository.GetAll(movieId)
+	reviews, err := s.reviewService.GetAll(movieId)
 	if err != nil {
 		log.Println("ERROR: Unable to get movie reviews", err)
 		return err
