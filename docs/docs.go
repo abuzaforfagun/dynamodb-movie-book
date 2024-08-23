@@ -296,7 +296,7 @@ const docTemplate = `{
                         "type": "string",
                         "description": "Movie Id",
                         "name": "id",
-                        "in": "query",
+                        "in": "path",
                         "required": true
                     }
                 ],

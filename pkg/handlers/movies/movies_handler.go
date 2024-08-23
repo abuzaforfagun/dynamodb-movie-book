@@ -127,8 +127,22 @@ func (mh *MoviesHandler) AddPictures(c *gin.Context) {}
 // @Summary Delete movie
 // @Description Delete movie by id
 // @Tags movies
-// @Param id query string true "Movie Id"
+// @Param id path string true "Movie Id"
 // @Produce json
 // @Success 204
 // @Router /movies/{id} [delete]
-func (mh *MoviesHandler) DeleteMovie(c *gin.Context) {}
+func (h *MoviesHandler) DeleteMovie(c *gin.Context) {
+	movieId := c.Param("id")
+
+	if movieId == "" {
+		c.JSON(http.StatusBadRequest, gin.H{})
+		return
+	}
+
+	err := h.movieService.Delete(movieId)
+	if err != nil {
+		log.Println("Unable to delete movie", err)
+		c.JSON(http.StatusInternalServerError, gin.H{})
+	}
+	c.JSON(http.StatusNoContent, gin.H{})
+}

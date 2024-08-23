@@ -183,6 +183,7 @@ func existGsi(ctx context.Context, svc *dynamodb.Client, tableName string, gsiNa
 func HasItem(ctx context.Context, svc *dynamodb.Client, tableName string, pk string, sk string) (bool, error) {
 	key := map[string]types.AttributeValue{
 		"PK": &types.AttributeValueMemberS{Value: pk},
+		"SK": &types.AttributeValueMemberS{Value: sk},
 	}
 
 	getItemInput := &dynamodb.GetItemInput{

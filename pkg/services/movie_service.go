@@ -18,6 +18,7 @@ type MovieService interface {
 	GetByGenre(genreName string) ([]response_model.Movie, error)
 	UpdateMovieScore(movieId string) error
 	HasMovie(movieId string) (bool, error)
+	Delete(movieId string) error
 }
 
 type movieService struct {
@@ -110,6 +111,23 @@ func (s *movieService) UpdateMovieScore(movieId string) error {
 	err = s.movieRepository.UpdateScore(movieId, score)
 	if err != nil {
 		log.Println("ERROR: Unable to update score", err)
+		return err
+	}
+	return nil
+}
+
+func (s *movieService) Delete(movieId string) error {
+	isExistingMovie, err := s.HasMovie(movieId)
+	if err != nil {
+		return err
+	}
+
+	if !isExistingMovie {
+		return fmt.Errorf("Not found")
+	}
+
+	err = s.movieRepository.Delete(movieId)
+	if err != nil {
 		return err
 	}
 	return nil

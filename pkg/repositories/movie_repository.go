@@ -31,6 +31,7 @@ type MovieRepository interface {
 	GetByGenre(genreName string) ([]response_model.Movie, error)
 	UpdateScore(movieId string, score float64) error
 	HasMovie(movieId string) (bool, error)
+	Delete(movieId string) error
 }
 
 func NewMovieRepository(client *dynamodb.Client, tableName string) MovieRepository {
@@ -218,4 +219,76 @@ func (r *movieRepository) GetByGenre(genreName string) ([]response_model.Movie, 
 		return nil, err
 	}
 	return movies, nil
+}
+
+func (r *movieRepository) Delete(movieId string) error {
+	movieItems, err := r.getMovieRelatedItems(movieId)
+	if err != nil {
+		return err
+	}
+
+	var writeRequests []types.WriteRequest
+	var movieModelForGenre struct {
+		Genre []string `dynamodb:"Genre"`
+	}
+
+	for _, item := range movieItems {
+
+		if movieModelForGenre.Genre == nil && item["Genre"] != nil {
+			attributevalue.UnmarshalMap(item, &movieModelForGenre)
+		}
+
+		primaryKey := map[string]types.AttributeValue{
+			"PK": item["PK"],
+			"SK": item["SK"],
+		}
+
+		writeRequests = append(writeRequests, types.WriteRequest{
+			DeleteRequest: &types.DeleteRequest{
+				Key: primaryKey,
+			},
+		})
+	}
+
+	for _, genre := range movieModelForGenre.Genre {
+		primaryKey := map[string]types.AttributeValue{
+			"PK": &types.AttributeValueMemberS{Value: "GENRE#" + strings.ToLower(genre)},
+			"SK": &types.AttributeValueMemberS{Value: "MOVIE#" + movieId},
+		}
+
+		writeRequests = append(writeRequests, types.WriteRequest{
+			DeleteRequest: &types.DeleteRequest{
+				Key: primaryKey,
+			},
+		})
+	}
+	_, err = r.client.BatchWriteItem(context.TODO(), &dynamodb.BatchWriteItemInput{
+		RequestItems: map[string][]types.WriteRequest{
+			r.tableName: writeRequests,
+		},
+	})
+
+	return err
+}
+
+func (r *movieRepository) getMovieRelatedItems(movieId string) ([]map[string]types.AttributeValue, error) {
+	pk := "MOVIE#" + movieId
+	keyExpression := expression.Key("PK").Equal(expression.Value(pk))
+
+	expr, err := expression.NewBuilder().WithKeyCondition(keyExpression).Build()
+
+	if err != nil {
+		return nil, err
+	}
+
+	response, err := r.client.Query(
+		context.TODO(),
+		&dynamodb.QueryInput{
+			TableName:                 aws.String(r.tableName),
+			ExpressionAttributeNames:  expr.Names(),
+			ExpressionAttributeValues: expr.Values(),
+			KeyConditionExpression:    expr.KeyCondition(),
+		},
+	)
+	return response.Items, err
 }

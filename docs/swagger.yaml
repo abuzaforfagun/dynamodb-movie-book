@@ -345,7 +345,7 @@ paths:
       description: Delete movie by id
       parameters:
       - description: Movie Id
-        in: query
+        in: path
         name: id
         required: true
         type: string
