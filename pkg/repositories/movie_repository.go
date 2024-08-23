@@ -120,31 +120,9 @@ func (r *movieRepository) AssignActors(actors []db_model.AssignActor) error {
 func (r *movieRepository) UpdateScore(movieId string, score float64) error {
 	pk := "MOVIE#" + movieId
 	sk := "MOVIE#" + movieId
-	update := expression.Set(expression.Name("Score"), expression.Value(score))
+	updateBuilder := expression.Set(expression.Name("Score"), expression.Value(score))
 
-	expr, err := expression.NewBuilder().WithUpdate(update).Build()
-	if err != nil {
-		return fmt.Errorf("failed to build expression: %w", err)
-	}
-
-	input := &dynamodb.UpdateItemInput{
-		TableName: aws.String(r.tableName),
-		Key: map[string]types.AttributeValue{
-			"PK": &types.AttributeValueMemberS{Value: pk},
-			"SK": &types.AttributeValueMemberS{Value: sk},
-		},
-		ExpressionAttributeNames:  expr.Names(),
-		ExpressionAttributeValues: expr.Values(),
-		UpdateExpression:          expr.Update(),
-		ReturnValues:              types.ReturnValueUpdatedNew, // To get the updated attributes back
-	}
-
-	_, err = r.client.UpdateItem(context.TODO(), input)
-	if err != nil {
-		log.Println("ERROR: Unable to update score", err)
-		return err
-	}
-	return nil
+	return database.Update(context.TODO(), r.client, r.tableName, pk, sk, updateBuilder)
 }
 
 func (r *movieRepository) GetAll(movieName string) ([]response_model.Movie, error) {

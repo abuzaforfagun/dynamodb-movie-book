@@ -57,7 +57,7 @@ func main() {
 	router.POST("/movies/:id/reviews", reviewHandler.AddReview)
 	router.DELETE("/movies:id/reviews:review_id", reviewHandler.DeleteReview)
 
-	userHandler := users_handler.New(userService)
+	userHandler := users_handler.New(userService, reviewService)
 	router.GET("/users/:id", userHandler.GetUser)
 	router.POST("/users/", userHandler.AddUser)
 	router.PUT("/users/:id", userHandler.UpdateUser)

@@ -10,6 +10,7 @@ import (
 type UserService interface {
 	AddUser(userModel request_model.AddUser) error
 	GetInfo(userId string) (db_model.UserInfo, error)
+	Update(userId string, updateModel request_model.UpdateUser) error
 }
 
 type userService struct {
@@ -31,4 +32,8 @@ func (s *userService) AddUser(userModel request_model.AddUser) error {
 
 func (s *userService) GetInfo(userId string) (db_model.UserInfo, error) {
 	return s.userRepository.GetInfo(userId)
+}
+
+func (s *userService) Update(userId string, updateModel request_model.UpdateUser) error {
+	return s.userRepository.Update(userId, updateModel.Name)
 }

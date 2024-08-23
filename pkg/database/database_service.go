@@ -10,6 +10,7 @@ import (
 	"github.com/abuzaforfagun/dynamodb-movie-book/infrastructure"
 	"github.com/aws/aws-sdk-go-v2/aws"
 	"github.com/aws/aws-sdk-go-v2/feature/dynamodb/attributevalue"
+	"github.com/aws/aws-sdk-go-v2/feature/dynamodb/expression"
 	"github.com/aws/aws-sdk-go-v2/service/dynamodb"
 	"github.com/aws/aws-sdk-go-v2/service/dynamodb/types"
 )
@@ -233,4 +234,30 @@ func GetInfo[T any](ctx context.Context, svc *dynamodb.Client, tableName string,
 		return info, err
 	}
 	return info, nil
+}
+
+func Update(ctx context.Context, svc *dynamodb.Client, tableName string, pk string, sk string, builder expression.UpdateBuilder) error {
+	expr, err := expression.NewBuilder().WithUpdate(builder).Build()
+	if err != nil {
+		return fmt.Errorf("failed to build expression: %v", err)
+	}
+
+	input := &dynamodb.UpdateItemInput{
+		TableName: aws.String(tableName),
+		Key: map[string]types.AttributeValue{
+			"PK": &types.AttributeValueMemberS{Value: pk},
+			"SK": &types.AttributeValueMemberS{Value: sk},
+		},
+		ExpressionAttributeNames:  expr.Names(),
+		ExpressionAttributeValues: expr.Values(),
+		UpdateExpression:          expr.Update(),
+		ReturnValues:              types.ReturnValueUpdatedNew,
+	}
+
+	_, err = svc.UpdateItem(context.TODO(), input)
+	if err != nil {
+		log.Println("ERROR: Unable to update score", err)
+		return err
+	}
+	return nil
 }

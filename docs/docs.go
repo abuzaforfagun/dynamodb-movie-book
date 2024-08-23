@@ -447,7 +447,7 @@ const docTemplate = `{
                         "type": "string",
                         "description": "User id",
                         "name": "id",
-                        "in": "query",
+                        "in": "path",
                         "required": true
                     },
                     {
@@ -461,8 +461,8 @@ const docTemplate = `{
                     }
                 ],
                 "responses": {
-                    "201": {
-                        "description": "Created"
+                    "200": {
+                        "description": "OK"
                     }
                 }
             }

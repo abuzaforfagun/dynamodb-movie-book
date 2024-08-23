@@ -17,6 +17,7 @@ type UserRepository interface {
 	Add(user db_model.AddUser) error
 	Get(userId string) (response_model.User, error)
 	GetInfo(userId string) (db_model.UserInfo, error)
+	Update(userId string, name string) error
 }
 
 type userRepository struct {
@@ -87,4 +88,12 @@ func (r *userRepository) GetInfo(userId string) (db_model.UserInfo, error) {
 		return db_model.UserInfo{}, err
 	}
 	return userInfo, nil
+}
+
+func (r *userRepository) Update(userId string, name string) error {
+	pk := "USER#" + userId
+	sk := "USER#" + userId
+	update := expression.Set(expression.Name("Name"), expression.Value(name))
+
+	return database.Update(context.TODO(), r.client, r.tableName, pk, sk, update)
 }

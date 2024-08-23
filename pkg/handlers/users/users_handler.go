@@ -11,12 +11,15 @@ import (
 )
 
 type UserHandler struct {
-	userService services.UserService
+	userService   services.UserService
+	reviewService services.ReviewService
 }
 
-func New(userService services.UserService) *UserHandler {
+func New(userService services.UserService,
+	reviewService services.ReviewService) *UserHandler {
 	return &UserHandler{
-		userService: userService,
+		userService:   userService,
+		reviewService: reviewService,
 	}
 }
 
@@ -62,9 +65,44 @@ func (uh *UserHandler) GetUser(c *gin.Context) {}
 // @Summary Update user
 // @Description Update existing user
 // @Tags users
-// @Param id query string true "User id"
+// @Param id path string true "User id"
 // @Param UpdateUserRequest body request_model.UpdateUser true "Update user payload"
 // @Produce json
-// @Success 201
+// @Success 200
 // @Router /users/{id} [put]
-func (uh *UserHandler) UpdateUser(c *gin.Context) {}
+func (h *UserHandler) UpdateUser(c *gin.Context) {
+	userId := c.Param("id")
+	if userId == "" {
+		err := &custom_errors.BadRequestError{
+			Message: "Please verify user id",
+		}
+		c.JSON(http.StatusBadRequest, err)
+		return
+	}
+	var requestModel request_model.UpdateUser
+
+	err := c.BindJSON(&requestModel)
+	if err != nil || requestModel.Name == "" {
+		err := &custom_errors.BadRequestError{
+			Message: "Please verify payload",
+		}
+		c.JSON(http.StatusBadRequest, err)
+		return
+	}
+
+	err = h.userService.Update(userId, requestModel)
+	if err != nil {
+		log.Printf("ERROR: Unable to update user information. Error: %v\n", err)
+		c.JSON(http.StatusInternalServerError, gin.H{})
+		return
+	}
+
+	err = h.reviewService.UpdateReviewerName(userId, requestModel.Name)
+	if err != nil {
+		log.Printf("ERROR: Unable to update reviewer name. Error: %v\n", err)
+		c.JSON(http.StatusInternalServerError, gin.H{})
+		return
+	}
+
+	c.JSON(http.StatusOK, gin.H{})
+}

@@ -484,7 +484,7 @@ paths:
       description: Update existing user
       parameters:
       - description: User id
-        in: query
+        in: path
         name: id
         required: true
         type: string
@@ -497,8 +497,8 @@ paths:
       produces:
       - application/json
       responses:
-        "201":
-          description: Created
+        "200":
+          description: OK
       summary: Update user
       tags:
       - users
