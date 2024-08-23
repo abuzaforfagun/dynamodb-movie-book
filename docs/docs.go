@@ -490,27 +490,6 @@ const docTemplate = `{
                 "Other"
             ]
         },
-        "core_models.Genre": {
-            "type": "integer",
-            "enum": [
-                -1,
-                0,
-                1,
-                2,
-                3,
-                4,
-                5
-            ],
-            "x-enum-varnames": [
-                "NotSupported",
-                "Unknown",
-                "Romantic",
-                "Action",
-                "Drama",
-                "Travel",
-                "History"
-            ]
-        },
         "request_model.ActorRole": {
             "type": "object",
             "properties": {
@@ -534,7 +513,7 @@ const docTemplate = `{
                 "genre": {
                     "type": "array",
                     "items": {
-                        "$ref": "#/definitions/core_models.Genre"
+                        "type": "string"
                     }
                 },
                 "release_year": {

@@ -1,9 +1,11 @@
 package services
 
 import (
+	"fmt"
 	"log"
 	"math"
 
+	core_models "github.com/abuzaforfagun/dynamodb-movie-book/pkg/models/core"
 	db_model "github.com/abuzaforfagun/dynamodb-movie-book/pkg/models/db"
 	request_model "github.com/abuzaforfagun/dynamodb-movie-book/pkg/models/requests"
 	"github.com/abuzaforfagun/dynamodb-movie-book/pkg/models/response_model"
@@ -39,6 +41,13 @@ func (s *movieService) HasMovie(movieId string) (bool, error) {
 }
 
 func (s *movieService) Add(movie request_model.AddMovie) error {
+	for _, genre := range movie.Genre {
+		isSupportedGenre := core_models.IsSupportedGenre(genre)
+
+		if !isSupportedGenre {
+			return fmt.Errorf("'%s' is not supported Genre", genre)
+		}
+	}
 	movieId, err := s.movieRepository.Add(movie)
 	if err != nil {
 		log.Printf("ERROR: unable save movie %v", err.Error())

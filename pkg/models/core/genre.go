@@ -1,41 +1,31 @@
 package core_models
 
-import (
-	"errors"
-	"strings"
-)
+import "strings"
 
-type Genre int
-
-const (
-	NotSupported Genre = -1 + iota
-	Unknown
-	Romantic
-	Action
-	Drama
-	Travel
-	History
-)
-
-func (genre Genre) ToString() string {
-	return [...]string{"Unknown", "Romantic", "Action", "Drama", "Travel", "History"}[genre]
+var supportedGenre = map[string]bool{
+	"action":      true,
+	"adventure":   true,
+	"animation":   true,
+	"biography":   true,
+	"comedy":      true,
+	"crime":       true,
+	"documentary": true,
+	"drama":       true,
+	"family":      true,
+	"fantasy":     true,
+	"film-noir":   true,
+	"history":     true,
+	"horror":      true,
+	"musical":     true,
+	"mystery":     true,
+	"romance":     true,
+	"sci-fi":      true,
+	"sport":       true,
+	"thriller":    true,
+	"war":         true,
+	"western":     true,
 }
 
-func ToGenre(s string) (Genre, error) {
-	switch strings.ToLower(s) {
-	case "romantic":
-		return Romantic, nil
-	case "action":
-		return Action, nil
-	case "drama":
-		return Drama, nil
-	case "travel":
-		return Travel, nil
-	case "history":
-		return History, nil
-	case "unknown":
-		return Unknown, nil
-	default:
-		return NotSupported, errors.New("invalid genre")
-	}
+func IsSupportedGenre(val string) bool {
+	return supportedGenre[strings.ToLower(val)]
 }

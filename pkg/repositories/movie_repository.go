@@ -50,12 +50,8 @@ func (r *movieRepository) HasMovie(movieId string) (bool, error) {
 
 func (r *movieRepository) Add(movie request_model.AddMovie) (string, error) {
 	movieId := uuid.New().String()
-	genres := []string{}
 
-	for _, genre := range movie.Genre {
-		genres = append(genres, genre.ToString())
-	}
-	dbModels := db_model.NewMovieModel(movieId, movie.Title, movie.ReleaseYear, genres)
+	dbModels := db_model.NewMovieModel(movieId, movie.Title, movie.ReleaseYear, movie.Genre)
 
 	var writeRequests []types.WriteRequest
 

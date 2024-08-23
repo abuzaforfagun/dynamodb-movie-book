@@ -17,24 +17,6 @@ definitions:
     - Heroin
     - Billen
     - Other
-  core_models.Genre:
-    enum:
-    - -1
-    - 0
-    - 1
-    - 2
-    - 3
-    - 4
-    - 5
-    type: integer
-    x-enum-varnames:
-    - NotSupported
-    - Unknown
-    - Romantic
-    - Action
-    - Drama
-    - Travel
-    - History
   request_model.ActorRole:
     properties:
       actor_id:
@@ -50,7 +32,7 @@ definitions:
         type: array
       genre:
         items:
-          $ref: '#/definitions/core_models.Genre'
+          type: string
         type: array
       release_year:
         type: integer

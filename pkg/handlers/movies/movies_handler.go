@@ -70,8 +70,8 @@ func (h *MoviesHandler) GetMoviesByGenre(c *gin.Context) {
 		return
 	}
 
-	_, err := core_models.ToGenre(movieGenre)
-	if err != nil {
+	isSupportedGenre := core_models.IsSupportedGenre(movieGenre)
+	if !isSupportedGenre {
 		c.JSON(http.StatusBadRequest, gin.H{})
 		return
 	}
@@ -105,7 +105,11 @@ func (h *MoviesHandler) AddMovie(c *gin.Context) {
 		return
 	}
 
-	h.movieService.Add(requestModel)
+	err = h.movieService.Add(requestModel)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{})
+		return
+	}
 
 	c.JSON(http.StatusCreated, gin.H{})
 }
