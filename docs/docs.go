@@ -490,6 +490,25 @@ const docTemplate = `{
                 "Other"
             ]
         },
+        "core_models.Genre": {
+            "type": "integer",
+            "enum": [
+                0,
+                1,
+                2,
+                3,
+                4,
+                5
+            ],
+            "x-enum-varnames": [
+                "Unknown",
+                "Romantic",
+                "Action",
+                "Drama",
+                "Travel",
+                "History"
+            ]
+        },
         "request_model.ActorRole": {
             "type": "object",
             "properties": {
@@ -508,6 +527,12 @@ const docTemplate = `{
                     "type": "array",
                     "items": {
                         "$ref": "#/definitions/request_model.ActorRole"
+                    }
+                },
+                "genre": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/core_models.Genre"
                     }
                 },
                 "release_year": {
