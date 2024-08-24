@@ -1,6 +1,7 @@
 package movies_handler
 
 import (
+	"fmt"
 	"log"
 	"net/http"
 
@@ -127,6 +128,18 @@ func (h *MoviesHandler) AddMovie(c *gin.Context) {
 		}
 		c.JSON(http.StatusBadRequest, err)
 		return
+	}
+
+	for _, genre := range requestModel.Genre {
+		isSupportedGenre := core_models.IsSupportedGenre(genre)
+
+		if !isSupportedGenre {
+			err := &custom_errors.BadRequestError{
+				Message: fmt.Sprintf("'%s' is not supported Genre", genre),
+			}
+			c.JSON(http.StatusBadRequest, err)
+			return
+		}
 	}
 
 	err = h.movieService.Add(requestModel)
