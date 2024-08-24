@@ -68,7 +68,7 @@ func (uh *UserHandler) GetUser(c *gin.Context) {}
 // @Param id path string true "User id"
 // @Param UpdateUserRequest body request_model.UpdateUser true "Update user payload"
 // @Produce json
-// @Success 200
+// @Success 202
 // @Router /users/{id} [put]
 func (h *UserHandler) UpdateUser(c *gin.Context) {
 	userId := c.Param("id")
@@ -97,12 +97,5 @@ func (h *UserHandler) UpdateUser(c *gin.Context) {
 		return
 	}
 
-	err = h.reviewService.UpdateReviewerName(userId, requestModel.Name)
-	if err != nil {
-		log.Printf("ERROR: Unable to update reviewer name. Error: %v\n", err)
-		c.JSON(http.StatusInternalServerError, gin.H{})
-		return
-	}
-
-	c.JSON(http.StatusOK, gin.H{})
+	c.JSON(http.StatusAccepted, gin.H{})
 }

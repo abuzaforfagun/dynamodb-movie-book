@@ -34,7 +34,12 @@ func (h *UserUpdatedHandler) HandleMessage(msg amqp.Delivery) {
 		return
 	}
 
-	h.reviewService.UpdateReviewerName(payload.UserId, user.Name)
+	err = h.reviewService.UpdateReviewerName(payload.UserId, user.Name)
+
+	if err != nil {
+		log.Printf("ERROR: Unable to update reviewer %v\n", err)
+		// TODO: requee or move to DLQ
+	}
 }
 
 type userUpdated struct {

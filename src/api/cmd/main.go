@@ -2,6 +2,7 @@ package main
 
 import (
 	"log"
+	"os"
 
 	_ "github.com/abuzaforfagun/dynamodb-movie-book/docs"
 	"github.com/abuzaforfagun/dynamodb-movie-book/internal/database"
@@ -9,6 +10,7 @@ import (
 	movies_handler "github.com/abuzaforfagun/dynamodb-movie-book/internal/handlers/movies"
 	reviews_handler "github.com/abuzaforfagun/dynamodb-movie-book/internal/handlers/reviews"
 	users_handler "github.com/abuzaforfagun/dynamodb-movie-book/internal/handlers/users"
+	"github.com/abuzaforfagun/dynamodb-movie-book/internal/infrastructure"
 	"github.com/abuzaforfagun/dynamodb-movie-book/internal/initializers"
 	"github.com/abuzaforfagun/dynamodb-movie-book/internal/repositories"
 	"github.com/abuzaforfagun/dynamodb-movie-book/internal/services"
@@ -33,12 +35,17 @@ func main() {
 	if err != nil {
 		log.Fatalf("failed to connect database %x", err)
 	}
+
+	rabbitMqUri := os.Getenv("AMQP_SERVER_URL")
+	userUpdatedExchageName := os.Getenv("EXCHANGE_NAME_USER_UPDATED")
+	rabbitMq := infrastructure.NewRabbitMQ(rabbitMqUri)
+
 	userRepository := repositories.NewUserRepository(dbService.Client, dbService.TableName)
 	actorRepository := repositories.NewActorRepository(dbService.Client, dbService.TableName)
 	movieRepository := repositories.NewMovieRepository(dbService.Client, dbService.TableName)
 	reviewRepository := repositories.NewReviewRepository(dbService.Client, dbService.TableName)
 
-	userService := services.NewUserService(userRepository)
+	userService := services.NewUserService(userRepository, rabbitMq, userUpdatedExchageName)
 	reviewService := services.NewReviewService(reviewRepository, userService)
 	movieService := services.NewMovieService(movieRepository, actorRepository, reviewService)
 

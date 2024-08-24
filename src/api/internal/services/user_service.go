@@ -1,7 +1,9 @@
 package services
 
 import (
+	"github.com/abuzaforfagun/dynamodb-movie-book/internal/infrastructure"
 	db_model "github.com/abuzaforfagun/dynamodb-movie-book/internal/models/db"
+	"github.com/abuzaforfagun/dynamodb-movie-book/internal/models/events"
 	request_model "github.com/abuzaforfagun/dynamodb-movie-book/internal/models/requests"
 	"github.com/abuzaforfagun/dynamodb-movie-book/internal/repositories"
 	"github.com/google/uuid"
@@ -14,12 +16,19 @@ type UserService interface {
 }
 
 type userService struct {
-	userRepository repositories.UserRepository
+	userRepository          repositories.UserRepository
+	rabbitMq                infrastructure.RabbitMQ
+	userUpdatedExchangeName string
 }
 
-func NewUserService(userRepository repositories.UserRepository) UserService {
+func NewUserService(
+	userRepository repositories.UserRepository,
+	rabbitMq infrastructure.RabbitMQ,
+	userUpdatedExchageName string) UserService {
 	return &userService{
-		userRepository: userRepository,
+		userRepository:          userRepository,
+		rabbitMq:                rabbitMq,
+		userUpdatedExchangeName: userUpdatedExchageName,
 	}
 }
 
@@ -35,5 +44,14 @@ func (s *userService) GetInfo(userId string) (db_model.UserInfo, error) {
 }
 
 func (s *userService) Update(userId string, updateModel request_model.UpdateUser) error {
-	return s.userRepository.Update(userId, updateModel.Name)
+	err := s.userRepository.Update(userId, updateModel.Name)
+	if err != nil {
+		return err
+	}
+
+	userUpdatedEvent := events.UserUpdated{
+		UserId: userId,
+	}
+	err = s.rabbitMq.PublishMessage(userUpdatedEvent, s.userUpdatedExchangeName)
+	return err
 }

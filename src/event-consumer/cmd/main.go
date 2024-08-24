@@ -3,14 +3,12 @@ package main
 import (
 	"log"
 	"os"
-	"time"
 
 	"github.com/abuzaforfagun/dynamodb-movie-book/internal/infrastructure"
 	"github.com/abuzaforfagun/dynamodb-movie-book/internal/initializers"
 	"github.com/abuzaforfagun/dynamodb-movie-book/internal/processor"
 	"github.com/abuzaforfagun/dynamodb-movie-book/internal/rabbitmq"
 	"github.com/abuzaforfagun/dynamodb-movie-book/internal/services"
-	"github.com/streadway/amqp"
 )
 
 func main() {
@@ -40,12 +38,5 @@ func main() {
 	userUpdatedHandler := processor.NewHandler(reviewService, userService)
 
 	rabbitmq.RegisterQueueExchange(conn, userUpdatedQueueName, userUpdatedExchangeName, userUpdatedHandler.HandleMessage)
-	time.Sleep(5 * time.Second)
-	ch, _ := conn.Channel()
-	ch.Publish(userUpdatedExchangeName, "", false, false, amqp.Publishing{
-		ContentType: "application/json",
-		Body:        []byte(`{"user_id":"5cd3df2a-344e-4d37-a6a6-2c2adfe2a53b"}`),
-	})
-
 	select {}
 }
