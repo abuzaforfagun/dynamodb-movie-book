@@ -4,9 +4,9 @@ import (
 	"log"
 	"net/http"
 
-	"github.com/abuzaforfagun/dynamodb-movie-book/pkg/models/custom_errors"
-	request_model "github.com/abuzaforfagun/dynamodb-movie-book/pkg/models/requests"
-	"github.com/abuzaforfagun/dynamodb-movie-book/pkg/services"
+	"github.com/abuzaforfagun/dynamodb-movie-book/internal/api/models/custom_errors"
+	request_model "github.com/abuzaforfagun/dynamodb-movie-book/internal/api/models/requests"
+	"github.com/abuzaforfagun/dynamodb-movie-book/internal/api/services"
 	"github.com/gin-gonic/gin"
 )
 

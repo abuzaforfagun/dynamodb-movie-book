@@ -4,7 +4,7 @@ import (
 	"strings"
 	"time"
 
-	core_models "github.com/abuzaforfagun/dynamodb-movie-book/pkg/models/core"
+	core_models "github.com/abuzaforfagun/dynamodb-movie-book/internal/api/models/core"
 )
 
 type AddMovie struct {

@@ -5,12 +5,12 @@ import (
 	"log"
 	"math"
 
-	core_models "github.com/abuzaforfagun/dynamodb-movie-book/pkg/models/core"
-	"github.com/abuzaforfagun/dynamodb-movie-book/pkg/models/custom_errors"
-	db_model "github.com/abuzaforfagun/dynamodb-movie-book/pkg/models/db"
-	request_model "github.com/abuzaforfagun/dynamodb-movie-book/pkg/models/requests"
-	"github.com/abuzaforfagun/dynamodb-movie-book/pkg/models/response_model"
-	"github.com/abuzaforfagun/dynamodb-movie-book/pkg/repositories"
+	core_models "github.com/abuzaforfagun/dynamodb-movie-book/internal/api/models/core"
+	"github.com/abuzaforfagun/dynamodb-movie-book/internal/api/models/custom_errors"
+	db_model "github.com/abuzaforfagun/dynamodb-movie-book/internal/api/models/db"
+	request_model "github.com/abuzaforfagun/dynamodb-movie-book/internal/api/models/requests"
+	"github.com/abuzaforfagun/dynamodb-movie-book/internal/api/models/response_model"
+	"github.com/abuzaforfagun/dynamodb-movie-book/internal/api/repositories"
 )
 
 type MovieService interface {

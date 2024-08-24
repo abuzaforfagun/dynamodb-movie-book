@@ -4,9 +4,9 @@ import (
 	"encoding/json"
 	"log"
 
-	db_model "github.com/abuzaforfagun/dynamodb-movie-book/pkg/models/db"
-	request_model "github.com/abuzaforfagun/dynamodb-movie-book/pkg/models/requests"
-	"github.com/abuzaforfagun/dynamodb-movie-book/pkg/repositories"
+	db_model "github.com/abuzaforfagun/dynamodb-movie-book/internal/api/models/db"
+	request_model "github.com/abuzaforfagun/dynamodb-movie-book/internal/api/models/requests"
+	"github.com/abuzaforfagun/dynamodb-movie-book/internal/api/repositories"
 )
 
 type ReviewService interface {

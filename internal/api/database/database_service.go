@@ -7,7 +7,7 @@ import (
 	"log"
 	"os"
 
-	"github.com/abuzaforfagun/dynamodb-movie-book/infrastructure"
+	"github.com/abuzaforfagun/dynamodb-movie-book/internal/api/infrastructure"
 	"github.com/aws/aws-sdk-go-v2/aws"
 	"github.com/aws/aws-sdk-go-v2/feature/dynamodb/attributevalue"
 	"github.com/aws/aws-sdk-go-v2/feature/dynamodb/expression"

@@ -4,9 +4,9 @@ import (
 	"context"
 	"fmt"
 
-	"github.com/abuzaforfagun/dynamodb-movie-book/pkg/database"
-	db_model "github.com/abuzaforfagun/dynamodb-movie-book/pkg/models/db"
-	"github.com/abuzaforfagun/dynamodb-movie-book/pkg/models/response_model"
+	"github.com/abuzaforfagun/dynamodb-movie-book/internal/api/database"
+	db_model "github.com/abuzaforfagun/dynamodb-movie-book/internal/api/models/db"
+	"github.com/abuzaforfagun/dynamodb-movie-book/internal/api/models/response_model"
 	"github.com/aws/aws-sdk-go-v2/aws"
 	"github.com/aws/aws-sdk-go-v2/feature/dynamodb/attributevalue"
 	"github.com/aws/aws-sdk-go-v2/feature/dynamodb/expression"

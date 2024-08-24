@@ -4,10 +4,10 @@ import (
 	"log"
 	"net/http"
 
-	core_models "github.com/abuzaforfagun/dynamodb-movie-book/pkg/models/core"
-	"github.com/abuzaforfagun/dynamodb-movie-book/pkg/models/custom_errors"
-	request_model "github.com/abuzaforfagun/dynamodb-movie-book/pkg/models/requests"
-	"github.com/abuzaforfagun/dynamodb-movie-book/pkg/services"
+	core_models "github.com/abuzaforfagun/dynamodb-movie-book/internal/api/models/core"
+	"github.com/abuzaforfagun/dynamodb-movie-book/internal/api/models/custom_errors"
+	request_model "github.com/abuzaforfagun/dynamodb-movie-book/internal/api/models/requests"
+	"github.com/abuzaforfagun/dynamodb-movie-book/internal/api/services"
 	"github.com/gin-gonic/gin"
 )
 
