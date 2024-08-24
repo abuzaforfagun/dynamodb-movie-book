@@ -76,6 +76,10 @@ func (s *movieService) Add(movie request_model.AddMovie) error {
 		dbActors = append(dbActors, dbActor)
 	}
 
+	if len(dbActors) == 0 {
+		return nil
+	}
+
 	err = s.movieRepository.AssignActors(dbActors)
 
 	return err
