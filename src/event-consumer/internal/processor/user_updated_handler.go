@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"log"
 
+	"github.com/abuzaforfagun/dynamodb-movie-book/internal/models/events"
 	"github.com/abuzaforfagun/dynamodb-movie-book/internal/services"
 	"github.com/streadway/amqp"
 )
@@ -22,7 +23,8 @@ func NewHandler(reviewService services.ReviewService, userService services.UserS
 
 func (h *UserUpdatedHandler) HandleMessage(msg amqp.Delivery) {
 	log.Printf("Received a message: %s", msg.Body)
-	var payload *userUpdated
+
+	var payload *events.UserUpdated
 	json.Unmarshal(msg.Body, &payload)
 
 	if payload == nil {
@@ -40,8 +42,4 @@ func (h *UserUpdatedHandler) HandleMessage(msg amqp.Delivery) {
 		log.Printf("ERROR: Unable to update reviewer %v\n", err)
 		// TODO: requee or move to DLQ
 	}
-}
-
-type userUpdated struct {
-	UserId string `json:"user_id"`
 }
