@@ -2,9 +2,7 @@ package repositories
 
 import (
 	"context"
-	"encoding/json"
 	"fmt"
-	"log"
 	"strings"
 
 	"github.com/abuzaforfagun/dynamodb-movie-book/internal/database"
@@ -26,7 +24,6 @@ type movieRepository struct {
 
 type MovieRepository interface {
 	Add(movie request_model.AddMovie, actors []db_model.MovieActor) (string, error)
-	AssignActors(actor []db_model.AssignActor) error
 	GetAll(searchQuery string) ([]response_model.Movie, error)
 	GetByGenre(genreName string) ([]response_model.Movie, error)
 	UpdateScore(movieId string, score float64) error
@@ -66,69 +63,6 @@ func (r *movieRepository) Add(movie request_model.AddMovie, actors []db_model.Mo
 		return "", err
 	}
 	return movieId, nil
-
-	// dbModels := db_model.NewMovieAndGenreModel(movieId, movie.Title, movie.ReleaseYear, movie.Genre)
-
-	// var writeRequests []types.WriteRequest
-
-	// for _, dbModel := range dbModels {
-	// 	av, err := attributevalue.MarshalMap(dbModel)
-	// 	if err != nil {
-	// 		log.Fatalf("Failed to marshal item: %v", err)
-	// 		return "", err
-	// 	}
-	// 	writeRequests = append(writeRequests, types.WriteRequest{
-	// 		PutRequest: &types.PutRequest{
-	// 			Item: av,
-	// 		},
-	// 	})
-	// }
-
-	// batchWriteInput := &dynamodb.BatchWriteItemInput{
-	// 	RequestItems: map[string][]types.WriteRequest{
-	// 		r.tableName: writeRequests,
-	// 	},
-	// }
-	// _, err := r.client.BatchWriteItem(context.TODO(), batchWriteInput)
-
-	// if err != nil {
-	// 	log.Printf("Couldn't add item to table.: %v\n", err)
-	// 	return "", err
-	// }
-
-	// return movieId, nil
-}
-
-func (r *movieRepository) AssignActors(actors []db_model.AssignActor) error {
-	var writeRequests []types.WriteRequest
-
-	for _, actor := range actors {
-		av, err := attributevalue.MarshalMap(actor)
-		if err != nil {
-			log.Fatalf("Failed to marshal item: %v", err)
-			return err
-		}
-		writeRequests = append(writeRequests, types.WriteRequest{
-			PutRequest: &types.PutRequest{
-				Item: av,
-			},
-		})
-	}
-
-	batchWriteInput := &dynamodb.BatchWriteItemInput{
-		RequestItems: map[string][]types.WriteRequest{
-			r.tableName: writeRequests,
-		},
-	}
-
-	_, err := r.client.BatchWriteItem(context.TODO(), batchWriteInput)
-	if err != nil {
-		jsonPayload, _ := json.Marshal(actors)
-		log.Fatalf("got error assigning actors to movie. Payload:[%s] \nError: %v", string(jsonPayload), err)
-		return err
-	}
-
-	return nil
 }
 
 func (r *movieRepository) UpdateScore(movieId string, score float64) error {

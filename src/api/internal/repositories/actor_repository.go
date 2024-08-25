@@ -4,7 +4,6 @@ import (
 	"context"
 	"log"
 
-	"github.com/abuzaforfagun/dynamodb-movie-book/internal/database"
 	db_model "github.com/abuzaforfagun/dynamodb-movie-book/internal/models/db"
 	"github.com/aws/aws-sdk-go-v2/aws"
 	"github.com/aws/aws-sdk-go-v2/feature/dynamodb/attributevalue"
@@ -14,7 +13,6 @@ import (
 
 type ActorRepository interface {
 	Add(actor db_model.AddActor) error
-	GetInfo(actorId string) (*db_model.ActorInfo, error)
 	Get(actorIds []string) ([]db_model.ActorInfo, error)
 }
 
@@ -45,15 +43,6 @@ func (r *actorRepository) Add(actor db_model.AddActor) error {
 	}
 
 	return nil
-}
-
-func (r *actorRepository) GetInfo(actorId string) (*db_model.ActorInfo, error) {
-	pk := "ACTOR#" + actorId
-	actorInfo, err := database.GetInfo[db_model.ActorInfo](context.TODO(), r.client, r.tableName, pk, pk)
-	if err != nil {
-		return nil, err
-	}
-	return &actorInfo, nil
 }
 
 func (r *actorRepository) Get(actorIds []string) ([]db_model.ActorInfo, error) {

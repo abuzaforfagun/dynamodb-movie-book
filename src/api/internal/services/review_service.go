@@ -13,7 +13,6 @@ type ReviewService interface {
 	Add(movieId string, reviewRequest request_model.AddReview) error
 	GetAll(movieId string) ([]db_model.Review, error)
 	Delete(movieId string, userId string) error
-	UpdateReviewerName(userId string, name string) error
 }
 
 type reviewService struct {
@@ -68,8 +67,4 @@ func (s *reviewService) GetAll(movieId string) ([]db_model.Review, error) {
 
 func (s *reviewService) Delete(movieId string, userId string) error {
 	return s.reviewRepository.Delete(movieId, userId)
-}
-
-func (s *reviewService) UpdateReviewerName(userId string, name string) error {
-	return s.reviewRepository.UpdateReviewerName(userId, name)
 }

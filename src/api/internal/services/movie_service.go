@@ -50,7 +50,6 @@ func (s *movieService) HasMovie(movieId string) (bool, error) {
 }
 
 func (s *movieService) Add(movie request_model.AddMovie, actors []db_model.MovieActor) (string, error) {
-	// movieId, err := s.movieRepository.Add(movie, actors)
 	movieId, err := s.movieRepository.Add(movie, actors)
 	if err != nil {
 		log.Printf("ERROR: unable save movie %v", err.Error())

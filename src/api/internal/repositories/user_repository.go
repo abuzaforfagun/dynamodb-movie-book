@@ -6,7 +6,6 @@ import (
 
 	"github.com/abuzaforfagun/dynamodb-movie-book/internal/database"
 	db_model "github.com/abuzaforfagun/dynamodb-movie-book/internal/models/db"
-	"github.com/abuzaforfagun/dynamodb-movie-book/internal/models/response_model"
 	"github.com/aws/aws-sdk-go-v2/aws"
 	"github.com/aws/aws-sdk-go-v2/feature/dynamodb/attributevalue"
 	"github.com/aws/aws-sdk-go-v2/feature/dynamodb/expression"
@@ -15,7 +14,6 @@ import (
 
 type UserRepository interface {
 	Add(user db_model.AddUser) error
-	Get(userId string) (response_model.User, error)
 	GetInfo(userId string) (db_model.UserInfo, error)
 	Update(userId string, name string) error
 }
@@ -30,37 +28,6 @@ func NewUserRepository(client *dynamodb.Client, tableName string) UserRepository
 		client:    client,
 		tableName: tableName,
 	}
-}
-
-func (r *userRepository) Get(userId string) (response_model.User, error) {
-	var userData response_model.User
-
-	pk := "USER#" + userId
-	keyExpression := expression.Key("PK").Equal(expression.Value(pk))
-
-	expr, err := expression.NewBuilder().WithKeyCondition(keyExpression).Build()
-
-	if err != nil {
-		return response_model.User{}, err
-	}
-
-	response, err := r.client.Query(
-		context.TODO(),
-		&dynamodb.QueryInput{
-			TableName:                 aws.String(r.tableName),
-			ExpressionAttributeNames:  expr.Names(),
-			ExpressionAttributeValues: expr.Values(),
-			KeyConditionExpression:    expr.KeyCondition(),
-		},
-	)
-	if err != nil {
-		return response_model.User{}, err
-	}
-
-	// unmarshal attribute values to go struct
-	err = attributevalue.UnmarshalListOfMaps(response.Items, &userData)
-
-	return userData, err
 }
 
 func (r *userRepository) Add(userData db_model.AddUser) error {

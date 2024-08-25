@@ -19,7 +19,6 @@ type ReviewRepository interface {
 	GetAll(movieId string) ([]db_model.Review, error)
 	HasReview(movieId string, userId string) (bool, error)
 	Delete(movieId string, userId string) error
-	UpdateReviewerName(userId string, name string) error
 }
 
 type reviewRepository struct {
@@ -121,47 +120,5 @@ func (r *reviewRepository) Delete(movieId string, userId string) error {
 		return err
 	}
 
-	return nil
-}
-
-func (r *reviewRepository) UpdateReviewerName(userId string, name string) error {
-	partitionKeyValue := "REVIEW"
-	sortKeyContainsValue := "USER#" + userId
-
-	queryInput := &dynamodb.QueryInput{
-		TableName:              aws.String(r.tableName),
-		IndexName:              aws.String(database.GSI_NAME),
-		KeyConditionExpression: aws.String(database.GSI_PK + " = :pk AND begins_with (" + database.GSI_SK + ", :skPrefix)"),
-		ExpressionAttributeValues: map[string]types.AttributeValue{
-			":pk":       &types.AttributeValueMemberS{Value: partitionKeyValue},
-			":skPrefix": &types.AttributeValueMemberS{Value: sortKeyContainsValue},
-		},
-	}
-
-	result, err := r.client.Query(context.TODO(), queryInput)
-	if err != nil {
-		log.Println("ERROR: Got error calling Query:", err)
-		return err
-	}
-
-	var reviews []db_model.Review
-
-	err = attributevalue.UnmarshalListOfMaps(result.Items, &reviews)
-	if err != nil {
-		log.Println("ERROR: Unable to unmarshal result:", err)
-		return err
-	}
-
-	for _, review := range reviews {
-		pk := "MOVIE#" + review.MovieId
-		sk := "USER#" + review.UserId
-
-		updateExpression := expression.Set(expression.Name("Name"), expression.Value(name))
-		err := database.Update(context.TODO(), r.client, r.tableName, pk, sk, updateExpression)
-		if err != nil {
-			log.Printf("ERROR: Unable to update review. Error: %v\n", err)
-			return err
-		}
-	}
 	return nil
 }
