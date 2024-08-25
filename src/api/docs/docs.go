@@ -510,7 +510,7 @@ const docTemplate = `{
                         "$ref": "#/definitions/request_model.ActorRole"
                     }
                 },
-                "genre": {
+                "genres": {
                     "type": "array",
                     "items": {
                         "type": "string"

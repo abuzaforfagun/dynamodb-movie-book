@@ -38,6 +38,7 @@ func main() {
 
 	rabbitMqUri := os.Getenv("AMQP_SERVER_URL")
 	userUpdatedExchageName := os.Getenv("EXCHANGE_NAME_USER_UPDATED")
+	movieAddedExchageName := os.Getenv("EXCHANGE_NAME_MOVIE_ADDED")
 	rabbitMq := infrastructure.NewRabbitMQ(rabbitMqUri)
 
 	userRepository := repositories.NewUserRepository(dbService.Client, dbService.TableName)
@@ -47,12 +48,12 @@ func main() {
 
 	userService := services.NewUserService(userRepository, rabbitMq, userUpdatedExchageName)
 	reviewService := services.NewReviewService(reviewRepository, userService)
-	movieService := services.NewMovieService(movieRepository, actorRepository, reviewService)
+	movieService := services.NewMovieService(movieRepository, actorRepository, reviewService, rabbitMq, movieAddedExchageName)
 
 	router := gin.Default()
 	router.GET("/swagger/*any", ginSwagger.WrapHandler(swaggerFiles.Handler))
 
-	movieHandler := movies_handler.New(movieService)
+	movieHandler := movies_handler.New(movieService, actorRepository)
 	router.GET("/movies", movieHandler.GetAllMovies)
 	router.POST("/movies", movieHandler.AddMovie)
 	router.POST("/movies/:id/photos", movieHandler.AddPictures)

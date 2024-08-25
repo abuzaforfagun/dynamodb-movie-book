@@ -16,8 +16,8 @@ type AssignActor struct {
 
 func NewAssignActor(actorId, movieId, name, role string) AssignActor {
 	return AssignActor{
-		PK:        "MOVIE#" + movieId,
-		SK:        "ACTOR#" + actorId,
+		PK:        "ACTOR#" + actorId,
+		SK:        "MOVIE#" + movieId,
 		GSI_PK:    "ACTOR-MOVIE",
 		GSI_SK:    "MOVIE#" + movieId + "_ACTOR#" + actorId,
 		Id:        actorId,

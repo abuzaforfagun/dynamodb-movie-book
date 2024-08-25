@@ -49,9 +49,7 @@ func (s *userService) Update(userId string, updateModel request_model.UpdateUser
 		return err
 	}
 
-	userUpdatedEvent := events.UserUpdated{
-		UserId: userId,
-	}
+	userUpdatedEvent := events.NewUserUpdated(userId)
 	err = s.rabbitMq.PublishMessage(userUpdatedEvent, s.userUpdatedExchangeName)
 	return err
 }

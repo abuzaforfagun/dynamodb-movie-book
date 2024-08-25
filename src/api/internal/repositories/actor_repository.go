@@ -9,11 +9,13 @@ import (
 	"github.com/aws/aws-sdk-go-v2/aws"
 	"github.com/aws/aws-sdk-go-v2/feature/dynamodb/attributevalue"
 	"github.com/aws/aws-sdk-go-v2/service/dynamodb"
+	"github.com/aws/aws-sdk-go-v2/service/dynamodb/types"
 )
 
 type ActorRepository interface {
 	Add(actor db_model.AddActor) error
 	GetInfo(actorId string) (*db_model.ActorInfo, error)
+	Get(actorIds []string) ([]db_model.ActorInfo, error)
 }
 
 type actorRepository struct {
@@ -52,4 +54,38 @@ func (r *actorRepository) GetInfo(actorId string) (*db_model.ActorInfo, error) {
 		return nil, err
 	}
 	return &actorInfo, nil
+}
+
+func (r *actorRepository) Get(actorIds []string) ([]db_model.ActorInfo, error) {
+	keys := []map[string]types.AttributeValue{}
+	for _, actorId := range actorIds {
+		keys = append(keys, map[string]types.AttributeValue{
+			"PK": &types.AttributeValueMemberS{Value: "ACTOR#" + actorId},
+			"SK": &types.AttributeValueMemberS{Value: "ACTOR#" + actorId},
+		})
+	}
+
+	input := &dynamodb.BatchGetItemInput{
+		RequestItems: map[string]types.KeysAndAttributes{
+			r.tableName: {
+				Keys: keys,
+			},
+		},
+	}
+
+	resp, err := r.client.BatchGetItem(context.Background(), input)
+	if err != nil {
+		log.Printf("Failed to get items: %v", err)
+		return nil, err
+	}
+
+	actorsResponse := resp.Responses[r.tableName]
+	var actors []db_model.ActorInfo
+
+	err = attributevalue.UnmarshalListOfMaps(actorsResponse, &actors)
+	if err != nil {
+		log.Printf("Failed to unmarshal response %v\n", err)
+	}
+
+	return actors, nil
 }

@@ -7,18 +7,24 @@ import (
 
 	core_models "github.com/abuzaforfagun/dynamodb-movie-book/internal/models/core"
 	"github.com/abuzaforfagun/dynamodb-movie-book/internal/models/custom_errors"
+	db_model "github.com/abuzaforfagun/dynamodb-movie-book/internal/models/db"
 	request_model "github.com/abuzaforfagun/dynamodb-movie-book/internal/models/requests"
+	"github.com/abuzaforfagun/dynamodb-movie-book/internal/repositories"
 	"github.com/abuzaforfagun/dynamodb-movie-book/internal/services"
 	"github.com/gin-gonic/gin"
 )
 
 type MoviesHandler struct {
-	movieService services.MovieService
+	movieService    services.MovieService
+	actorRepository repositories.ActorRepository
 }
 
-func New(movieService services.MovieService) *MoviesHandler {
+func New(
+	movieService services.MovieService,
+	actorRepository repositories.ActorRepository) *MoviesHandler {
 	return &MoviesHandler{
-		movieService: movieService,
+		movieService:    movieService,
+		actorRepository: actorRepository,
 	}
 }
 
@@ -130,7 +136,7 @@ func (h *MoviesHandler) AddMovie(c *gin.Context) {
 		return
 	}
 
-	for _, genre := range requestModel.Genre {
+	for _, genre := range requestModel.Genres {
 		isSupportedGenre := core_models.IsSupportedGenre(genre)
 
 		if !isSupportedGenre {
@@ -142,7 +148,44 @@ func (h *MoviesHandler) AddMovie(c *gin.Context) {
 		}
 	}
 
-	err = h.movieService.Add(requestModel)
+	actorIds := []string{}
+	actorRoleMap := map[string]string{}
+	for _, actor := range requestModel.Actors {
+		actorIds = append(actorIds, actor.ActorId)
+		actorRoleMap[actor.ActorId] = actor.Role.ToString()
+	}
+	var actorsInfo []db_model.ActorInfo
+
+	if len(actorIds) != 0 {
+		actorsInfo, err = h.actorRepository.Get(actorIds)
+		if err != nil {
+			log.Printf("ERROR: Unable to get [Actors=%s]\nError: %v\n", actorsInfo, err)
+			c.JSON(http.StatusInternalServerError, gin.H{})
+			return
+		}
+
+		if len(actorsInfo) != len(actorIds) {
+			err := &custom_errors.BadRequestError{
+				Message: "Please verify actor ids",
+			}
+			c.JSON(http.StatusBadRequest, err)
+			return
+		}
+	}
+
+	movieActors := []db_model.MovieActor{}
+
+	for _, actor := range actorsInfo {
+		role := actorRoleMap[actor.Id]
+		movieActor := db_model.MovieActor{
+			ActorId: actor.Id,
+			Role:    role,
+			Name:    actor.Name,
+		}
+		movieActors = append(movieActors, movieActor)
+	}
+
+	err = h.movieService.Add(requestModel, movieActors)
 
 	if err != nil {
 		if err, ok := err.(*custom_errors.BadRequestError); ok {

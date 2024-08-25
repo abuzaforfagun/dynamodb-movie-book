@@ -25,7 +25,7 @@ type movieRepository struct {
 }
 
 type MovieRepository interface {
-	Add(movie request_model.AddMovie) (string, error)
+	Add(movie request_model.AddMovie, actors []db_model.MovieActor) (string, error)
 	AssignActors(actor []db_model.AssignActor) error
 	GetAll(searchQuery string) ([]response_model.Movie, error)
 	GetByGenre(genreName string) ([]response_model.Movie, error)
@@ -50,39 +50,53 @@ func (r *movieRepository) HasMovie(movieId string) (bool, error) {
 	return hasMovie, err
 }
 
-func (r *movieRepository) Add(movie request_model.AddMovie) (string, error) {
+func (r *movieRepository) Add(movie request_model.AddMovie, actors []db_model.MovieActor) (string, error) {
 	movieId := uuid.New().String()
-
-	dbModels := db_model.NewMovieModel(movieId, movie.Title, movie.ReleaseYear, movie.Genre)
-
-	var writeRequests []types.WriteRequest
-
-	for _, dbModel := range dbModels {
-		av, err := attributevalue.MarshalMap(dbModel)
-		if err != nil {
-			log.Fatalf("Failed to marshal item: %v", err)
-			return "", err
-		}
-		writeRequests = append(writeRequests, types.WriteRequest{
-			PutRequest: &types.PutRequest{
-				Item: av,
-			},
-		})
-	}
-
-	batchWriteInput := &dynamodb.BatchWriteItemInput{
-		RequestItems: map[string][]types.WriteRequest{
-			r.tableName: writeRequests,
-		},
-	}
-	_, err := r.client.BatchWriteItem(context.TODO(), batchWriteInput)
-
+	dbModel := db_model.NewMovieModel(movieId, movie.Title, movie.ReleaseYear, movie.Genres, actors)
+	av, err := attributevalue.MarshalMap(dbModel)
 	if err != nil {
-		log.Printf("Couldn't add item to table.: %v\n", err)
+		fmt.Printf("Got error marshalling data: %s\n", err)
 		return "", err
 	}
-
+	_, err = r.client.PutItem(context.TODO(), &dynamodb.PutItemInput{
+		TableName: aws.String(r.tableName), Item: av,
+	})
+	if err != nil {
+		fmt.Printf("Couldn't add item to table.: %v\n", err)
+		return "", err
+	}
 	return movieId, nil
+
+	// dbModels := db_model.NewMovieAndGenreModel(movieId, movie.Title, movie.ReleaseYear, movie.Genre)
+
+	// var writeRequests []types.WriteRequest
+
+	// for _, dbModel := range dbModels {
+	// 	av, err := attributevalue.MarshalMap(dbModel)
+	// 	if err != nil {
+	// 		log.Fatalf("Failed to marshal item: %v", err)
+	// 		return "", err
+	// 	}
+	// 	writeRequests = append(writeRequests, types.WriteRequest{
+	// 		PutRequest: &types.PutRequest{
+	// 			Item: av,
+	// 		},
+	// 	})
+	// }
+
+	// batchWriteInput := &dynamodb.BatchWriteItemInput{
+	// 	RequestItems: map[string][]types.WriteRequest{
+	// 		r.tableName: writeRequests,
+	// 	},
+	// }
+	// _, err := r.client.BatchWriteItem(context.TODO(), batchWriteInput)
+
+	// if err != nil {
+	// 	log.Printf("Couldn't add item to table.: %v\n", err)
+	// 	return "", err
+	// }
+
+	// return movieId, nil
 }
 
 func (r *movieRepository) AssignActors(actors []db_model.AssignActor) error {

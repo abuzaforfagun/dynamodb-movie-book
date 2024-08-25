@@ -1,5 +1,6 @@
 package events
 
 type UserUpdated struct {
-	UserId string `json:"user_id"`
+	MessageId string `json:"message_id"`
+	UserId    string `json:"user_id"`
 }

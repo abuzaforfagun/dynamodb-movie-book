@@ -4,15 +4,17 @@ import (
 	"log"
 	"math"
 
+	"github.com/abuzaforfagun/dynamodb-movie-book/internal/infrastructure"
 	"github.com/abuzaforfagun/dynamodb-movie-book/internal/models/custom_errors"
 	db_model "github.com/abuzaforfagun/dynamodb-movie-book/internal/models/db"
+	"github.com/abuzaforfagun/dynamodb-movie-book/internal/models/events"
 	request_model "github.com/abuzaforfagun/dynamodb-movie-book/internal/models/requests"
 	"github.com/abuzaforfagun/dynamodb-movie-book/internal/models/response_model"
 	"github.com/abuzaforfagun/dynamodb-movie-book/internal/repositories"
 )
 
 type MovieService interface {
-	Add(movie request_model.AddMovie) error
+	Add(movie request_model.AddMovie, actors []db_model.MovieActor) error
 	GetAll(searchQuery string) ([]response_model.Movie, error)
 	GetByGenre(genreName string) ([]response_model.Movie, error)
 	UpdateMovieScore(movieId string) error
@@ -22,18 +24,24 @@ type MovieService interface {
 }
 
 type movieService struct {
-	movieRepository repositories.MovieRepository
-	actorRepository repositories.ActorRepository
-	reviewService   ReviewService
+	movieRepository        repositories.MovieRepository
+	actorRepository        repositories.ActorRepository
+	reviewService          ReviewService
+	rabbitMq               infrastructure.RabbitMQ
+	movieAddedExchangeName string
 }
 
 func NewMovieService(movieRepository repositories.MovieRepository,
 	actorRepository repositories.ActorRepository,
-	reviewService ReviewService) MovieService {
+	reviewService ReviewService,
+	rabbitMq infrastructure.RabbitMQ,
+	movieAddedExchangeName string) MovieService {
 	return &movieService{
-		movieRepository: movieRepository,
-		actorRepository: actorRepository,
-		reviewService:   reviewService,
+		movieRepository:        movieRepository,
+		actorRepository:        actorRepository,
+		reviewService:          reviewService,
+		movieAddedExchangeName: movieAddedExchangeName,
+		rabbitMq:               rabbitMq,
 	}
 }
 
@@ -41,38 +49,21 @@ func (s *movieService) HasMovie(movieId string) (bool, error) {
 	return s.movieRepository.HasMovie(movieId)
 }
 
-func (s *movieService) Add(movie request_model.AddMovie) error {
-
-	movieId, err := s.movieRepository.Add(movie)
+func (s *movieService) Add(movie request_model.AddMovie, actors []db_model.MovieActor) error {
+	// movieId, err := s.movieRepository.Add(movie, actors)
+	movieId, err := s.movieRepository.Add(movie, actors)
 	if err != nil {
 		log.Printf("ERROR: unable save movie %v", err.Error())
 		return err
 	}
 
-	var dbActors []db_model.AssignActor
-	for _, movieActor := range movie.Actors {
-		actorInfo, err := s.actorRepository.GetInfo(movieActor.ActorId)
-
-		if err != nil {
-			return err
-		}
-
-		if actorInfo == nil {
-			return &custom_errors.BadRequestError{
-				Message: "Invalid actor",
-			}
-		}
-		dbActor := db_model.NewAssignActor(actorInfo.Id, movieId, actorInfo.Name, movieActor.Role.ToString())
-		dbActors = append(dbActors, dbActor)
+	movieAddedEvent := events.NewMovieAdded(movieId)
+	err = s.rabbitMq.PublishMessage(movieAddedEvent, s.movieAddedExchangeName)
+	if err != nil {
+		log.Printf("ERROR: failed to publish event. Error: %v", err)
+		return err
 	}
-
-	if len(dbActors) == 0 {
-		return nil
-	}
-
-	err = s.movieRepository.AssignActors(dbActors)
-
-	return err
+	return nil
 }
 
 func (s *movieService) GetAll(searchQuery string) ([]response_model.Movie, error) {

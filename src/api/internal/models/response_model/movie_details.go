@@ -1,18 +1,18 @@
 package response_model
 
 type MovieDetails struct {
-	Id          string       `json:"id" dynamodbav:"MovieId"`
+	MovieId     string       `json:"id"`
 	Title       string       `json:"title"`
 	ReleaseYear string       `json:"release_year"`
 	Actors      []MovieActor `json:"actors"`
-	Genres      []string     `json:"genres" dynamodbav:"Genre"`
+	Genres      []string     `json:"genres"`
 	Score       float64      `json:"rating"`
 	Reviews     []Review     `json:"reviews"`
 	Pictures    []string     `json:"pictures"`
 }
 
 type MovieActor struct {
-	Id   string `json:"id" dynamodbav:"ActorId"`
+	Id   string `json:"id"`
 	Name string `json:"name"`
 	Role string `json:"role"`
 }

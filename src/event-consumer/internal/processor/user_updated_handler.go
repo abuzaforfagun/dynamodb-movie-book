@@ -14,7 +14,7 @@ type UserUpdatedHandler struct {
 	userService   services.UserService
 }
 
-func NewHandler(reviewService services.ReviewService, userService services.UserService) *UserUpdatedHandler {
+func NewUserUpdatedHandler(reviewService services.ReviewService, userService services.UserService) *UserUpdatedHandler {
 	return &UserUpdatedHandler{
 		userService:   userService,
 		reviewService: reviewService,
@@ -22,10 +22,9 @@ func NewHandler(reviewService services.ReviewService, userService services.UserS
 }
 
 func (h *UserUpdatedHandler) HandleMessage(msg amqp.Delivery) {
-	log.Printf("Received a message: %s", msg.Body)
-
 	var payload *events.UserUpdated
 	json.Unmarshal(msg.Body, &payload)
+	log.Printf("Processing message [MessageId=%s]", payload.MessageId)
 
 	if payload == nil {
 		log.Println("Invalid message", payload)
@@ -42,4 +41,5 @@ func (h *UserUpdatedHandler) HandleMessage(msg amqp.Delivery) {
 		log.Printf("ERROR: Unable to update reviewer %v\n", err)
 		// TODO: requee or move to DLQ
 	}
+	log.Printf("Message processing completed [MessageId=%s]", payload.MessageId)
 }

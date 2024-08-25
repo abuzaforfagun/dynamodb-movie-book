@@ -1,12 +1,14 @@
 package request_model
 
-import core_models "github.com/abuzaforfagun/dynamodb-movie-book/internal/models/core"
+import (
+	core_models "github.com/abuzaforfagun/dynamodb-movie-book/internal/models/core"
+)
 
 type AddMovie struct {
 	Title       string      `json:"title"`
 	Actors      []ActorRole `json:"actors"`
 	ReleaseYear int         `json:"release_year"`
-	Genre       []string    `json:"genre"`
+	Genres      []string    `json:"genres"`
 }
 
 type ActorRole struct {

@@ -30,7 +30,7 @@ definitions:
         items:
           $ref: '#/definitions/request_model.ActorRole'
         type: array
-      genre:
+      genres:
         items:
           type: string
         type: array
