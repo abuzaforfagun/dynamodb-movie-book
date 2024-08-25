@@ -12,9 +12,9 @@ type MovieDetails struct {
 }
 
 type MovieActor struct {
-	Id   string `json:"id"`
-	Name string `json:"name"`
-	Role string `json:"role"`
+	ActorId string `json:"id"`
+	Name    string `json:"name"`
+	Role    string `json:"role"`
 }
 
 type Review struct {

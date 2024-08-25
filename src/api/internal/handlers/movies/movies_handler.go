@@ -9,6 +9,7 @@ import (
 	"github.com/abuzaforfagun/dynamodb-movie-book/internal/models/custom_errors"
 	db_model "github.com/abuzaforfagun/dynamodb-movie-book/internal/models/db"
 	request_model "github.com/abuzaforfagun/dynamodb-movie-book/internal/models/requests"
+	"github.com/abuzaforfagun/dynamodb-movie-book/internal/models/response_model"
 	"github.com/abuzaforfagun/dynamodb-movie-book/internal/repositories"
 	"github.com/abuzaforfagun/dynamodb-movie-book/internal/services"
 	"github.com/gin-gonic/gin"
@@ -120,7 +121,7 @@ func (h *MoviesHandler) GetMoviesByGenre(c *gin.Context) {
 // @Tags movies
 // @Param AddMovieRequest body request_model.AddMovie true "movie payload"
 // @Produce json
-// @Success 201
+// @Success 201 {object} response_model.CreateMovieResponse
 // @Router /movies [post]
 func (h *MoviesHandler) AddMovie(c *gin.Context) {
 	var requestModel request_model.AddMovie
@@ -185,7 +186,7 @@ func (h *MoviesHandler) AddMovie(c *gin.Context) {
 		movieActors = append(movieActors, movieActor)
 	}
 
-	err = h.movieService.Add(requestModel, movieActors)
+	movieId, err := h.movieService.Add(requestModel, movieActors)
 
 	if err != nil {
 		if err, ok := err.(*custom_errors.BadRequestError); ok {
@@ -195,8 +196,11 @@ func (h *MoviesHandler) AddMovie(c *gin.Context) {
 		c.JSON(http.StatusBadRequest, gin.H{})
 		return
 	}
+	response := response_model.CreateMovieResponse{
+		MovieId: movieId,
+	}
 
-	c.JSON(http.StatusCreated, gin.H{})
+	c.JSON(http.StatusCreated, response)
 }
 
 // @Summary Add pictures to the movie

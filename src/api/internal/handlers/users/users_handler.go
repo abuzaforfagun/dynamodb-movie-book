@@ -6,6 +6,7 @@ import (
 
 	"github.com/abuzaforfagun/dynamodb-movie-book/internal/models/custom_errors"
 	request_model "github.com/abuzaforfagun/dynamodb-movie-book/internal/models/requests"
+	"github.com/abuzaforfagun/dynamodb-movie-book/internal/models/response_model"
 	"github.com/abuzaforfagun/dynamodb-movie-book/internal/services"
 	"github.com/gin-gonic/gin"
 )
@@ -28,7 +29,7 @@ func New(userService services.UserService,
 // @Tags users
 // @Param AddUserRequest body request_model.AddUser true "User payload"
 // @Produce json
-// @Success 201
+// @Success 201 {object} response_model.CreateUserResponse
 // @Router /users [post]
 func (h *UserHandler) AddUser(c *gin.Context) {
 	var requestModel request_model.AddUser
@@ -43,14 +44,17 @@ func (h *UserHandler) AddUser(c *gin.Context) {
 		return
 	}
 
-	err = h.userService.AddUser(requestModel)
+	userId, err := h.userService.AddUser(requestModel)
 	if err != nil {
 		log.Printf("ERROR: unable to store new user %x", err)
 		c.JSON(http.StatusInternalServerError, gin.H{})
 		return
 	}
 
-	c.JSON(http.StatusAccepted, gin.H{})
+	response := response_model.CreateUserResponse{
+		UserId: userId,
+	}
+	c.JSON(http.StatusCreated, response)
 }
 
 // @Summary Get user details

@@ -78,6 +78,21 @@ definitions:
       thumbnail_url:
         type: string
     type: object
+  response_model.CreateActorResponse:
+    properties:
+      actor_id:
+        type: string
+    type: object
+  response_model.CreateMovieResponse:
+    properties:
+      movie_id:
+        type: string
+    type: object
+  response_model.CreateUserResponse:
+    properties:
+      user_id:
+        type: string
+    type: object
   response_model.Creator:
     properties:
       id:
@@ -233,6 +248,8 @@ paths:
       responses:
         "201":
           description: Created
+          schema:
+            $ref: '#/definitions/response_model.CreateActorResponse'
       summary: Add new actor
       tags:
       - actors
@@ -337,6 +354,8 @@ paths:
       responses:
         "201":
           description: Created
+          schema:
+            $ref: '#/definitions/response_model.CreateMovieResponse'
       summary: Add movie
       tags:
       - movies
@@ -456,6 +475,8 @@ paths:
       responses:
         "201":
           description: Created
+          schema:
+            $ref: '#/definitions/response_model.CreateUserResponse'
       summary: Add user
       tags:
       - users

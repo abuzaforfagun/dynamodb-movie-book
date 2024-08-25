@@ -14,7 +14,7 @@ import (
 )
 
 type MovieService interface {
-	Add(movie request_model.AddMovie, actors []db_model.MovieActor) error
+	Add(movie request_model.AddMovie, actors []db_model.MovieActor) (string, error)
 	GetAll(searchQuery string) ([]response_model.Movie, error)
 	GetByGenre(genreName string) ([]response_model.Movie, error)
 	UpdateMovieScore(movieId string) error
@@ -49,21 +49,21 @@ func (s *movieService) HasMovie(movieId string) (bool, error) {
 	return s.movieRepository.HasMovie(movieId)
 }
 
-func (s *movieService) Add(movie request_model.AddMovie, actors []db_model.MovieActor) error {
+func (s *movieService) Add(movie request_model.AddMovie, actors []db_model.MovieActor) (string, error) {
 	// movieId, err := s.movieRepository.Add(movie, actors)
 	movieId, err := s.movieRepository.Add(movie, actors)
 	if err != nil {
 		log.Printf("ERROR: unable save movie %v", err.Error())
-		return err
+		return "", err
 	}
 
 	movieAddedEvent := events.NewMovieAdded(movieId)
 	err = s.rabbitMq.PublishMessage(movieAddedEvent, s.movieAddedExchangeName)
 	if err != nil {
 		log.Printf("ERROR: failed to publish event. Error: %v", err)
-		return err
+		return "", err
 	}
-	return nil
+	return movieId, nil
 }
 
 func (s *movieService) GetAll(searchQuery string) ([]response_model.Movie, error) {

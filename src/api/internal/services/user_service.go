@@ -10,7 +10,7 @@ import (
 )
 
 type UserService interface {
-	AddUser(userModel request_model.AddUser) error
+	AddUser(userModel request_model.AddUser) (string, error)
 	GetInfo(userId string) (db_model.UserInfo, error)
 	Update(userId string, updateModel request_model.UpdateUser) error
 }
@@ -32,11 +32,15 @@ func NewUserService(
 	}
 }
 
-func (s *userService) AddUser(userModel request_model.AddUser) error {
+func (s *userService) AddUser(userModel request_model.AddUser) (string, error) {
 	userId := uuid.New().String()
 	dbModel := db_model.NewAddUser(userId, userModel.Name, userModel.Email)
 
-	return s.userRepository.Add(dbModel)
+	err := s.userRepository.Add(dbModel)
+	if err != nil {
+		return "", err
+	}
+	return userId, nil
 }
 
 func (s *userService) GetInfo(userId string) (db_model.UserInfo, error) {

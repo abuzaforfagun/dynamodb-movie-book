@@ -8,6 +8,7 @@ import (
 	"github.com/abuzaforfagun/dynamodb-movie-book/internal/models/custom_errors"
 	db_model "github.com/abuzaforfagun/dynamodb-movie-book/internal/models/db"
 	request_model "github.com/abuzaforfagun/dynamodb-movie-book/internal/models/requests"
+	"github.com/abuzaforfagun/dynamodb-movie-book/internal/models/response_model"
 	"github.com/abuzaforfagun/dynamodb-movie-book/internal/repositories"
 	"github.com/gin-gonic/gin"
 	"github.com/google/uuid"
@@ -41,7 +42,7 @@ func (ah *ActorsHandler) GetDetails(c *gin.Context) {
 // @Param payload formData request_model.AddActor true "movie payload"
 // @Param thumbnail formData file true "Upload thumbnail image"
 // @Param pictures formData file false "Upload multiple pictures (Swagger 2.0 UI does not support multiple file upload, use curl or Postman)"
-// @Success 201
+// @Success 201 {object} response_model.CreateActorResponse
 // @Router /actors [post]
 func (h *ActorsHandler) Add(c *gin.Context) {
 
@@ -92,7 +93,11 @@ func (h *ActorsHandler) Add(c *gin.Context) {
 		return
 	}
 
-	c.JSON(http.StatusAccepted, gin.H{})
+	response := response_model.CreateActorResponse{
+		ActorId: actorId,
+	}
+
+	c.JSON(http.StatusCreated, response)
 }
 
 func deleteUploadedPhotos(photos []string) {

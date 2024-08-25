@@ -60,7 +60,10 @@ const docTemplate = `{
                 ],
                 "responses": {
                     "201": {
-                        "description": "Created"
+                        "description": "Created",
+                        "schema": {
+                            "$ref": "#/definitions/response_model.CreateActorResponse"
+                        }
                     }
                 }
             }
@@ -217,7 +220,10 @@ const docTemplate = `{
                 ],
                 "responses": {
                     "201": {
-                        "description": "Created"
+                        "description": "Created",
+                        "schema": {
+                            "$ref": "#/definitions/response_model.CreateMovieResponse"
+                        }
                     }
                 }
             }
@@ -397,7 +403,10 @@ const docTemplate = `{
                 ],
                 "responses": {
                     "201": {
-                        "description": "Created"
+                        "description": "Created",
+                        "schema": {
+                            "$ref": "#/definitions/response_model.CreateUserResponse"
+                        }
                     }
                 }
             }
@@ -580,6 +589,30 @@ const docTemplate = `{
                     "type": "string"
                 },
                 "thumbnail_url": {
+                    "type": "string"
+                }
+            }
+        },
+        "response_model.CreateActorResponse": {
+            "type": "object",
+            "properties": {
+                "actor_id": {
+                    "type": "string"
+                }
+            }
+        },
+        "response_model.CreateMovieResponse": {
+            "type": "object",
+            "properties": {
+                "movie_id": {
+                    "type": "string"
+                }
+            }
+        },
+        "response_model.CreateUserResponse": {
+            "type": "object",
+            "properties": {
+                "user_id": {
                     "type": "string"
                 }
             }

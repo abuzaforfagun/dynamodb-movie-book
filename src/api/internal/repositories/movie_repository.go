@@ -296,7 +296,6 @@ func (r *movieRepository) Get(movieId string) (*response_model.MovieDetails, err
 
 	var movieDetails response_model.MovieDetails
 	var reviews []response_model.Review
-	var actors []response_model.MovieActor
 	for _, item := range movieItems {
 		var typeStruct struct {
 			GSI_PK string `dynamodbav:"GSI_PK"`
@@ -317,14 +316,9 @@ func (r *movieRepository) Get(movieId string) (*response_model.MovieDetails, err
 					Name: review.CreatorName,
 				},
 			})
-		case "ACTOR-MOVIE":
-			var actor response_model.MovieActor
-			attributevalue.UnmarshalMap(item, &actor)
-			actors = append(actors, actor)
 		}
 	}
 
-	movieDetails.Actors = actors
 	movieDetails.Reviews = reviews
 
 	return &movieDetails, nil
