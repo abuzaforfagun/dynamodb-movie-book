@@ -1,6 +1,10 @@
 package db_model
 
-import "time"
+import (
+	"time"
+
+	"github.com/abuzaforfagun/dynamodb-movie-book/api/internal/models/custom_errors"
+)
 
 type AddReview struct {
 	PK        string  `dynamodbav:"PK"`
@@ -15,8 +19,20 @@ type AddReview struct {
 	CreatedAt string  `dynamodbav:"CreatedAt"`
 }
 
-func NewAddReview(movieId string, userId string, userName string, rating float64, comment string) AddReview {
-	return AddReview{
+func NewAddReview(movieId string, userId string, userName string, rating float64, comment string) (*AddReview, error) {
+	if movieId == "" {
+		return nil, &custom_errors.BadRequestError{
+			Message: "Unable to create review with empty movie id",
+		}
+	}
+
+	if userId == "" {
+		return nil, &custom_errors.BadRequestError{
+			Message: "Unable to create review with empty user id",
+		}
+	}
+
+	return &AddReview{
 		PK:        "MOVIE#" + movieId,
 		SK:        "USER#" + userId,
 		GSI_PK:    "REVIEW",
@@ -27,5 +43,5 @@ func NewAddReview(movieId string, userId string, userName string, rating float64
 		Rating:    rating,
 		Comment:   comment,
 		CreatedAt: time.Now().UTC().String(),
-	}
+	}, nil
 }

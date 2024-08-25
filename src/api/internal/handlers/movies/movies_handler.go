@@ -153,7 +153,15 @@ func (h *MoviesHandler) AddMovie(c *gin.Context) {
 	actorRoleMap := map[string]string{}
 	for _, actor := range requestModel.Actors {
 		actorIds = append(actorIds, actor.ActorId)
-		actorRoleMap[actor.ActorId] = actor.Role.ToString()
+		roleName, err := actor.Role.ToString()
+		if err != nil {
+			err := &custom_errors.BadRequestError{
+				Message: "Please verify role id",
+			}
+			c.JSON(http.StatusBadRequest, err)
+			return
+		}
+		actorRoleMap[actor.ActorId] = roleName
 	}
 	var actorsInfo []db_model.ActorInfo
 

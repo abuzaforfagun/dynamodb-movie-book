@@ -34,9 +34,13 @@ func NewUserService(
 
 func (s *userService) AddUser(userModel request_model.AddUser) (string, error) {
 	userId := uuid.New().String()
-	dbModel := db_model.NewAddUser(userId, userModel.Name, userModel.Email)
+	dbModel, err := db_model.NewAddUser(userId, userModel.Name, userModel.Email)
 
-	err := s.userRepository.Add(dbModel)
+	if err != nil {
+		return "", err
+	}
+
+	err = s.userRepository.Add(dbModel)
 	if err != nil {
 		return "", err
 	}

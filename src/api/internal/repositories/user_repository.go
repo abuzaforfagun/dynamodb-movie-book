@@ -13,7 +13,7 @@ import (
 )
 
 type UserRepository interface {
-	Add(user db_model.AddUser) error
+	Add(user *db_model.AddUser) error
 	GetInfo(userId string) (db_model.UserInfo, error)
 	Update(userId string, name string) error
 }
@@ -31,7 +31,7 @@ func NewUserRepository(client *dynamodb.Client, tableName string) UserRepository
 	}
 }
 
-func (r *userRepository) Add(userData db_model.AddUser) error {
+func (r *userRepository) Add(userData *db_model.AddUser) error {
 	av, err := attributevalue.MarshalMap(userData)
 	if err != nil {
 		fmt.Printf("Got error marshalling data: %s\n", err)

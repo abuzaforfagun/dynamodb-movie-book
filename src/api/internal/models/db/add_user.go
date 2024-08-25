@@ -1,6 +1,10 @@
 package db_model
 
-import "time"
+import (
+	"time"
+
+	"github.com/abuzaforfagun/dynamodb-movie-book/api/internal/models/custom_errors"
+)
 
 type AddUser struct {
 	PK        string `dynamodbav:"PK"`
@@ -13,8 +17,13 @@ type AddUser struct {
 	CreatedAt string `dynamodbav:"CreatedAt"`
 }
 
-func NewAddUser(userId string, name string, email string) AddUser {
-	return AddUser{
+func NewAddUser(userId string, name string, email string) (*AddUser, error) {
+	if userId == "" {
+		return nil, &custom_errors.BadRequestError{
+			Message: "Unable to create user with empty user id",
+		}
+	}
+	user := AddUser{
 		PK:        "USER#" + userId,
 		SK:        "USER#" + userId,
 		GSI_PK:    "USER",
@@ -24,4 +33,5 @@ func NewAddUser(userId string, name string, email string) AddUser {
 		Email:     email,
 		CreatedAt: time.Now().UTC().String(),
 	}
+	return &user, nil
 }

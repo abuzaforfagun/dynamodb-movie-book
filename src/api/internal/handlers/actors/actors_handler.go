@@ -81,8 +81,13 @@ func (h *ActorsHandler) Add(c *gin.Context) {
 		return
 	}
 
-	actorDbModel := db_model.NewAddActor(actorId, actorRequest.Name, actorRequest.DateOfBirth.Format("2006-01-02"),
+	actorDbModel, err := db_model.NewAddActor(actorId, actorRequest.Name, actorRequest.DateOfBirth.Format("2006-01-02"),
 		thumbnailUrl, photosUrl)
+
+	if err != nil {
+		c.JSON(http.StatusBadRequest, err)
+		return
+	}
 
 	err = h.actorRepository.Add(actorDbModel)
 	if err != nil {

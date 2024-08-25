@@ -3,6 +3,8 @@ package db_model
 import (
 	"strings"
 	"time"
+
+	"github.com/abuzaforfagun/dynamodb-movie-book/api/internal/models/custom_errors"
 )
 
 type AddMovie struct {
@@ -19,8 +21,13 @@ type AddMovie struct {
 	CreatedAt       string       `dynamodbav:"CreatedAt"`
 }
 
-func NewMovieModel(id string, title string, releaseYear int, genres []string, actors []MovieActor) AddMovie {
-	return AddMovie{
+func NewMovieModel(id string, title string, releaseYear int, genres []string, actors []MovieActor) (*AddMovie, error) {
+	if id == "" {
+		return nil, &custom_errors.BadRequestError{
+			Message: "Can not create movie with empty id",
+		}
+	}
+	movie := AddMovie{
 		PK:              "MOVIE#" + id,
 		SK:              "MOVIE#" + id,
 		GSI_PK:          "MOVIE",
@@ -33,6 +40,8 @@ func NewMovieModel(id string, title string, releaseYear int, genres []string, ac
 		Actors:          actors,
 		CreatedAt:       time.Now().UTC().String(),
 	}
+
+	return &movie, nil
 }
 
 type MovieActor struct {

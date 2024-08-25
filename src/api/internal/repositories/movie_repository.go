@@ -50,7 +50,12 @@ func (r *movieRepository) HasMovie(movieId string) (bool, error) {
 
 func (r *movieRepository) Add(movie request_model.AddMovie, actors []db_model.MovieActor) (string, error) {
 	movieId := uuid.New().String()
-	dbModel := db_model.NewMovieModel(movieId, movie.Title, movie.ReleaseYear, movie.Genres, actors)
+	dbModel, err := db_model.NewMovieModel(movieId, movie.Title, movie.ReleaseYear, movie.Genres, actors)
+
+	if err != nil {
+		return "", err
+	}
+
 	av, err := attributevalue.MarshalMap(dbModel)
 	if err != nil {
 		fmt.Printf("Got error marshalling data: %s\n", err)

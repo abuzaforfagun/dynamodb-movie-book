@@ -34,7 +34,10 @@ func NewReviewRepository(client *dynamodb.Client, tableName string) ReviewReposi
 }
 
 func (r *reviewRepository) Add(movieId string, userName string, review request_model.AddReview) error {
-	dbRviewModel := db_model.NewAddReview(movieId, review.UserId, userName, review.Rating, review.Comment)
+	dbRviewModel, err := db_model.NewAddReview(movieId, review.UserId, userName, review.Rating, review.Comment)
+	if err != nil {
+		return err
+	}
 
 	av, err := attributevalue.MarshalMap(dbRviewModel)
 	if err != nil {

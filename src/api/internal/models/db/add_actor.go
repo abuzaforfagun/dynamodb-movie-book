@@ -1,6 +1,10 @@
 package db_model
 
-import "time"
+import (
+	"time"
+
+	"github.com/abuzaforfagun/dynamodb-movie-book/api/internal/models/custom_errors"
+)
 
 type AddActor struct {
 	PK           string   `dynamodbav:"PK"`
@@ -15,8 +19,13 @@ type AddActor struct {
 	CreatedAt    string   `dynamodbav:"CreatedAt"`
 }
 
-func NewAddActor(actorId string, name string, dateOfBirth string, thumbnailUrl string, pictures []string) AddActor {
-	return AddActor{
+func NewAddActor(actorId string, name string, dateOfBirth string, thumbnailUrl string, pictures []string) (AddActor, error) {
+	if actorId == "" {
+		return AddActor{}, &custom_errors.BadRequestError{
+			Message: "Unable to create AddActor with empty actor id",
+		}
+	}
+	actor := AddActor{
 		PK:           "ACTOR#" + actorId,
 		SK:           "ACTOR#" + actorId,
 		GSI_PK:       "ACTOR",
@@ -28,4 +37,5 @@ func NewAddActor(actorId string, name string, dateOfBirth string, thumbnailUrl s
 		Pictures:     pictures,
 		CreatedAt:    time.Now().UTC().String(),
 	}
+	return actor, nil
 }
