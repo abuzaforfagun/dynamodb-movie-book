@@ -1,6 +1,8 @@
 package events
 
-import "github.com/google/uuid"
+import (
+	"github.com/google/uuid"
+)
 
 type UserUpdated struct {
 	MessageId string `json:"message_id"`

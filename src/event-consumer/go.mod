@@ -3,6 +3,7 @@ module github.com/abuzaforfagun/dynamodb-movie-book/event-consumer
 go 1.22.5
 
 require (
+	github.com/abuzaforfagun/dynamodb-movie-book/events v0.0.0-00010101000000-000000000000
 	github.com/aws/aws-sdk-go v1.55.5
 	github.com/aws/aws-sdk-go-v2 v1.30.4
 	github.com/aws/aws-sdk-go-v2/config v1.27.30
@@ -13,6 +14,8 @@ require (
 	github.com/joho/godotenv v1.5.1
 	github.com/streadway/amqp v1.1.0
 )
+
+replace github.com/abuzaforfagun/dynamodb-movie-book/events => ../events/
 
 require (
 	github.com/aws/aws-sdk-go-v2/feature/ec2/imds v1.16.12 // indirect
@@ -27,5 +30,6 @@ require (
 	github.com/aws/aws-sdk-go-v2/service/ssooidc v1.26.5 // indirect
 	github.com/aws/aws-sdk-go-v2/service/sts v1.30.5 // indirect
 	github.com/aws/smithy-go v1.20.4 // indirect
+	github.com/google/uuid v1.6.0 // indirect
 	github.com/jmespath/go-jmespath v0.4.0 // indirect
 )

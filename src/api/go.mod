@@ -16,7 +16,10 @@ require (
 	github.com/swaggo/files v1.0.1
 	github.com/swaggo/gin-swagger v1.6.0
 	github.com/swaggo/swag v1.16.3
+	github.com/abuzaforfagun/dynamodb-movie-book/events v0.0.0-00010101000000-000000000000
 )
+
+replace github.com/abuzaforfagun/dynamodb-movie-book/events => ../events/
 
 require (
 	github.com/KyleBanks/depth v1.2.1 // indirect

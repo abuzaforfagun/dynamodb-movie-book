@@ -7,10 +7,10 @@ import (
 	"github.com/abuzaforfagun/dynamodb-movie-book/api/internal/infrastructure"
 	"github.com/abuzaforfagun/dynamodb-movie-book/api/internal/models/custom_errors"
 	db_model "github.com/abuzaforfagun/dynamodb-movie-book/api/internal/models/db"
-	"github.com/abuzaforfagun/dynamodb-movie-book/api/internal/models/events"
 	request_model "github.com/abuzaforfagun/dynamodb-movie-book/api/internal/models/requests"
 	"github.com/abuzaforfagun/dynamodb-movie-book/api/internal/models/response_model"
 	"github.com/abuzaforfagun/dynamodb-movie-book/api/internal/repositories"
+	"github.com/abuzaforfagun/dynamodb-movie-book/events"
 )
 
 type MovieService interface {
@@ -56,7 +56,7 @@ func (s *movieService) Add(movie request_model.AddMovie, actors []db_model.Movie
 		return "", err
 	}
 
-	movieAddedEvent := events.NewMovieAdded(movieId)
+	movieAddedEvent := events.NewMovieCreated(movieId)
 	err = s.rabbitMq.PublishMessage(movieAddedEvent, s.movieAddedExchangeName)
 	if err != nil {
 		log.Printf("ERROR: failed to publish event. Error: %v", err)

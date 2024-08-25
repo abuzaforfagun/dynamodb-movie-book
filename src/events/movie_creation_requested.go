@@ -2,13 +2,13 @@ package events
 
 import "github.com/google/uuid"
 
-type MovieAdded struct {
+type MovieCreated struct {
 	MessageId string `json:"message_id"`
 	MovieId   string `json:"movie_id"`
 }
 
-func NewMovieAdded(movieId string) MovieAdded {
-	return MovieAdded{
+func NewMovieCreated(movieId string) MovieCreated {
+	return MovieCreated{
 		MessageId: uuid.New().String(),
 		MovieId:   movieId,
 	}

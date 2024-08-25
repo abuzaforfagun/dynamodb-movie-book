@@ -1,17 +1,14 @@
 package main
 
 import (
-	"encoding/json"
 	"log"
 	"os"
 
 	"github.com/abuzaforfagun/dynamodb-movie-book/event-consumer/internal/infrastructure"
 	"github.com/abuzaforfagun/dynamodb-movie-book/event-consumer/internal/initializers"
-	"github.com/abuzaforfagun/dynamodb-movie-book/event-consumer/internal/models/events"
 	"github.com/abuzaforfagun/dynamodb-movie-book/event-consumer/internal/processor"
 	"github.com/abuzaforfagun/dynamodb-movie-book/event-consumer/internal/rabbitmq"
 	"github.com/abuzaforfagun/dynamodb-movie-book/event-consumer/internal/services"
-	"github.com/streadway/amqp"
 )
 
 func main() {
@@ -51,14 +48,5 @@ func main() {
 	rabbitmq.RegisterQueueExchange(conn, userUpdatedQueueName, userUpdatedExchangeName, userUpdatedHandler.HandleMessage)
 	rabbitmq.RegisterQueueExchange(conn, movieAddedQueueName, movieAddedExchangeName, moviedAddedHandler.HandleMessage)
 
-	ch, _ := conn.Channel()
-	obj := events.MovieCreated{
-		MovieId: "de353f60-167b-46a5-8184-32c03d6c5a31",
-	}
-	js, _ := json.Marshal(obj)
-	ch.Publish(movieAddedExchangeName, "", false, false, amqp.Publishing{
-		ContentType: "application/json",
-		Body:        js,
-	})
 	select {}
 }
