@@ -4,7 +4,6 @@ import (
 	"context"
 	"log"
 
-	"github.com/abuzaforfagun/dynamodb-movie-book/internal/database"
 	db_model "github.com/abuzaforfagun/dynamodb-movie-book/internal/models/db"
 	request_model "github.com/abuzaforfagun/dynamodb-movie-book/internal/models/requests"
 	"github.com/aws/aws-sdk-go-v2/aws"
@@ -22,14 +21,15 @@ type ReviewRepository interface {
 }
 
 type reviewRepository struct {
-	client    *dynamodb.Client
-	tableName string
+	baseRepository
 }
 
 func NewReviewRepository(client *dynamodb.Client, tableName string) ReviewRepository {
 	return &reviewRepository{
-		client:    client,
-		tableName: tableName,
+		baseRepository: baseRepository{
+			client:    client,
+			tableName: tableName,
+		},
 	}
 }
 
@@ -90,7 +90,7 @@ func (r *reviewRepository) GetAll(movieId string) ([]db_model.Review, error) {
 func (r *reviewRepository) HasReview(movieId string, userId string) (bool, error) {
 	pk := "MOVIE#" + movieId
 	sk := "USER#" + userId
-	hasReview, err := database.HasItem(context.TODO(), r.client, r.tableName, pk, sk)
+	hasReview, err := r.HasItem(context.TODO(), pk, sk)
 
 	if err != nil {
 		log.Printf("ERROR: unable to get item: %v\n", err)

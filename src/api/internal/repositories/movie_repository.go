@@ -18,8 +18,7 @@ import (
 )
 
 type movieRepository struct {
-	client    *dynamodb.Client
-	tableName string
+	baseRepository
 }
 
 type MovieRepository interface {
@@ -34,15 +33,17 @@ type MovieRepository interface {
 
 func NewMovieRepository(client *dynamodb.Client, tableName string) MovieRepository {
 	return &movieRepository{
-		client:    client,
-		tableName: tableName,
+		baseRepository: baseRepository{
+			client:    client,
+			tableName: tableName,
+		},
 	}
 }
 
 func (r *movieRepository) HasMovie(movieId string) (bool, error) {
 	key := "MOVIE#" + movieId
 
-	hasMovie, err := database.HasItem(context.TODO(), r.client, r.tableName, key, key)
+	hasMovie, err := r.HasItem(context.TODO(), key, key)
 
 	return hasMovie, err
 }
@@ -70,7 +71,7 @@ func (r *movieRepository) UpdateScore(movieId string, score float64) error {
 	sk := "MOVIE#" + movieId
 	updateBuilder := expression.Set(expression.Name("Score"), expression.Value(score))
 
-	return database.Update(context.TODO(), r.client, r.tableName, pk, sk, updateBuilder)
+	return r.UpdateByPKSK(context.TODO(), pk, sk, updateBuilder)
 }
 
 func (r *movieRepository) GetAll(movieName string) ([]response_model.Movie, error) {

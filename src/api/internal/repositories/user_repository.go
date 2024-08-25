@@ -3,8 +3,8 @@ package repositories
 import (
 	"context"
 	"fmt"
+	"log"
 
-	"github.com/abuzaforfagun/dynamodb-movie-book/internal/database"
 	db_model "github.com/abuzaforfagun/dynamodb-movie-book/internal/models/db"
 	"github.com/aws/aws-sdk-go-v2/aws"
 	"github.com/aws/aws-sdk-go-v2/feature/dynamodb/attributevalue"
@@ -19,14 +19,15 @@ type UserRepository interface {
 }
 
 type userRepository struct {
-	client    *dynamodb.Client
-	tableName string
+	baseRepository
 }
 
 func NewUserRepository(client *dynamodb.Client, tableName string) UserRepository {
 	return &userRepository{
-		client:    client,
-		tableName: tableName,
+		baseRepository: baseRepository{
+			client:    client,
+			tableName: tableName,
+		},
 	}
 }
 
@@ -49,9 +50,16 @@ func (r *userRepository) Add(userData db_model.AddUser) error {
 
 func (r *userRepository) GetInfo(userId string) (db_model.UserInfo, error) {
 	pk := "USER#" + userId
-	userInfo, err := database.GetInfo[db_model.UserInfo](context.TODO(), r.client, r.tableName, pk, pk)
+	dbResponse, err := r.GetOneByPKSK(context.TODO(), pk, pk)
 
 	if err != nil {
+		return db_model.UserInfo{}, err
+	}
+
+	var userInfo db_model.UserInfo
+	err = attributevalue.UnmarshalMap(dbResponse, &userInfo)
+	if err != nil {
+		log.Println("ERROR: unable to unmarshal result", err)
 		return db_model.UserInfo{}, err
 	}
 	return userInfo, nil
@@ -60,7 +68,7 @@ func (r *userRepository) GetInfo(userId string) (db_model.UserInfo, error) {
 func (r *userRepository) Update(userId string, name string) error {
 	pk := "USER#" + userId
 	sk := "USER#" + userId
-	update := expression.Set(expression.Name("Name"), expression.Value(name))
+	updateBuilder := expression.Set(expression.Name("Name"), expression.Value(name))
 
-	return database.Update(context.TODO(), r.client, r.tableName, pk, sk, update)
+	return r.UpdateByPKSK(context.TODO(), pk, sk, updateBuilder)
 }
