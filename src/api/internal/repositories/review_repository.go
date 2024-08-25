@@ -4,8 +4,8 @@ import (
 	"context"
 	"log"
 
-	db_model "github.com/abuzaforfagun/dynamodb-movie-book/internal/models/db"
-	request_model "github.com/abuzaforfagun/dynamodb-movie-book/internal/models/requests"
+	db_model "github.com/abuzaforfagun/dynamodb-movie-book/api/internal/models/db"
+	request_model "github.com/abuzaforfagun/dynamodb-movie-book/api/internal/models/requests"
 	"github.com/aws/aws-sdk-go-v2/aws"
 	"github.com/aws/aws-sdk-go-v2/feature/dynamodb/attributevalue"
 	"github.com/aws/aws-sdk-go-v2/feature/dynamodb/expression"

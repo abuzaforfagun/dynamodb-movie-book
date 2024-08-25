@@ -5,13 +5,13 @@ import (
 	"log"
 	"net/http"
 
-	core_models "github.com/abuzaforfagun/dynamodb-movie-book/internal/models/core"
-	"github.com/abuzaforfagun/dynamodb-movie-book/internal/models/custom_errors"
-	db_model "github.com/abuzaforfagun/dynamodb-movie-book/internal/models/db"
-	request_model "github.com/abuzaforfagun/dynamodb-movie-book/internal/models/requests"
-	"github.com/abuzaforfagun/dynamodb-movie-book/internal/models/response_model"
-	"github.com/abuzaforfagun/dynamodb-movie-book/internal/repositories"
-	"github.com/abuzaforfagun/dynamodb-movie-book/internal/services"
+	core_models "github.com/abuzaforfagun/dynamodb-movie-book/api/internal/models/core"
+	"github.com/abuzaforfagun/dynamodb-movie-book/api/internal/models/custom_errors"
+	db_model "github.com/abuzaforfagun/dynamodb-movie-book/api/internal/models/db"
+	request_model "github.com/abuzaforfagun/dynamodb-movie-book/api/internal/models/requests"
+	"github.com/abuzaforfagun/dynamodb-movie-book/api/internal/models/response_model"
+	"github.com/abuzaforfagun/dynamodb-movie-book/api/internal/repositories"
+	"github.com/abuzaforfagun/dynamodb-movie-book/api/internal/services"
 	"github.com/gin-gonic/gin"
 )
 

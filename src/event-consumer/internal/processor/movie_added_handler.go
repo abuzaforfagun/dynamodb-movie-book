@@ -4,8 +4,8 @@ import (
 	"encoding/json"
 	"log"
 
-	"github.com/abuzaforfagun/dynamodb-movie-book/internal/models/events"
-	"github.com/abuzaforfagun/dynamodb-movie-book/internal/services"
+	"github.com/abuzaforfagun/dynamodb-movie-book/event-consumer/internal/models/events"
+	"github.com/abuzaforfagun/dynamodb-movie-book/event-consumer/internal/services"
 	"github.com/streadway/amqp"
 )
 

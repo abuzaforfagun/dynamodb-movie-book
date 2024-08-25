@@ -1,7 +1,7 @@
 package request_model
 
 import (
-	core_models "github.com/abuzaforfagun/dynamodb-movie-book/internal/models/core"
+	core_models "github.com/abuzaforfagun/dynamodb-movie-book/api/internal/models/core"
 )
 
 type AddMovie struct {

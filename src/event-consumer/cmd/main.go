@@ -5,12 +5,12 @@ import (
 	"log"
 	"os"
 
-	"github.com/abuzaforfagun/dynamodb-movie-book/internal/infrastructure"
-	"github.com/abuzaforfagun/dynamodb-movie-book/internal/initializers"
-	"github.com/abuzaforfagun/dynamodb-movie-book/internal/models/events"
-	"github.com/abuzaforfagun/dynamodb-movie-book/internal/processor"
-	"github.com/abuzaforfagun/dynamodb-movie-book/internal/rabbitmq"
-	"github.com/abuzaforfagun/dynamodb-movie-book/internal/services"
+	"github.com/abuzaforfagun/dynamodb-movie-book/event-consumer/internal/infrastructure"
+	"github.com/abuzaforfagun/dynamodb-movie-book/event-consumer/internal/initializers"
+	"github.com/abuzaforfagun/dynamodb-movie-book/event-consumer/internal/models/events"
+	"github.com/abuzaforfagun/dynamodb-movie-book/event-consumer/internal/processor"
+	"github.com/abuzaforfagun/dynamodb-movie-book/event-consumer/internal/rabbitmq"
+	"github.com/abuzaforfagun/dynamodb-movie-book/event-consumer/internal/services"
 	"github.com/streadway/amqp"
 )
 

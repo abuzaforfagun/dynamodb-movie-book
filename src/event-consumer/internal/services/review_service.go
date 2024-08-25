@@ -5,8 +5,8 @@ import (
 	"log"
 	"sync"
 
-	"github.com/abuzaforfagun/dynamodb-movie-book/internal/constants"
-	"github.com/abuzaforfagun/dynamodb-movie-book/internal/models"
+	"github.com/abuzaforfagun/dynamodb-movie-book/event-consumer/internal/constants"
+	"github.com/abuzaforfagun/dynamodb-movie-book/event-consumer/internal/models"
 	"github.com/aws/aws-sdk-go-v2/feature/dynamodb/attributevalue"
 	"github.com/aws/aws-sdk-go-v2/feature/dynamodb/expression"
 	"github.com/aws/aws-sdk-go-v2/service/dynamodb"

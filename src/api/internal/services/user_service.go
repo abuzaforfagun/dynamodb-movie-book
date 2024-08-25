@@ -1,11 +1,11 @@
 package services
 
 import (
-	"github.com/abuzaforfagun/dynamodb-movie-book/internal/infrastructure"
-	db_model "github.com/abuzaforfagun/dynamodb-movie-book/internal/models/db"
-	"github.com/abuzaforfagun/dynamodb-movie-book/internal/models/events"
-	request_model "github.com/abuzaforfagun/dynamodb-movie-book/internal/models/requests"
-	"github.com/abuzaforfagun/dynamodb-movie-book/internal/repositories"
+	"github.com/abuzaforfagun/dynamodb-movie-book/api/internal/infrastructure"
+	db_model "github.com/abuzaforfagun/dynamodb-movie-book/api/internal/models/db"
+	"github.com/abuzaforfagun/dynamodb-movie-book/api/internal/models/events"
+	request_model "github.com/abuzaforfagun/dynamodb-movie-book/api/internal/models/requests"
+	"github.com/abuzaforfagun/dynamodb-movie-book/api/internal/repositories"
 	"github.com/google/uuid"
 )
 

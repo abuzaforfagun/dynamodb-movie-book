@@ -5,7 +5,7 @@ import (
 	"fmt"
 	"log"
 
-	db_model "github.com/abuzaforfagun/dynamodb-movie-book/internal/models/db"
+	db_model "github.com/abuzaforfagun/dynamodb-movie-book/api/internal/models/db"
 	"github.com/aws/aws-sdk-go-v2/aws"
 	"github.com/aws/aws-sdk-go-v2/feature/dynamodb/attributevalue"
 	"github.com/aws/aws-sdk-go-v2/feature/dynamodb/expression"

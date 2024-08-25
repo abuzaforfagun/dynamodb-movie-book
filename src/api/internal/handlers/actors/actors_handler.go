@@ -5,11 +5,11 @@ import (
 	"net/http"
 	"time"
 
-	"github.com/abuzaforfagun/dynamodb-movie-book/internal/models/custom_errors"
-	db_model "github.com/abuzaforfagun/dynamodb-movie-book/internal/models/db"
-	request_model "github.com/abuzaforfagun/dynamodb-movie-book/internal/models/requests"
-	"github.com/abuzaforfagun/dynamodb-movie-book/internal/models/response_model"
-	"github.com/abuzaforfagun/dynamodb-movie-book/internal/repositories"
+	"github.com/abuzaforfagun/dynamodb-movie-book/api/internal/models/custom_errors"
+	db_model "github.com/abuzaforfagun/dynamodb-movie-book/api/internal/models/db"
+	request_model "github.com/abuzaforfagun/dynamodb-movie-book/api/internal/models/requests"
+	"github.com/abuzaforfagun/dynamodb-movie-book/api/internal/models/response_model"
+	"github.com/abuzaforfagun/dynamodb-movie-book/api/internal/repositories"
 	"github.com/gin-gonic/gin"
 	"github.com/google/uuid"
 )
