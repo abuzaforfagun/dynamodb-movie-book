@@ -44,7 +44,7 @@ func (r *baseRepository) HasItem(ctx context.Context, pk string, sk string) (boo
 	return hasItem, nil
 }
 
-func (r *baseRepository) GetOneByPKSK(ctx context.Context, pk string, sk string) (map[string]types.AttributeValue, error) {
+func (r *baseRepository) GetOneByPKSK(ctx context.Context, pk string, sk string) (*map[string]types.AttributeValue, error) {
 	key := map[string]types.AttributeValue{
 		"PK": &types.AttributeValueMemberS{Value: pk},
 		"SK": &types.AttributeValueMemberS{Value: sk},
@@ -65,7 +65,7 @@ func (r *baseRepository) GetOneByPKSK(ctx context.Context, pk string, sk string)
 		log.Printf("ERROR: [pk=%s] [sk=%s] not found\n", pk, sk)
 		return nil, errors.New("not found")
 	}
-	return result.Item, nil
+	return &result.Item, nil
 }
 
 func (r *baseRepository) UpdateByPKSK(ctx context.Context, pk string, sk string, builder expression.UpdateBuilder) error {

@@ -19,9 +19,9 @@ type AddActor struct {
 	CreatedAt    string   `dynamodbav:"CreatedAt"`
 }
 
-func NewAddActor(actorId string, name string, dateOfBirth string, thumbnailUrl string, pictures []string) (AddActor, error) {
+func NewAddActor(actorId string, name string, dateOfBirth string, thumbnailUrl string, pictures []string) (*AddActor, error) {
 	if actorId == "" {
-		return AddActor{}, &custom_errors.BadRequestError{
+		return nil, &custom_errors.BadRequestError{
 			Message: "Unable to create AddActor with empty actor id",
 		}
 	}
@@ -37,5 +37,5 @@ func NewAddActor(actorId string, name string, dateOfBirth string, thumbnailUrl s
 		Pictures:     pictures,
 		CreatedAt:    time.Now().UTC().String(),
 	}
-	return actor, nil
+	return &actor, nil
 }

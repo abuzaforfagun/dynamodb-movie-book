@@ -57,7 +57,7 @@ func (r *userRepository) GetInfo(userId string) (db_model.UserInfo, error) {
 	}
 
 	var userInfo db_model.UserInfo
-	err = attributevalue.UnmarshalMap(dbResponse, &userInfo)
+	err = attributevalue.UnmarshalMap(*dbResponse, &userInfo)
 	if err != nil {
 		log.Println("ERROR: unable to unmarshal result", err)
 		return db_model.UserInfo{}, err

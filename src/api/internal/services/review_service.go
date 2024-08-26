@@ -11,7 +11,7 @@ import (
 
 type ReviewService interface {
 	Add(movieId string, reviewRequest request_model.AddReview) error
-	GetAll(movieId string) ([]db_model.Review, error)
+	GetAll(movieId string) (*[]db_model.Review, error)
 	Delete(movieId string, userId string) error
 }
 
@@ -61,7 +61,7 @@ func (s *reviewService) Add(movieId string, reviewRequest request_model.AddRevie
 	return nil
 }
 
-func (s *reviewService) GetAll(movieId string) ([]db_model.Review, error) {
+func (s *reviewService) GetAll(movieId string) (*[]db_model.Review, error) {
 	return s.reviewRepository.GetAll(movieId)
 }
 

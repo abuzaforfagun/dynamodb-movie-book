@@ -169,7 +169,7 @@ func existGsi(ctx context.Context, svc *dynamodb.Client, tableName string, gsiNa
 	})
 
 	if err != nil {
-		log.Fatalf("Unable to retrieve table description", err)
+		log.Fatalf("Unable to retrieve table description %v", err)
 	}
 
 	for _, gsi := range result.Table.GlobalSecondaryIndexes {

@@ -15,7 +15,7 @@ import (
 
 type ReviewRepository interface {
 	Add(movieId string, userName string, review request_model.AddReview) error
-	GetAll(movieId string) ([]db_model.Review, error)
+	GetAll(movieId string) (*[]db_model.Review, error)
 	HasReview(movieId string, userId string) (bool, error)
 	Delete(movieId string, userId string) error
 }
@@ -55,7 +55,7 @@ func (r *reviewRepository) Add(movieId string, userName string, review request_m
 	return nil
 }
 
-func (r *reviewRepository) GetAll(movieId string) ([]db_model.Review, error) {
+func (r *reviewRepository) GetAll(movieId string) (*[]db_model.Review, error) {
 	var reviewData []db_model.Review
 
 	pk := "MOVIE#" + movieId
@@ -87,7 +87,7 @@ func (r *reviewRepository) GetAll(movieId string) ([]db_model.Review, error) {
 	if err != nil {
 		log.Println("WARNING: Failed to unmarshal", err)
 	}
-	return reviewData, nil
+	return &reviewData, nil
 }
 
 func (r *reviewRepository) HasReview(movieId string, userId string) (bool, error) {

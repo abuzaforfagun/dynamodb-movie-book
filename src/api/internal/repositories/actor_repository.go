@@ -12,8 +12,8 @@ import (
 )
 
 type ActorRepository interface {
-	Add(actor db_model.AddActor) error
-	Get(actorIds []string) ([]db_model.ActorInfo, error)
+	Add(actor *db_model.AddActor) error
+	Get(actorIds []string) (*[]db_model.ActorInfo, error)
 }
 
 type actorRepository struct {
@@ -28,7 +28,7 @@ func NewActorRepository(client *dynamodb.Client, tableName string) ActorReposito
 	}
 }
 
-func (r *actorRepository) Add(actor db_model.AddActor) error {
+func (r *actorRepository) Add(actor *db_model.AddActor) error {
 	av, err := attributevalue.MarshalMap(actor)
 	if err != nil {
 		log.Printf("Got error marshalling data: %s\n", err)
@@ -45,7 +45,7 @@ func (r *actorRepository) Add(actor db_model.AddActor) error {
 	return nil
 }
 
-func (r *actorRepository) Get(actorIds []string) ([]db_model.ActorInfo, error) {
+func (r *actorRepository) Get(actorIds []string) (*[]db_model.ActorInfo, error) {
 	keys := []map[string]types.AttributeValue{}
 	for _, actorId := range actorIds {
 		keys = append(keys, map[string]types.AttributeValue{
@@ -76,5 +76,5 @@ func (r *actorRepository) Get(actorIds []string) ([]db_model.ActorInfo, error) {
 		log.Printf("Failed to unmarshal response %v\n", err)
 	}
 
-	return actors, nil
+	return &actors, nil
 }

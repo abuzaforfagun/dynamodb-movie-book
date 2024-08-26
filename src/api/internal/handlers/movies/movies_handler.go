@@ -163,7 +163,7 @@ func (h *MoviesHandler) AddMovie(c *gin.Context) {
 		}
 		actorRoleMap[actor.ActorId] = roleName
 	}
-	var actorsInfo []db_model.ActorInfo
+	var actorsInfo *[]db_model.ActorInfo
 
 	if len(actorIds) != 0 {
 		actorsInfo, err = h.actorRepository.Get(actorIds)
@@ -173,7 +173,7 @@ func (h *MoviesHandler) AddMovie(c *gin.Context) {
 			return
 		}
 
-		if len(actorsInfo) != len(actorIds) {
+		if len(*actorsInfo) != len(actorIds) {
 			err := &custom_errors.BadRequestError{
 				Message: "Please verify actor ids",
 			}
@@ -184,7 +184,7 @@ func (h *MoviesHandler) AddMovie(c *gin.Context) {
 
 	movieActors := []db_model.MovieActor{}
 
-	for _, actor := range actorsInfo {
+	for _, actor := range *actorsInfo {
 		role := actorRoleMap[actor.Id]
 		movieActor := db_model.MovieActor{
 			ActorId: actor.Id,
@@ -194,7 +194,7 @@ func (h *MoviesHandler) AddMovie(c *gin.Context) {
 		movieActors = append(movieActors, movieActor)
 	}
 
-	movieId, err := h.movieService.Add(requestModel, movieActors)
+	movieId, err := h.movieService.Add(&requestModel, movieActors)
 
 	if err != nil {
 		if err, ok := err.(*custom_errors.BadRequestError); ok {

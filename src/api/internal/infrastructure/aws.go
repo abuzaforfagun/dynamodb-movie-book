@@ -10,7 +10,7 @@ import (
 	"github.com/aws/aws-sdk-go-v2/service/dynamodb"
 )
 
-func NewAWSConfig() aws.Config {
+func NewAWSConfig() *aws.Config {
 	// get config from environment variables
 	awsAccessKey := os.Getenv("AWS_ACCESS_KEY_ID")
 	awsSecretAccessKey := os.Getenv("AWS_SECRET_ACCESS_KEY")
@@ -30,10 +30,9 @@ func NewAWSConfig() aws.Config {
 	if err != nil {
 		panic(err)
 	}
-	return conf
+	return &conf
 }
 
-func NewDynamoDBClient(sdkConfig aws.Config) *dynamodb.Client {
-	// initialize new dynamodb client from aws config and return it
-	return dynamodb.NewFromConfig(sdkConfig)
+func NewDynamoDBClient(sdkConfig *aws.Config) *dynamodb.Client {
+	return dynamodb.NewFromConfig(*sdkConfig)
 }

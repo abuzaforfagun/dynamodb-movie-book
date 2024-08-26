@@ -11,11 +11,12 @@ import (
 	"github.com/abuzaforfagun/dynamodb-movie-book/api/internal/models/response_model"
 	"github.com/abuzaforfagun/dynamodb-movie-book/api/internal/repositories"
 	"github.com/abuzaforfagun/dynamodb-movie-book/events"
+	"github.com/google/uuid"
 )
 
 type MovieService interface {
-	Add(movie request_model.AddMovie, actors []db_model.MovieActor) (string, error)
-	GetAll(searchQuery string) ([]response_model.Movie, error)
+	Add(movie *request_model.AddMovie, actors []db_model.MovieActor) (string, error)
+	GetAll(searchQuery string) (*[]response_model.Movie, error)
 	GetByGenre(genreName string) ([]response_model.Movie, error)
 	UpdateMovieScore(movieId string) error
 	HasMovie(movieId string) (bool, error)
@@ -49,8 +50,15 @@ func (s *movieService) HasMovie(movieId string) (bool, error) {
 	return s.movieRepository.HasMovie(movieId)
 }
 
-func (s *movieService) Add(movie request_model.AddMovie, actors []db_model.MovieActor) (string, error) {
-	movieId, err := s.movieRepository.Add(movie, actors)
+func (s *movieService) Add(movie *request_model.AddMovie, actors []db_model.MovieActor) (string, error) {
+	movieId := uuid.New().String()
+	dbModel, err := db_model.NewMovieModel(movieId, movie.Title, movie.ReleaseYear, movie.Genres, actors)
+
+	if err != nil {
+		return "", err
+	}
+
+	err = s.movieRepository.Add(dbModel, actors)
 	if err != nil {
 		log.Printf("ERROR: unable save movie %v", err.Error())
 		return "", err
@@ -65,7 +73,7 @@ func (s *movieService) Add(movie request_model.AddMovie, actors []db_model.Movie
 	return movieId, nil
 }
 
-func (s *movieService) GetAll(searchQuery string) ([]response_model.Movie, error) {
+func (s *movieService) GetAll(searchQuery string) (*[]response_model.Movie, error) {
 	movies, err := s.movieRepository.GetAll(searchQuery)
 	if err != nil {
 		return nil, err
@@ -80,7 +88,7 @@ func (s *movieService) GetByGenre(genreName string) ([]response_model.Movie, err
 		return nil, err
 	}
 
-	return movies, nil
+	return *movies, nil
 }
 
 func (s *movieService) UpdateMovieScore(movieId string) error {
@@ -90,16 +98,16 @@ func (s *movieService) UpdateMovieScore(movieId string) error {
 		return err
 	}
 
-	if len(reviews) == 0 {
+	if len(*reviews) == 0 {
 		return nil
 	}
 
 	totalScore := 0
-	for _, r := range reviews {
+	for _, r := range *reviews {
 		totalScore += r.Rating
 	}
 
-	avgScore := float64(totalScore) / float64(len(reviews))
+	avgScore := float64(totalScore) / float64(len(*reviews))
 	score := math.Round(avgScore*100) / 100
 
 	err = s.movieRepository.UpdateScore(movieId, score)
