@@ -18,8 +18,8 @@ type ActorsHandler struct {
 	actorRepository repositories.ActorRepository
 }
 
-func New(actorRepository repositories.ActorRepository) ActorsHandler {
-	return ActorsHandler{
+func New(actorRepository repositories.ActorRepository) *ActorsHandler {
+	return &ActorsHandler{
 		actorRepository: actorRepository,
 	}
 }

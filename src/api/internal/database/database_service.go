@@ -5,8 +5,8 @@ import (
 	"errors"
 	"fmt"
 	"log"
-	"os"
 
+	"github.com/abuzaforfagun/dynamodb-movie-book/api/internal/configuration"
 	"github.com/abuzaforfagun/dynamodb-movie-book/api/internal/infrastructure"
 	"github.com/aws/aws-sdk-go-v2/aws"
 	"github.com/aws/aws-sdk-go-v2/service/dynamodb"
@@ -22,44 +22,43 @@ type DatabaseService struct {
 	TableName string
 }
 
-func New() (*DatabaseService, error) {
-	tableName := os.Getenv("TABLE_NAME")
-	if tableName == "" {
+func New(config *configuration.DatabaseConfig) (*DatabaseService, error) {
+	if config.TableName == "" {
 		log.Println("failed to load the table name")
 	}
 
-	awsConfig := infrastructure.NewAWSConfig()
+	awsConfig := infrastructure.NewAWSConfig(config)
 	svc := infrastructure.NewDynamoDBClient(awsConfig)
 
 	ctx := context.TODO()
-	isTableExists, err := tableExists(ctx, svc, tableName)
+	isTableExists, err := tableExists(ctx, svc, config.TableName)
 	if err != nil {
 		log.Printf("failed in table exists %x \n", err)
 		return nil, err
 	}
 
 	if !isTableExists {
-		err = createTable(ctx, svc, tableName)
+		err = createTable(ctx, svc, config.TableName)
 		if err != nil {
 			return nil, err
 		}
 	}
-	isGsiExists, err := existGsi(ctx, svc, tableName, GSI_NAME)
+	isGsiExists, err := existGsi(ctx, svc, config.TableName, GSI_NAME)
 	if err != nil {
 		log.Fatalf("failed to check existing gsi: %v", err)
 		return nil, err
 	}
 	if isGsiExists {
-		return new(tableName, svc), nil
+		return new(config.TableName, svc), nil
 	}
 
-	err = createGsi(svc, tableName, GSI_NAME, GSI_PK, GSI_SK)
+	err = createGsi(svc, config.TableName, GSI_NAME, GSI_PK, GSI_SK)
 	if err != nil {
 		log.Fatalf("failed to create gsi: %v", err)
 		return nil, err
 	}
 
-	return new(tableName, svc), nil
+	return new(config.TableName, svc), nil
 }
 
 func new(tableName string, client *dynamodb.Client) *DatabaseService {

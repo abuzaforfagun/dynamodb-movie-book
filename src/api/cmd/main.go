@@ -5,6 +5,7 @@ import (
 	"os"
 
 	_ "github.com/abuzaforfagun/dynamodb-movie-book/api/docs"
+	"github.com/abuzaforfagun/dynamodb-movie-book/api/internal/configuration"
 	"github.com/abuzaforfagun/dynamodb-movie-book/api/internal/database"
 	actors_handler "github.com/abuzaforfagun/dynamodb-movie-book/api/internal/handlers/actors"
 	movies_handler "github.com/abuzaforfagun/dynamodb-movie-book/api/internal/handlers/movies"
@@ -13,6 +14,7 @@ import (
 	"github.com/abuzaforfagun/dynamodb-movie-book/api/internal/infrastructure"
 	"github.com/abuzaforfagun/dynamodb-movie-book/api/internal/initializers"
 	"github.com/abuzaforfagun/dynamodb-movie-book/api/internal/repositories"
+	"github.com/abuzaforfagun/dynamodb-movie-book/api/internal/routers"
 	"github.com/abuzaforfagun/dynamodb-movie-book/api/internal/services"
 	"github.com/gin-gonic/gin"
 	swaggerFiles "github.com/swaggo/files"
@@ -31,7 +33,21 @@ import (
 // @host      localhost:5001
 func main() {
 	initializers.LoadEnvVariables()
-	dbService, err := database.New()
+	awsRegion := os.Getenv("AWS_REGION")
+	awsSecretKey := os.Getenv("AWS_ACCESS_KEY_ID")
+	awsAccessKey := os.Getenv("AWS_SECRET_ACCESS_KEY")
+	awsSessionToken := os.Getenv("AWS_SESSION_TOKEN")
+	awsTableName := os.Getenv("TABLE_NAME")
+
+	dbConfig := configuration.DatabaseConfig{
+		TableName:    awsTableName,
+		AccessKey:    awsAccessKey,
+		SecretKey:    awsSecretKey,
+		Region:       awsRegion,
+		SessionToken: awsSessionToken,
+	}
+
+	dbService, err := database.New(&dbConfig)
 	if err != nil {
 		log.Fatalf("failed to connect database %x", err)
 	}
@@ -54,26 +70,16 @@ func main() {
 	router.GET("/swagger/*any", ginSwagger.WrapHandler(swaggerFiles.Handler))
 
 	movieHandler := movies_handler.New(movieService, actorRepository)
-	router.GET("/movies", movieHandler.GetAllMovies)
-	router.POST("/movies", movieHandler.AddMovie)
-	router.POST("/movies/:id/photos", movieHandler.AddPictures)
-	router.GET("/movies/:id", movieHandler.GetMovieDetails)
-	router.DELETE("/movies/:id", movieHandler.DeleteMovie)
-	router.GET("/movies/genre/:genre", movieHandler.GetMoviesByGenre)
+	routers.SetupMovies(router, movieHandler)
 
 	reviewHandler := reviews_handler.New(reviewService, movieService)
-	router.POST("/movies/:id/reviews", reviewHandler.AddReview)
-	router.DELETE("/movies:id/reviews:review_id", reviewHandler.DeleteReview)
+	routers.SetupReviewes(router, reviewHandler)
 
 	userHandler := users_handler.New(userService, reviewService)
-	router.GET("/users/:id", userHandler.GetUser)
-	router.POST("/users/", userHandler.AddUser)
-	router.PUT("/users/:id", userHandler.UpdateUser)
+	routers.SetupUsers(router, userHandler)
 
 	actorHandler := actors_handler.New(actorRepository)
-	router.POST("/actors", actorHandler.Add)
-	router.GET("/actors/:id", actorHandler.GetDetails)
-	router.POST("/actors/:id/photos", actorHandler.AddPictures)
+	routers.SetupActors(router, actorHandler)
 
 	err = router.Run(":5001")
 

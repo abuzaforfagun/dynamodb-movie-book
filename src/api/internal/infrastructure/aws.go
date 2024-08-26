@@ -2,29 +2,23 @@ package infrastructure
 
 import (
 	"context"
-	"os"
 
+	"github.com/abuzaforfagun/dynamodb-movie-book/api/internal/configuration"
 	"github.com/aws/aws-sdk-go-v2/aws"
 	"github.com/aws/aws-sdk-go-v2/config"
 	"github.com/aws/aws-sdk-go-v2/credentials"
 	"github.com/aws/aws-sdk-go-v2/service/dynamodb"
 )
 
-func NewAWSConfig() *aws.Config {
-	// get config from environment variables
-	awsAccessKey := os.Getenv("AWS_ACCESS_KEY_ID")
-	awsSecretAccessKey := os.Getenv("AWS_SECRET_ACCESS_KEY")
-	awsRegion := os.Getenv("AWS_REGION")
-	awsSession := os.Getenv("AWS_SESSION_TOKEN")
-	// setup aws credential provider
+func NewAWSConfig(awsConfig *configuration.DatabaseConfig) *aws.Config {
 	credProvider := aws.NewCredentialsCache(credentials.NewStaticCredentialsProvider(
-		awsAccessKey,
-		awsSecretAccessKey,
-		awsSession,
+		awsConfig.AccessKey,
+		awsConfig.SecretKey,
+		awsConfig.SessionToken,
 	))
 	conf, err := config.LoadDefaultConfig(
 		context.Background(),
-		config.WithRegion(awsRegion),
+		config.WithRegion(awsConfig.Region),
 		config.WithCredentialsProvider(credProvider),
 	)
 	if err != nil {
