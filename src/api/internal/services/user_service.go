@@ -49,7 +49,7 @@ func (s *userService) AddUser(userModel request_model.AddUser) (string, error) {
 
 	if isExistingUser {
 		err := &custom_errors.BadRequestError{
-			Message: "User is already exists",
+			Message: "User already exists",
 		}
 		return "", err
 	}
@@ -66,11 +66,11 @@ func (s *userService) GetInfo(userId string) (db_model.UserInfo, error) {
 }
 
 func (s *userService) Update(userId string, updateModel request_model.UpdateUser) error {
-	isValidUser, err := s.HasUser(userId)
+	isExistingUser, err := s.HasUser(userId)
 	if err != nil {
 		return err
 	}
-	if !isValidUser {
+	if !isExistingUser {
 		err := &custom_errors.BadRequestError{
 			Message: "User does not exist",
 		}

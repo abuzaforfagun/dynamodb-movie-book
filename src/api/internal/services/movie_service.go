@@ -26,20 +26,17 @@ type MovieService interface {
 
 type movieService struct {
 	movieRepository        repositories.MovieRepository
-	actorRepository        repositories.ActorRepository
 	reviewService          ReviewService
 	rabbitMq               infrastructure.RabbitMQ
 	movieAddedExchangeName string
 }
 
 func NewMovieService(movieRepository repositories.MovieRepository,
-	actorRepository repositories.ActorRepository,
 	reviewService ReviewService,
 	rabbitMq infrastructure.RabbitMQ,
 	movieAddedExchangeName string) MovieService {
 	return &movieService{
 		movieRepository:        movieRepository,
-		actorRepository:        actorRepository,
 		reviewService:          reviewService,
 		movieAddedExchangeName: movieAddedExchangeName,
 		rabbitMq:               rabbitMq,
@@ -91,6 +88,8 @@ func (s *movieService) GetByGenre(genreName string) (*[]response_model.Movie, er
 	return movies, nil
 }
 
+// Ignoring integration test of UpdateMovieScore,
+// because we are going to move the feature to event consumers
 func (s *movieService) UpdateMovieScore(movieId string) error {
 	reviews, err := s.reviewService.GetAll(movieId)
 	if err != nil {
