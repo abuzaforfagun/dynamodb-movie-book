@@ -85,7 +85,7 @@ func (h *MoviesHandler) GetMovieDetails(c *gin.Context) {
 // @Param genre path string true "Genre name"
 // @Produce json
 // @Success 200 {array} response_model.Movie
-// @Router /movies/genre/{genre} [get]
+// @Router /movies/genres/{genre} [get]
 func (h *MoviesHandler) GetMoviesByGenre(c *gin.Context) {
 	movieGenre := c.Param("genre")
 	if movieGenre == "" {
@@ -101,7 +101,7 @@ func (h *MoviesHandler) GetMoviesByGenre(c *gin.Context) {
 		err := &custom_errors.BadRequestError{
 			Message: "Unsupported genre",
 		}
-		c.JSON(http.StatusBadRequest, err)
+		c.JSON(http.StatusNotFound, err)
 		return
 	}
 
@@ -129,9 +129,16 @@ func (h *MoviesHandler) AddMovie(c *gin.Context) {
 	err := c.BindJSON(&requestModel)
 
 	if err != nil {
-		log.Printf("WARNING: unable to bind %v", err.Error())
 		err := core_models.ErrorMessage{
 			Error: "Please check your body payload",
+		}
+		c.JSON(http.StatusBadRequest, err)
+		return
+	}
+
+	if requestModel.Title == "" {
+		err := core_models.ErrorMessage{
+			Error: "Movie title should not be empty",
 		}
 		c.JSON(http.StatusBadRequest, err)
 		return
@@ -197,11 +204,7 @@ func (h *MoviesHandler) AddMovie(c *gin.Context) {
 	movieId, err := h.movieService.Add(&requestModel, movieActors)
 
 	if err != nil {
-		if err, ok := err.(*custom_errors.BadRequestError); ok {
-			c.JSON(http.StatusBadRequest, err)
-			return
-		}
-		c.JSON(http.StatusBadRequest, gin.H{})
+		c.JSON(http.StatusInternalServerError, gin.H{})
 		return
 	}
 	response := response_model.CreateMovieResponse{
@@ -243,7 +246,7 @@ func (h *MoviesHandler) DeleteMovie(c *gin.Context) {
 	if err != nil {
 		log.Println("Unable to delete movie", err)
 		if err, ok := err.(*custom_errors.BadRequestError); ok {
-			c.JSON(http.StatusBadGateway, err)
+			c.JSON(http.StatusBadRequest, err)
 			return
 		}
 		c.JSON(http.StatusInternalServerError, gin.H{})

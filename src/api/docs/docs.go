@@ -228,7 +228,7 @@ const docTemplate = `{
                 }
             }
         },
-        "/movies/genre/{genre}": {
+        "/movies/genres/{genre}": {
             "get": {
                 "description": "Get movies by genre",
                 "produces": [
@@ -374,8 +374,8 @@ const docTemplate = `{
                     }
                 ],
                 "responses": {
-                    "201": {
-                        "description": "Created"
+                    "202": {
+                        "description": "Accepted"
                     }
                 }
             }

@@ -33,7 +33,7 @@ func New(config *configuration.DatabaseConfig) (*DatabaseService, error) {
 	ctx := context.TODO()
 	isTableExists, err := tableExists(ctx, svc, config.TableName)
 	if err != nil {
-		log.Printf("failed in table exists %x \n", err)
+		log.Printf("failed in table exists %v \n", err)
 		return nil, err
 	}
 

@@ -5,17 +5,21 @@ import (
 	"fmt"
 	"log"
 
+	"github.com/abuzaforfagun/dynamodb-movie-book/api/internal/database"
 	db_model "github.com/abuzaforfagun/dynamodb-movie-book/api/internal/models/db"
 	"github.com/aws/aws-sdk-go-v2/aws"
 	"github.com/aws/aws-sdk-go-v2/feature/dynamodb/attributevalue"
 	"github.com/aws/aws-sdk-go-v2/feature/dynamodb/expression"
 	"github.com/aws/aws-sdk-go-v2/service/dynamodb"
+	"github.com/aws/aws-sdk-go-v2/service/dynamodb/types"
 )
 
 type UserRepository interface {
 	Add(user *db_model.AddUser) error
 	GetInfo(userId string) (db_model.UserInfo, error)
 	Update(userId string, name string) error
+	HasUser(userId string) (bool, error)
+	HasUserByEmail(email string) (bool, error)
 }
 
 type userRepository struct {
@@ -71,4 +75,33 @@ func (r *userRepository) Update(userId string, name string) error {
 	updateBuilder := expression.Set(expression.Name("Name"), expression.Value(name))
 
 	return r.UpdateByPKSK(context.TODO(), pk, sk, updateBuilder)
+}
+
+func (r *userRepository) HasUser(userId string) (bool, error) {
+	PK := "USER#" + userId
+	SK := "USER#" + userId
+	return r.HasItem(context.TODO(), PK, SK)
+}
+
+func (r *userRepository) HasUserByEmail(email string) (bool, error) {
+	partitionKeyValue := "USER"
+	sortKeyContainsValue := "USER#" + email
+
+	queryInput := &dynamodb.QueryInput{
+		TableName:              aws.String(r.tableName),
+		IndexName:              aws.String(database.GSI_NAME),
+		KeyConditionExpression: aws.String(database.GSI_PK + " = :pk AND " + database.GSI_SK + "= :skPrefix"),
+		ExpressionAttributeValues: map[string]types.AttributeValue{
+			":pk":       &types.AttributeValueMemberS{Value: partitionKeyValue},
+			":skPrefix": &types.AttributeValueMemberS{Value: sortKeyContainsValue},
+		},
+	}
+	result, err := r.client.Query(context.TODO(), queryInput)
+
+	if err != nil {
+		log.Panicln("ERROR: unable to retrieve data", err)
+		return false, err
+	}
+
+	return len(result.Items) > 0, nil
 }

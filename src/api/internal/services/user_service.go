@@ -2,6 +2,7 @@ package services
 
 import (
 	"github.com/abuzaforfagun/dynamodb-movie-book/api/internal/infrastructure"
+	"github.com/abuzaforfagun/dynamodb-movie-book/api/internal/models/custom_errors"
 	db_model "github.com/abuzaforfagun/dynamodb-movie-book/api/internal/models/db"
 	request_model "github.com/abuzaforfagun/dynamodb-movie-book/api/internal/models/requests"
 	"github.com/abuzaforfagun/dynamodb-movie-book/api/internal/repositories"
@@ -13,6 +14,7 @@ type UserService interface {
 	AddUser(userModel request_model.AddUser) (string, error)
 	GetInfo(userId string) (db_model.UserInfo, error)
 	Update(userId string, updateModel request_model.UpdateUser) error
+	HasUser(userId string) (bool, error)
 }
 
 type userService struct {
@@ -40,6 +42,18 @@ func (s *userService) AddUser(userModel request_model.AddUser) (string, error) {
 		return "", err
 	}
 
+	isExistingUser, err := s.userRepository.HasUserByEmail(userModel.Email)
+	if err != nil {
+		return "", err
+	}
+
+	if isExistingUser {
+		err := &custom_errors.BadRequestError{
+			Message: "User is already exists",
+		}
+		return "", err
+	}
+
 	err = s.userRepository.Add(dbModel)
 	if err != nil {
 		return "", err
@@ -52,7 +66,18 @@ func (s *userService) GetInfo(userId string) (db_model.UserInfo, error) {
 }
 
 func (s *userService) Update(userId string, updateModel request_model.UpdateUser) error {
-	err := s.userRepository.Update(userId, updateModel.Name)
+	isValidUser, err := s.HasUser(userId)
+	if err != nil {
+		return err
+	}
+	if !isValidUser {
+		err := &custom_errors.BadRequestError{
+			Message: "User does not exist",
+		}
+		return err
+	}
+
+	err = s.userRepository.Update(userId, updateModel.Name)
 	if err != nil {
 		return err
 	}
@@ -60,4 +85,8 @@ func (s *userService) Update(userId string, updateModel request_model.UpdateUser
 	userUpdatedEvent := events.NewUserUpdated(userId)
 	err = s.rabbitMq.PublishMessage(userUpdatedEvent, s.userUpdatedExchangeName)
 	return err
+}
+
+func (s *userService) HasUser(userId string) (bool, error) {
+	return s.userRepository.HasUser(userId)
 }

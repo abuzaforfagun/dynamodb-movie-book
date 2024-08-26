@@ -35,7 +35,7 @@ func TestToString(t *testing.T) {
 		roleName, err := model.ToString()
 
 		if err == nil {
-			t.Error("Got '%s', expected error", roleName)
+			t.Errorf("Got '%s', expected error", roleName)
 		}
 	})
 }

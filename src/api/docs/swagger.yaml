@@ -434,12 +434,12 @@ paths:
       produces:
       - application/json
       responses:
-        "201":
-          description: Created
+        "202":
+          description: Accepted
       summary: Add movie review
       tags:
       - reviews
-  /movies/genre/{genre}:
+  /movies/genres/{genre}:
     get:
       description: Get movies by genre
       parameters:

@@ -12,15 +12,12 @@ import (
 )
 
 type UserHandler struct {
-	userService   services.UserService
-	reviewService services.ReviewService
+	userService services.UserService
 }
 
-func New(userService services.UserService,
-	reviewService services.ReviewService) *UserHandler {
+func New(userService services.UserService) *UserHandler {
 	return &UserHandler{
-		userService:   userService,
-		reviewService: reviewService,
+		userService: userService,
 	}
 }
 
@@ -44,7 +41,20 @@ func (h *UserHandler) AddUser(c *gin.Context) {
 		return
 	}
 
+	if requestModel.Email == "" || requestModel.Name == "" {
+		err := &custom_errors.BadRequestError{
+			Message: "Please verify request payload",
+		}
+		c.JSON(http.StatusBadRequest, err)
+		return
+	}
+
 	userId, err := h.userService.AddUser(requestModel)
+	if err, ok := err.(*custom_errors.BadRequestError); ok {
+		c.JSON(http.StatusBadRequest, err)
+		return
+	}
+
 	if err != nil {
 		log.Printf("ERROR: unable to store new user %x", err)
 		c.JSON(http.StatusInternalServerError, gin.H{})
@@ -96,6 +106,10 @@ func (h *UserHandler) UpdateUser(c *gin.Context) {
 
 	err = h.userService.Update(userId, requestModel)
 	if err != nil {
+		if err, ok := err.(*custom_errors.BadRequestError); ok {
+			c.JSON(http.StatusBadRequest, err)
+			return
+		}
 		log.Printf("ERROR: Unable to update user information. Error: %v\n", err)
 		c.JSON(http.StatusInternalServerError, gin.H{})
 		return

@@ -27,7 +27,7 @@ func NewAddUser(userId string, name string, email string) (*AddUser, error) {
 		PK:        "USER#" + userId,
 		SK:        "USER#" + userId,
 		GSI_PK:    "USER",
-		GSI_SK:    "USER#" + userId,
+		GSI_SK:    "USER#" + email,
 		Id:        userId,
 		Name:      name,
 		Email:     email,

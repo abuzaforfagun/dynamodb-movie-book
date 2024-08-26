@@ -14,7 +14,7 @@ func SetupMovies(router *gin.Engine, movieHandler *movies_handler.MoviesHandler)
 	router.POST("/movies/:id/photos", movieHandler.AddPictures)
 	router.GET("/movies/:id", movieHandler.GetMovieDetails)
 	router.DELETE("/movies/:id", movieHandler.DeleteMovie)
-	router.GET("/movies/genre/:genre", movieHandler.GetMoviesByGenre)
+	router.GET("/movies/genres/:genre", movieHandler.GetMoviesByGenre)
 }
 
 func SetupReviewes(router *gin.Engine, reviewHandler *reviews_handler.ReviewHandler) {

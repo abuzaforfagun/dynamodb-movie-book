@@ -47,11 +47,19 @@ func (ah *ActorsHandler) GetDetails(c *gin.Context) {
 func (h *ActorsHandler) Add(c *gin.Context) {
 
 	name := c.PostForm("name")
+	if name == "" {
+		err := &custom_errors.BadRequestError{
+			Message: "Please make sure, name is not empty",
+		}
+		c.JSON(http.StatusBadRequest, err)
+		return
+	}
+
 	dateOfBirthStr := c.PostForm("date_of_birth")
 
 	dateOfBirth, err := time.Parse("2006-01-02", dateOfBirthStr)
 
-	if name == "" || err != nil {
+	if err != nil {
 		err := &custom_errors.BadRequestError{
 			Message: "Please verify date of birth",
 		}
@@ -60,7 +68,7 @@ func (h *ActorsHandler) Add(c *gin.Context) {
 	}
 
 	actorRequest := &request_model.AddActor{
-		Name:        c.PostForm("name"),
+		Name:        name,
 		DateOfBirth: dateOfBirth,
 	}
 

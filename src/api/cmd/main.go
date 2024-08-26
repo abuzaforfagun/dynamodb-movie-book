@@ -32,7 +32,7 @@ import (
 
 // @host      localhost:5001
 func main() {
-	initializers.LoadEnvVariables()
+	initializers.LoadEnvVariables("../.env")
 	awsRegion := os.Getenv("AWS_REGION")
 	awsSecretKey := os.Getenv("AWS_ACCESS_KEY_ID")
 	awsAccessKey := os.Getenv("AWS_SECRET_ACCESS_KEY")
@@ -49,7 +49,7 @@ func main() {
 
 	dbService, err := database.New(&dbConfig)
 	if err != nil {
-		log.Fatalf("failed to connect database %x", err)
+		log.Fatalf("failed to connect database %v", err)
 	}
 
 	rabbitMqUri := os.Getenv("AMQP_SERVER_URL")
@@ -72,10 +72,10 @@ func main() {
 	movieHandler := movies_handler.New(movieService, actorRepository)
 	routers.SetupMovies(router, movieHandler)
 
-	reviewHandler := reviews_handler.New(reviewService, movieService)
+	reviewHandler := reviews_handler.New(reviewService, movieService, userService)
 	routers.SetupReviewes(router, reviewHandler)
 
-	userHandler := users_handler.New(userService, reviewService)
+	userHandler := users_handler.New(userService)
 	routers.SetupUsers(router, userHandler)
 
 	actorHandler := actors_handler.New(actorRepository)
