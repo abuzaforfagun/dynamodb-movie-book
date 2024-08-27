@@ -90,18 +90,20 @@ func TestDelete(t *testing.T) {
 	}
 
 	for _, test := range tests {
-		err := service.Delete(test.movieId)
+		t.Run(test.testName, func(t *testing.T) {
+			err := service.Delete(test.movieId)
 
-		if test.isUserFault {
-			_, isBadRequest := err.(*custom_errors.BadRequestError)
-			if isBadRequest == false {
-				t.Errorf("Should get BadRequestError")
+			if test.isUserFault {
+				_, isBadRequest := err.(*custom_errors.BadRequestError)
+				if isBadRequest == false {
+					t.Errorf("Should get BadRequestError")
+				}
+			} else {
+				if err != nil {
+					t.Error("Should not get error")
+				}
 			}
-		} else {
-			if err != nil {
-				t.Error("Should not get error")
-			}
-		}
+		})
 	}
 
 }

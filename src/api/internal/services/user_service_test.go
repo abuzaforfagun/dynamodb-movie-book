@@ -106,20 +106,22 @@ func TestUpdate(t *testing.T) {
 	}
 
 	for _, test := range tests {
-		updateModel := request_model.UpdateUser{
-			Name: test.userName,
-		}
-		err := userService.Update(test.userId, updateModel)
+		t.Run(test.testName, func(t *testing.T) {
+			updateModel := request_model.UpdateUser{
+				Name: test.userName,
+			}
+			err := userService.Update(test.userId, updateModel)
 
-		if test.shouldReturnErr {
-			if err == nil {
-				t.Error("Should return error")
+			if test.shouldReturnErr {
+				if err == nil {
+					t.Error("Should return error")
+				}
+			} else {
+				if err != nil {
+					t.Error("Should not return error")
+				}
 			}
-		} else {
-			if err != nil {
-				t.Error("Should not return error")
-			}
-		}
+		})
 	}
 
 }

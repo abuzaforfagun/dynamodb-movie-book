@@ -64,7 +64,7 @@ func main() {
 
 	userService := services.NewUserService(userRepository, rabbitMq, userUpdatedExchageName)
 	reviewService := services.NewReviewService(reviewRepository, userService)
-	movieService := services.NewMovieService(movieRepository, actorRepository, reviewService, rabbitMq, movieAddedExchageName)
+	movieService := services.NewMovieService(movieRepository, reviewService, rabbitMq, movieAddedExchageName)
 
 	router := gin.Default()
 	router.GET("/swagger/*any", ginSwagger.WrapHandler(swaggerFiles.Handler))
