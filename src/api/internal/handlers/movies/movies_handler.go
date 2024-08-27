@@ -244,7 +244,6 @@ func (h *MoviesHandler) DeleteMovie(c *gin.Context) {
 
 	err := h.movieService.Delete(movieId)
 	if err != nil {
-		log.Println("Unable to delete movie", err)
 		if err, ok := err.(*custom_errors.BadRequestError); ok {
 			c.JSON(http.StatusBadRequest, err)
 			return

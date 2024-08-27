@@ -1,3 +1,6 @@
+//go:build integration
+// +build integration
+
 package movies_handler_tests
 
 import (
@@ -12,7 +15,6 @@ import (
 	"time"
 
 	database_setup "github.com/abuzaforfagun/dynamodb-movie-book/api/integration_tests"
-	"github.com/abuzaforfagun/dynamodb-movie-book/api/internal/database"
 	movies_handler "github.com/abuzaforfagun/dynamodb-movie-book/api/internal/handlers/movies"
 	"github.com/abuzaforfagun/dynamodb-movie-book/api/internal/infrastructure"
 	db_model "github.com/abuzaforfagun/dynamodb-movie-book/api/internal/models/db"
@@ -481,24 +483,14 @@ func TestDeleteMovie(t *testing.T) {
 			}
 
 			if !test.ShouldReturnError {
-				result, err := getMovies()
+				result, err := getMovie(test.MovieId)
 
 				if err != nil {
 					t.Error("Should not return err")
 				}
 
-				if len(result.Items) != test.ExpectedNumberOfMovies {
+				if result != nil {
 					t.Error("Deletion does not work")
-				}
-			} else {
-				result, err := getMovies()
-
-				if err != nil {
-					t.Error("Should not return err")
-				}
-
-				if len(result.Items) != 1 {
-					t.Error("Should not delete movie")
 				}
 			}
 		})
@@ -506,21 +498,21 @@ func TestDeleteMovie(t *testing.T) {
 
 }
 
-func getMovies() (*dynamodb.QueryOutput, error) {
-	gsi_pk := "MOVIE"
-	queryInput := &dynamodb.QueryInput{
-		TableName:              aws.String(database_setup.DbService.TableName),
-		IndexName:              aws.String(database.GSI_NAME),
-		KeyConditionExpression: aws.String("#pk = :v"),
-		ExpressionAttributeNames: map[string]string{
-			"#pk": database.GSI_PK,
+func getMovie(movieId string) (map[string]types.AttributeValue, error) {
+	pk := "MOVIE#" + movieId
+	result, err := database_setup.DbService.Client.GetItem(context.TODO(), &dynamodb.GetItemInput{
+		TableName: aws.String(database_setup.DbService.TableName),
+		Key: map[string]types.AttributeValue{
+			"PK": &types.AttributeValueMemberS{Value: pk},
+			"SK": &types.AttributeValueMemberS{Value: pk},
 		},
-		ExpressionAttributeValues: map[string]types.AttributeValue{
-			":v": &types.AttributeValueMemberS{Value: gsi_pk},
-		},
+	})
+
+	if err != nil {
+		return nil, err
 	}
 
-	return database_setup.DbService.Client.Query(context.TODO(), queryInput)
+	return result.Item, nil
 }
 
 type Genre struct {

@@ -61,5 +61,5 @@ func AddItem(item interface{}) error {
 	_, err = DbService.Client.PutItem(context.TODO(), &dynamodb.PutItemInput{
 		TableName: aws.String(DbService.TableName), Item: av,
 	})
-	return nil
+	return err
 }

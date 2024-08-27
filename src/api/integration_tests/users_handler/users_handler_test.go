@@ -1,3 +1,6 @@
+//go:build integration
+// +build integration
+
 package users_handler_test
 
 import (

@@ -49,10 +49,11 @@ func TestNewAddUser(t *testing.T) {
 
 	t.Run("Should generate correct GSI_SK", func(t *testing.T) {
 		userId := uuid.NewString()
+		email := "hello@email.com"
 
-		model, _ := NewAddUser(userId, "", "")
+		model, _ := NewAddUser(userId, "", email)
 
-		expectedResult := "USER#" + userId
+		expectedResult := "USER#" + email
 		if model.GSI_SK != expectedResult {
 			t.Errorf("Got '%s', expected '%s'", model.GSI_SK, expectedResult)
 		}

@@ -3,6 +3,7 @@ package services
 import (
 	"log"
 	"math"
+	"strings"
 
 	"github.com/abuzaforfagun/dynamodb-movie-book/api/internal/infrastructure"
 	"github.com/abuzaforfagun/dynamodb-movie-book/api/internal/models/custom_errors"
@@ -80,7 +81,7 @@ func (s *movieService) GetAll(searchQuery string) (*[]response_model.Movie, erro
 }
 
 func (s *movieService) GetByGenre(genreName string) (*[]response_model.Movie, error) {
-	movies, err := s.movieRepository.GetByGenre(genreName)
+	movies, err := s.movieRepository.GetByGenre(strings.ToLower(genreName))
 	if err != nil {
 		return nil, err
 	}
