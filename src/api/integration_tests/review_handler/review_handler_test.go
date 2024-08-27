@@ -13,6 +13,7 @@ import (
 	"testing"
 
 	database_setup "github.com/abuzaforfagun/dynamodb-movie-book/api/integration_tests"
+	"github.com/abuzaforfagun/dynamodb-movie-book/api/integration_tests/models"
 	reviews_handler "github.com/abuzaforfagun/dynamodb-movie-book/api/internal/handlers/reviews"
 	"github.com/abuzaforfagun/dynamodb-movie-book/api/internal/infrastructure"
 	db_model "github.com/abuzaforfagun/dynamodb-movie-book/api/internal/models/db"
@@ -37,26 +38,42 @@ func TestMain(m *testing.M) {
 
 	// Tear down the test database
 	database_setup.TearDownTestDatabase()
+	mockServer.Close()
 
 	// Exit with the test result code
 	os.Exit(code)
 }
 
+var (
+	userId     string = uuid.NewString()
+	mockServer *httptest.Server
+)
+
 func newReviewHandler() *reviews_handler.ReviewHandler {
 	movieRepository := repositories.NewMovieRepository(database_setup.DbService.Client, database_setup.DbService.TableName)
 	reviewRepository := repositories.NewReviewRepository(database_setup.DbService.Client, database_setup.DbService.TableName)
-	userRepository := repositories.NewUserRepository(database_setup.DbService.Client, database_setup.DbService.TableName)
 
 	serverUri := os.Getenv("AMQP_SERVER_URL")
-	userUpdatedExchangeName := os.Getenv("EXCHANGE_NAME_USER_UPDATED")
 	movieAddedExchangeName := os.Getenv("EXCHANGE_NAME_MOVIE_ADDED")
 
 	rabbitMq := infrastructure.NewRabbitMQ(serverUri)
-	userService := services.NewUserService(userRepository, rabbitMq, userUpdatedExchangeName)
+
+	mockServer = httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		if r.URL.Path == "/"+userId+"/info" {
+			w.WriteHeader(http.StatusOK)
+			w.Write([]byte(`{"name": "Jack"}`))
+		} else {
+			w.WriteHeader(http.StatusNotFound)
+		}
+	}))
+
+	httpClient := &http.Client{}
+	userService := services.NewUserService(httpClient, mockServer.URL)
+
 	reviewService := services.NewReviewService(reviewRepository, userService)
 	moviesService := services.NewMovieService(movieRepository, reviewService, rabbitMq, movieAddedExchangeName)
 
-	return reviews_handler.New(reviewService, moviesService, userService)
+	return reviews_handler.New(reviewService, moviesService)
 }
 
 func TestAddReview(t *testing.T) {
@@ -69,8 +86,7 @@ func TestAddReview(t *testing.T) {
 	movie1, _ := db_model.NewMovieModel(movieId, "Movie 1", 2024, []string{"history"}, nil)
 	database_setup.AddItem(movie1)
 
-	userId := uuid.NewString()
-	user1, _ := db_model.NewAddUser(userId, "Jack", "jack@email.com")
+	user1 := models.NewAddUser(userId, "Jack", "jack@email.com")
 	database_setup.AddItem(user1)
 
 	router.POST("/movies/:id/reviews", handler.AddReview)

@@ -3,21 +3,32 @@ package services
 import (
 	"testing"
 
-	"github.com/abuzaforfagun/dynamodb-movie-book/api/internal/models/custom_errors"
-	db_model "github.com/abuzaforfagun/dynamodb-movie-book/api/internal/models/db"
-	request_model "github.com/abuzaforfagun/dynamodb-movie-book/api/internal/models/requests"
+	"github.com/abuzaforfagun/dynamodb-movie-book/user-api/internal/models/custom_errors"
+	"github.com/abuzaforfagun/dynamodb-movie-book/user-api/internal/models/db_model"
+	"github.com/abuzaforfagun/dynamodb-movie-book/user-api/internal/models/request_model"
+	"github.com/abuzaforfagun/dynamodb-movie-book/user-api/internal/models/response_model"
 )
 
 const ExistingEmail string = "existing@email.com"
 const ExistingUserId string = "e5a971e7-d1ae-448d-a19c-269694937e3a"
+
+type MockRabbitMQ struct{}
+
+func (m *MockRabbitMQ) PublishMessage(message interface{}, topicName string) error {
+	return nil
+}
+
+func (m *MockRabbitMQ) DeclareFanoutExchange(exchangename string) error {
+	return nil
+}
 
 type MockUserRepository struct{}
 
 func (m *MockUserRepository) Add(user *db_model.AddUser) error {
 	return nil
 }
-func (m *MockUserRepository) GetInfo(userId string) (db_model.UserInfo, error) {
-	return db_model.UserInfo{}, nil
+func (m *MockUserRepository) GetInfo(userId string) (*response_model.UserInfo, error) {
+	return nil, nil
 }
 func (m *MockUserRepository) Update(userId string, name string) error {
 	return nil

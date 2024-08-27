@@ -1,4 +1,4 @@
-package users_handler
+package handlers
 
 import (
 	"encoding/json"
@@ -7,9 +7,9 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/abuzaforfagun/dynamodb-movie-book/api/internal/models/custom_errors"
-	db_model "github.com/abuzaforfagun/dynamodb-movie-book/api/internal/models/db"
-	request_model "github.com/abuzaforfagun/dynamodb-movie-book/api/internal/models/requests"
+	"github.com/abuzaforfagun/dynamodb-movie-book/user-api/internal/models/custom_errors"
+	"github.com/abuzaforfagun/dynamodb-movie-book/user-api/internal/models/request_model"
+	"github.com/abuzaforfagun/dynamodb-movie-book/user-api/internal/models/response_model"
 	"github.com/gin-gonic/gin"
 	"github.com/google/uuid"
 )
@@ -29,8 +29,8 @@ func (m *MockUserService) AddUser(userModel request_model.AddUser) (string, erro
 	return uuid.NewString(), nil
 }
 
-func (m *MockUserService) GetInfo(userId string) (db_model.UserInfo, error) {
-	return db_model.UserInfo{}, nil
+func (m *MockUserService) GetInfo(userId string) (*response_model.UserInfo, error) {
+	return nil, nil
 }
 func (m *MockUserService) Update(userId string, updateModel request_model.UpdateUser) error {
 	if userId != existingUserId {
@@ -48,7 +48,7 @@ func (m *MockUserService) HasUser(userId string) (bool, error) {
 func TestAddUser(t *testing.T) {
 	userService := &MockUserService{}
 
-	handler := New(userService)
+	handler := NewUserHandler(userService)
 
 	router := gin.Default()
 	router.POST("/users", handler.AddUser)
@@ -109,7 +109,7 @@ func TestAddUser(t *testing.T) {
 func TestUpdateUser(t *testing.T) {
 	userService := &MockUserService{}
 
-	handler := New(userService)
+	handler := NewUserHandler(userService)
 
 	router := gin.Default()
 	router.PUT("/users/:id", handler.UpdateUser)

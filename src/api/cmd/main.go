@@ -2,6 +2,7 @@ package main
 
 import (
 	"log"
+	"net/http"
 	"os"
 
 	_ "github.com/abuzaforfagun/dynamodb-movie-book/api/docs"
@@ -10,7 +11,6 @@ import (
 	actors_handler "github.com/abuzaforfagun/dynamodb-movie-book/api/internal/handlers/actors"
 	movies_handler "github.com/abuzaforfagun/dynamodb-movie-book/api/internal/handlers/movies"
 	reviews_handler "github.com/abuzaforfagun/dynamodb-movie-book/api/internal/handlers/reviews"
-	users_handler "github.com/abuzaforfagun/dynamodb-movie-book/api/internal/handlers/users"
 	"github.com/abuzaforfagun/dynamodb-movie-book/api/internal/infrastructure"
 	"github.com/abuzaforfagun/dynamodb-movie-book/api/internal/initializers"
 	"github.com/abuzaforfagun/dynamodb-movie-book/api/internal/repositories"
@@ -60,12 +60,14 @@ func main() {
 	rabbitMq.DeclareFanoutExchange(movieAddedExchageName)
 	rabbitMq.DeclareFanoutExchange(userUpdatedExchageName)
 
-	userRepository := repositories.NewUserRepository(dbService.Client, dbService.TableName)
 	actorRepository := repositories.NewActorRepository(dbService.Client, dbService.TableName)
 	movieRepository := repositories.NewMovieRepository(dbService.Client, dbService.TableName)
 	reviewRepository := repositories.NewReviewRepository(dbService.Client, dbService.TableName)
 
-	userService := services.NewUserService(userRepository, rabbitMq, userUpdatedExchageName)
+	httpClient := &http.Client{}
+	userApiBaseAddress := os.Getenv("USER_API_BASE_ADDRESS")
+	userService := services.NewUserService(httpClient, userApiBaseAddress)
+
 	reviewService := services.NewReviewService(reviewRepository, userService)
 	movieService := services.NewMovieService(movieRepository, reviewService, rabbitMq, movieAddedExchageName)
 
@@ -75,11 +77,8 @@ func main() {
 	movieHandler := movies_handler.New(movieService, actorRepository)
 	routers.SetupMovies(router, movieHandler)
 
-	reviewHandler := reviews_handler.New(reviewService, movieService, userService)
+	reviewHandler := reviews_handler.New(reviewService, movieService)
 	routers.SetupReviewes(router, reviewHandler)
-
-	userHandler := users_handler.New(userService)
-	routers.SetupUsers(router, userHandler)
 
 	actorHandler := actors_handler.New(actorRepository)
 	routers.SetupActors(router, actorHandler)

@@ -3,6 +3,9 @@
 api:
 	cd src/api && swag init -g cmd/main.go && cd cmd && go run .
 
+user-api:
+	cd src/user-api && swag init -g cmd/main.go && cd cmd && go run .
+
 movie-event-processor:
 	cd src/movie-event-consumer/cmd && go run .
 	

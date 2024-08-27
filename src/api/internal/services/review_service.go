@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"log"
 
+	"github.com/abuzaforfagun/dynamodb-movie-book/api/internal/models/custom_errors"
 	db_model "github.com/abuzaforfagun/dynamodb-movie-book/api/internal/models/db"
 	request_model "github.com/abuzaforfagun/dynamodb-movie-book/api/internal/models/requests"
 	"github.com/abuzaforfagun/dynamodb-movie-book/api/internal/repositories"
@@ -32,6 +33,13 @@ func (s *reviewService) Add(movieId string, reviewRequest request_model.AddRevie
 	user, err := s.userService.GetInfo(reviewRequest.UserId)
 	if err != nil {
 		log.Printf("ERROR: unable to get user [UserId=%s] Error: %v\n", reviewRequest.UserId, err)
+		return err
+	}
+
+	if user == nil {
+		err = &custom_errors.BadRequestError{
+			Message: "Invalid user id",
+		}
 		return err
 	}
 

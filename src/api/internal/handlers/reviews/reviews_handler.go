@@ -13,17 +13,15 @@ import (
 type ReviewHandler struct {
 	reviewService services.ReviewService
 	movieService  services.MovieService
-	userService   services.UserService
 }
 
 func New(
 	reviewService services.ReviewService,
 	movieService services.MovieService,
-	userService services.UserService) *ReviewHandler {
+) *ReviewHandler {
 	return &ReviewHandler{
 		reviewService: reviewService,
 		movieService:  movieService,
-		userService:   userService,
 	}
 }
 
@@ -63,21 +61,6 @@ func (h *ReviewHandler) AddReview(c *gin.Context) {
 		return
 	}
 
-	isValidUser, err := h.userService.HasUser(reviewRequest.UserId)
-	if err != nil {
-		log.Println("Unable to check user is exist")
-		c.JSON(http.StatusInternalServerError, gin.H{})
-		return
-	}
-
-	if !isValidUser {
-		err := custom_errors.BadRequestError{
-			Message: "Invalid user id",
-		}
-		c.JSON(http.StatusBadRequest, err)
-		return
-	}
-
 	hasMovie, err := h.movieService.HasMovie(movieId)
 
 	if err != nil {
@@ -95,6 +78,11 @@ func (h *ReviewHandler) AddReview(c *gin.Context) {
 	}
 
 	err = h.reviewService.Add(movieId, reviewRequest)
+
+	if err, ok := err.(*custom_errors.BadRequestError); ok {
+		c.JSON(http.StatusBadRequest, err)
+		return
+	}
 
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{})

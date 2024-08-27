@@ -48,14 +48,20 @@ func newMovieHandler() *movies_handler.MoviesHandler {
 	actorRepository := repositories.NewActorRepository(database_setup.DbService.Client, database_setup.DbService.TableName)
 	movieRepository := repositories.NewMovieRepository(database_setup.DbService.Client, database_setup.DbService.TableName)
 	reviewRepository := repositories.NewReviewRepository(database_setup.DbService.Client, database_setup.DbService.TableName)
-	userRepository := repositories.NewUserRepository(database_setup.DbService.Client, database_setup.DbService.TableName)
 
 	serverUri := os.Getenv("AMQP_SERVER_URL")
-	userUpdatedExchangeName := os.Getenv("EXCHANGE_NAME_USER_UPDATED")
 	movieAddedExchangeName := os.Getenv("EXCHANGE_NAME_MOVIE_ADDED")
 
 	rabbitMq := infrastructure.NewRabbitMQ(serverUri)
-	userService := services.NewUserService(userRepository, rabbitMq, userUpdatedExchangeName)
+
+	mockServer := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		w.WriteHeader(http.StatusOK)
+		w.Write([]byte(`{"key": "value"}`))
+	}))
+	defer mockServer.Close()
+	httpClient := &http.Client{}
+	userService := services.NewUserService(httpClient, mockServer.URL)
+
 	reviewService := services.NewReviewService(reviewRepository, userService)
 	moviesService := services.NewMovieService(movieRepository, reviewService, rabbitMq, movieAddedExchangeName)
 	return movies_handler.New(moviesService, actorRepository)

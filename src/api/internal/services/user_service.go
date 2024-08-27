@@ -1,92 +1,65 @@
 package services
 
 import (
-	"github.com/abuzaforfagun/dynamodb-movie-book/api/internal/infrastructure"
-	"github.com/abuzaforfagun/dynamodb-movie-book/api/internal/models/custom_errors"
-	db_model "github.com/abuzaforfagun/dynamodb-movie-book/api/internal/models/db"
-	request_model "github.com/abuzaforfagun/dynamodb-movie-book/api/internal/models/requests"
-	"github.com/abuzaforfagun/dynamodb-movie-book/api/internal/repositories"
-	"github.com/abuzaforfagun/dynamodb-movie-book/events"
-	"github.com/google/uuid"
+	"encoding/json"
+	"io"
+	"log"
+	"net/http"
+
+	"github.com/abuzaforfagun/dynamodb-movie-book/api/internal/models/dto"
 )
 
 type UserService interface {
-	AddUser(userModel request_model.AddUser) (string, error)
-	GetInfo(userId string) (db_model.UserInfo, error)
-	Update(userId string, updateModel request_model.UpdateUser) error
-	HasUser(userId string) (bool, error)
+	GetInfo(userId string) (*dto.UserInfo, error)
 }
 
 type userService struct {
-	userRepository          repositories.UserRepository
-	rabbitMq                infrastructure.RabbitMQ
-	userUpdatedExchangeName string
+	client  *http.Client
+	userApi string
 }
 
 func NewUserService(
-	userRepository repositories.UserRepository,
-	rabbitMq infrastructure.RabbitMQ,
-	userUpdatedExchageName string) UserService {
+	client *http.Client,
+	userApi string) UserService {
 	return &userService{
-		userRepository:          userRepository,
-		rabbitMq:                rabbitMq,
-		userUpdatedExchangeName: userUpdatedExchageName,
+		client:  client,
+		userApi: userApi,
 	}
 }
 
-func (s *userService) AddUser(userModel request_model.AddUser) (string, error) {
-	userId := uuid.New().String()
-	dbModel, err := db_model.NewAddUser(userId, userModel.Name, userModel.Email)
-
+func (s *userService) GetInfo(userId string) (*dto.UserInfo, error) {
+	url := s.userApi + "/" + userId + "/info"
+	req, err := http.NewRequest("GET", url, nil)
 	if err != nil {
-		return "", err
+		log.Println(err)
+		return nil, err
 	}
 
-	isExistingUser, err := s.userRepository.HasUserByEmail(userModel.Email)
+	req.Header.Set("Content-Type", "application/json")
+
+	resp, err := s.client.Do(req)
 	if err != nil {
-		return "", err
+		log.Println(err)
+		return nil, err
+	}
+	defer resp.Body.Close()
+
+	if resp.StatusCode == http.StatusNotFound {
+		return nil, nil
 	}
 
-	if isExistingUser {
-		err := &custom_errors.BadRequestError{
-			Message: "User already exists",
-		}
-		return "", err
-	}
-
-	err = s.userRepository.Add(dbModel)
+	body, err := io.ReadAll(resp.Body)
 	if err != nil {
-		return "", err
+		log.Println(err)
+		return nil, err
 	}
-	return userId, nil
-}
+	var result *dto.UserInfo
 
-func (s *userService) GetInfo(userId string) (db_model.UserInfo, error) {
-	return s.userRepository.GetInfo(userId)
-}
-
-func (s *userService) Update(userId string, updateModel request_model.UpdateUser) error {
-	isExistingUser, err := s.HasUser(userId)
+	err = json.Unmarshal(body, &result)
 	if err != nil {
-		return err
-	}
-	if !isExistingUser {
-		err := &custom_errors.BadRequestError{
-			Message: "User does not exist",
-		}
-		return err
+		log.Println(err)
+		return nil, err
 	}
 
-	err = s.userRepository.Update(userId, updateModel.Name)
-	if err != nil {
-		return err
-	}
-
-	userUpdatedEvent := events.NewUserUpdated(userId)
-	err = s.rabbitMq.PublishMessage(userUpdatedEvent, s.userUpdatedExchangeName)
-	return err
-}
-
-func (s *userService) HasUser(userId string) (bool, error) {
-	return s.userRepository.HasUser(userId)
+	return result, nil
 }

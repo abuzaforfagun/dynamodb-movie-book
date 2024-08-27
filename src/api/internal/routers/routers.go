@@ -4,7 +4,6 @@ import (
 	actors_handler "github.com/abuzaforfagun/dynamodb-movie-book/api/internal/handlers/actors"
 	movies_handler "github.com/abuzaforfagun/dynamodb-movie-book/api/internal/handlers/movies"
 	reviews_handler "github.com/abuzaforfagun/dynamodb-movie-book/api/internal/handlers/reviews"
-	users_handler "github.com/abuzaforfagun/dynamodb-movie-book/api/internal/handlers/users"
 	"github.com/gin-gonic/gin"
 )
 
@@ -20,12 +19,6 @@ func SetupMovies(router *gin.Engine, movieHandler *movies_handler.MoviesHandler)
 func SetupReviewes(router *gin.Engine, reviewHandler *reviews_handler.ReviewHandler) {
 	router.POST("/movies/:id/reviews", reviewHandler.AddReview)
 	router.DELETE("/movies:id/reviews:review_id", reviewHandler.DeleteReview)
-}
-
-func SetupUsers(router *gin.Engine, userHandler *users_handler.UserHandler) {
-	router.GET("/users/:id", userHandler.GetUser)
-	router.POST("/users/", userHandler.AddUser)
-	router.PUT("/users/:id", userHandler.UpdateUser)
 }
 
 func SetupActors(router *gin.Engine, actorHandler *actors_handler.ActorsHandler) {

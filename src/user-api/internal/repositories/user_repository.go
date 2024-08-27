@@ -5,8 +5,9 @@ import (
 	"fmt"
 	"log"
 
-	"github.com/abuzaforfagun/dynamodb-movie-book/api/internal/database"
-	db_model "github.com/abuzaforfagun/dynamodb-movie-book/api/internal/models/db"
+	"github.com/abuzaforfagun/dynamodb-movie-book/user-api/internal/database"
+	"github.com/abuzaforfagun/dynamodb-movie-book/user-api/internal/models/db_model"
+	"github.com/abuzaforfagun/dynamodb-movie-book/user-api/internal/models/response_model"
 	"github.com/aws/aws-sdk-go-v2/aws"
 	"github.com/aws/aws-sdk-go-v2/feature/dynamodb/attributevalue"
 	"github.com/aws/aws-sdk-go-v2/feature/dynamodb/expression"
@@ -16,7 +17,7 @@ import (
 
 type UserRepository interface {
 	Add(user *db_model.AddUser) error
-	GetInfo(userId string) (db_model.UserInfo, error)
+	GetInfo(userId string) (*response_model.UserInfo, error)
 	Update(userId string, name string) error
 	HasUser(userId string) (bool, error)
 	HasUserByEmail(email string) (bool, error)
@@ -52,19 +53,19 @@ func (r *userRepository) Add(userData *db_model.AddUser) error {
 	return nil
 }
 
-func (r *userRepository) GetInfo(userId string) (db_model.UserInfo, error) {
+func (r *userRepository) GetInfo(userId string) (*response_model.UserInfo, error) {
 	pk := "USER#" + userId
 	dbResponse, err := r.GetOneByPKSK(context.TODO(), pk, pk)
 
 	if err != nil {
-		return db_model.UserInfo{}, err
+		return nil, err
 	}
 
-	var userInfo db_model.UserInfo
+	var userInfo *response_model.UserInfo
 	err = attributevalue.UnmarshalMap(*dbResponse, &userInfo)
 	if err != nil {
 		log.Println("ERROR: unable to unmarshal result", err)
-		return db_model.UserInfo{}, err
+		return nil, err
 	}
 	return userInfo, nil
 }

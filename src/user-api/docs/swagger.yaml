@@ -1,0 +1,160 @@
+definitions:
+  request_model.AddUser:
+    properties:
+      email:
+        type: string
+      name:
+        type: string
+    type: object
+  request_model.UpdateUser:
+    properties:
+      name:
+        type: string
+    type: object
+  response_model.CreateUserResponse:
+    properties:
+      user_id:
+        type: string
+    type: object
+  response_model.ReviewOfUser:
+    properties:
+      comment:
+        type: string
+      id:
+        type: string
+      movie_id:
+        type: string
+      movie_thumbnail:
+        type: string
+      movie_title:
+        type: string
+      rating:
+        type: integer
+    type: object
+  response_model.User:
+    properties:
+      email:
+        type: string
+      id:
+        type: string
+      name:
+        type: string
+      reviews:
+        items:
+          $ref: '#/definitions/response_model.ReviewOfUser'
+        type: array
+      watch_list:
+        items:
+          $ref: '#/definitions/response_model.WatchListMovie'
+        type: array
+    type: object
+  response_model.UserInfo:
+    properties:
+      email:
+        type: string
+      name:
+        type: string
+      user_id:
+        type: string
+    type: object
+  response_model.WatchListMovie:
+    properties:
+      id:
+        type: string
+      thumbnail_url:
+        type: string
+      title:
+        type: string
+    type: object
+host: localhost:5002
+info:
+  contact:
+    email: support@swagger.io
+    name: API Support
+    url: http://www.swagger.io/support
+  description: This is a sample server Petstore server.
+  termsOfService: http://swagger.io/terms/
+  title: Swagger Example API
+  version: "1.0"
+paths:
+  /users:
+    post:
+      description: Add new user
+      parameters:
+      - description: User payload
+        in: body
+        name: AddUserRequest
+        required: true
+        schema:
+          $ref: '#/definitions/request_model.AddUser'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            $ref: '#/definitions/response_model.CreateUserResponse'
+      summary: Add user
+      tags:
+      - users
+  /users/{id}:
+    get:
+      description: Get user details
+      parameters:
+      - description: User id
+        in: query
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/response_model.User'
+      summary: Get user details
+      tags:
+      - users
+    put:
+      description: Update existing user
+      parameters:
+      - description: User id
+        in: path
+        name: id
+        required: true
+        type: string
+      - description: Update user payload
+        in: body
+        name: UpdateUserRequest
+        required: true
+        schema:
+          $ref: '#/definitions/request_model.UpdateUser'
+      produces:
+      - application/json
+      responses:
+        "202":
+          description: Accepted
+      summary: Update user
+      tags:
+      - users
+  /users/{id}/info:
+    get:
+      description: Get user details
+      parameters:
+      - description: User id
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/response_model.UserInfo'
+      summary: Get user details
+      tags:
+      - users
+swagger: "2.0"

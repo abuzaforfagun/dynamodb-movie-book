@@ -7,6 +7,7 @@ import (
 	"strings"
 	"testing"
 
+	"github.com/abuzaforfagun/dynamodb-movie-book/api/internal/models/custom_errors"
 	db_model "github.com/abuzaforfagun/dynamodb-movie-book/api/internal/models/db"
 	request_model "github.com/abuzaforfagun/dynamodb-movie-book/api/internal/models/requests"
 	"github.com/abuzaforfagun/dynamodb-movie-book/api/internal/models/response_model"
@@ -19,6 +20,9 @@ const validMovieId string = "67cc095d-6864-4b67-846d-ad8564f80dd4"
 type MockReviewService struct{}
 
 func (r *MockReviewService) Add(movieId string, reviewRequest request_model.AddReview) error {
+	if reviewRequest.UserId != validUserId {
+		return &custom_errors.BadRequestError{}
+	}
 	return nil
 }
 
@@ -57,31 +61,11 @@ func (m *MockMovieService) Get(movieId string) (*response_model.MovieDetails, er
 	return nil, nil
 }
 
-type MockUserService struct {
-}
-
-func (m *MockUserService) AddUser(userModel request_model.AddUser) (string, error) {
-	return "", nil
-}
-func (m *MockUserService) GetInfo(userId string) (db_model.UserInfo, error) {
-	return db_model.UserInfo{}, nil
-}
-func (m *MockUserService) Update(userId string, updateModel request_model.UpdateUser) error {
-	return nil
-}
-func (m *MockUserService) HasUser(userId string) (bool, error) {
-	if userId == validUserId {
-		return true, nil
-	}
-	return false, nil
-}
-
 func TestAddReview(t *testing.T) {
 	reviewService := &MockReviewService{}
 	movieService := &MockMovieService{}
-	userService := &MockUserService{}
 
-	handler := New(reviewService, movieService, userService)
+	handler := New(reviewService, movieService)
 
 	router := gin.Default()
 	router.POST("/movies/:id/reviews", handler.AddReview)
