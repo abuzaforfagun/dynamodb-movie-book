@@ -5,7 +5,7 @@ import (
 	"encoding/json"
 	"log"
 
-	"github.com/abuzaforfagun/dynamodb-movie-book/event-consumer/internal/models"
+	"github.com/abuzaforfagun/dynamodb-movie-book/movie-event-consumer/internal/models"
 	"github.com/aws/aws-sdk-go-v2/feature/dynamodb/attributevalue"
 	"github.com/aws/aws-sdk-go-v2/service/dynamodb"
 	"github.com/aws/aws-sdk-go-v2/service/dynamodb/types"
