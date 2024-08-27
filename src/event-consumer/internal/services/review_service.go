@@ -84,11 +84,13 @@ func (r *reviewService) UpdateReviewerName(userId string, name string) error {
 		}(review)
 
 	}
+	wg.Wait()
+	close(errChan)
 
 	for item := range errChan {
 		if item.Error != nil {
 			log.Printf("ERROR: Unable to update the reviewer name. Reference: %s", item.Value)
-			return err
+			return item.Error
 		}
 	}
 	return nil
