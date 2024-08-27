@@ -25,12 +25,6 @@ func main() {
 		log.Fatalf("Failed to connect to RabbitMQ: %s", err)
 	}
 
-	err = rabbitmq.DeclareFanoutExchange(conn, userUpdatedExchangeName)
-	err = rabbitmq.DeclareFanoutExchange(conn, movieAddedExchangeName)
-	if err != nil {
-		log.Fatalf("Failed to declare exchange: %s", err)
-	}
-
 	awsConfig := infrastructure.NewAWSConfig()
 	tableName := os.Getenv("TABLE_NAME")
 

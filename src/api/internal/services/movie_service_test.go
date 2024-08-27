@@ -64,6 +64,10 @@ func (m *MockRabbitMQ) PublishMessage(message interface{}, topicName string) err
 	return nil
 }
 
+func (m *MockRabbitMQ) DeclareFanoutExchange(exchangename string) error {
+	return nil
+}
+
 func TestDelete(t *testing.T) {
 
 	movieRepository := &MockMovieRepository{}

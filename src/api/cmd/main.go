@@ -57,6 +57,9 @@ func main() {
 	movieAddedExchageName := os.Getenv("EXCHANGE_NAME_MOVIE_ADDED")
 	rabbitMq := infrastructure.NewRabbitMQ(rabbitMqUri)
 
+	rabbitMq.DeclareFanoutExchange(movieAddedExchageName)
+	rabbitMq.DeclareFanoutExchange(userUpdatedExchageName)
+
 	userRepository := repositories.NewUserRepository(dbService.Client, dbService.TableName)
 	actorRepository := repositories.NewActorRepository(dbService.Client, dbService.TableName)
 	movieRepository := repositories.NewMovieRepository(dbService.Client, dbService.TableName)
