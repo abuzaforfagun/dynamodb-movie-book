@@ -14,6 +14,8 @@ import (
 )
 
 func main() {
+	log.SetFlags(log.LstdFlags | log.Lshortfile)
+
 	initializers.LoadEnvVariables()
 
 	amqpServerURL := os.Getenv("AMQP_SERVER_URL")

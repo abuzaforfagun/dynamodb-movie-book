@@ -26,6 +26,8 @@ import (
 
 // @host      localhost:5002
 func main() {
+	log.SetFlags(log.LstdFlags | log.Lshortfile)
+
 	initializers.LoadEnvVariables("../../.env")
 	awsRegion := os.Getenv("AWS_REGION")
 	awsSecretKey := os.Getenv("AWS_ACCESS_KEY_ID")
