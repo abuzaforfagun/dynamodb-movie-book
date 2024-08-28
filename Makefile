@@ -1,7 +1,7 @@
 # Makefile
 
-api:
-	cd src/api && swag init -g cmd/main.go && cd cmd && go run .
+movie-api:
+	cd src/movie-api && swag init -g cmd/main.go && cd cmd && go run .
 actor-api:
 	cd src/actor-api && swag init -g cmd/api/main.go && cd cmd/api && go run .
 
