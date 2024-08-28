@@ -7,6 +7,7 @@ require (
 	github.com/aws/aws-sdk-go-v2/config v1.27.31
 	github.com/aws/aws-sdk-go-v2/credentials v1.17.30
 	github.com/aws/aws-sdk-go-v2/feature/dynamodb/attributevalue v1.15.0
+	github.com/aws/aws-sdk-go-v2/feature/dynamodb/expression v1.7.35
 	github.com/aws/aws-sdk-go-v2/service/dynamodb v1.34.6
 	github.com/joho/godotenv v1.5.1
 	github.com/streadway/amqp v1.1.0

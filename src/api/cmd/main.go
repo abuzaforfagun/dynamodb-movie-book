@@ -54,10 +54,12 @@ func main() {
 	rabbitMqUri := os.Getenv("AMQP_SERVER_URL")
 	userUpdatedExchageName := os.Getenv("EXCHANGE_NAME_USER_UPDATED")
 	movieAddedExchageName := os.Getenv("EXCHANGE_NAME_MOVIE_ADDED")
+	reviewAddedExchageName := os.Getenv("EXCHANGE_NAME_REVIEW_ADDED")
 	rabbitMq := infrastructure.NewRabbitMQ(rabbitMqUri)
 
 	rabbitMq.DeclareFanoutExchange(movieAddedExchageName)
 	rabbitMq.DeclareFanoutExchange(userUpdatedExchageName)
+	rabbitMq.DeclareFanoutExchange(reviewAddedExchageName)
 
 	movieRepository := repositories.NewMovieRepository(dbService.Client, dbService.TableName)
 	reviewRepository := repositories.NewReviewRepository(dbService.Client, dbService.TableName)
@@ -69,7 +71,7 @@ func main() {
 	actorApiBaseAddress := os.Getenv("ACTOR_API_BASE_ADDRESS")
 	actorService := services.NewActorService(httpClient, actorApiBaseAddress)
 
-	reviewService := services.NewReviewService(reviewRepository, userService)
+	reviewService := services.NewReviewService(reviewRepository, userService, rabbitMq, reviewAddedExchageName)
 	movieService := services.NewMovieService(movieRepository, reviewService, rabbitMq, actorService, movieAddedExchageName)
 
 	router := gin.Default()

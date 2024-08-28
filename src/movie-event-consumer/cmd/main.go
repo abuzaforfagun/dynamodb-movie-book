@@ -17,7 +17,9 @@ func main() {
 
 	amqpServerURL := os.Getenv("AMQP_SERVER_URL")
 	movieAddedExchangeName := os.Getenv("EXCHANGE_NAME_MOVIE_ADDED")
+	reviewAddedExchangeName := os.Getenv("EXCHANGE_NAME_REVIEW_ADDED")
 	movieAddedQueueName := os.Getenv("MOVIE_ADDED_QUEUE")
+	reviewAddedQueueName := os.Getenv("REVIEW_ADDED_QUEUE")
 
 	conn, err := rabbitmq.NewConnection(amqpServerURL)
 	if err != nil {
@@ -34,8 +36,10 @@ func main() {
 	movieService := services.NewMovieService(dynamoDbClient, tableName)
 
 	moviedAddedHandler := processor.NewMovieAddedHandler(movieService, actorService, genreService)
+	reviewAddedHandler := processor.NewMovieAddedHandler(movieService, actorService, genreService)
 
 	rabbitmq.RegisterQueueExchange(conn, movieAddedQueueName, movieAddedExchangeName, moviedAddedHandler.HandleMessage)
+	rabbitmq.RegisterQueueExchange(conn, reviewAddedQueueName, reviewAddedExchangeName, reviewAddedHandler.HandleMessage)
 
 	fmt.Println("Ready to process events...")
 	select {}

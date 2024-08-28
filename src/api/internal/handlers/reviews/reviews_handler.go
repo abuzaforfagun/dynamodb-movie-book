@@ -89,14 +89,6 @@ func (h *ReviewHandler) AddReview(c *gin.Context) {
 		return
 	}
 
-	err = h.movieService.UpdateMovieScore(movieId)
-	if err != nil {
-		h.reviewService.Delete(movieId, reviewRequest.UserId)
-		log.Printf("ERROR: unable to update the movie score. Error: %v", err)
-		c.JSON(http.StatusInternalServerError, gin.H{})
-		return
-	}
-
 	c.JSON(http.StatusAccepted, gin.H{})
 }
 

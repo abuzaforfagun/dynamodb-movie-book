@@ -2,7 +2,6 @@ package services
 
 import (
 	"log"
-	"math"
 	"strings"
 
 	"github.com/abuzaforfagun/dynamodb-movie-book/api/internal/infrastructure"
@@ -19,7 +18,6 @@ type MovieService interface {
 	Add(movie *request_model.AddMovie) (string, error)
 	GetAll(searchQuery string) (*[]response_model.Movie, error)
 	GetByGenre(genreName string) (*[]response_model.Movie, error)
-	UpdateMovieScore(movieId string) error
 	HasMovie(movieId string) (bool, error)
 	Delete(movieId string) error
 	Get(movieId string) (*response_model.MovieDetails, error)
@@ -129,35 +127,6 @@ func (s *movieService) GetByGenre(genreName string) (*[]response_model.Movie, er
 	}
 
 	return movies, nil
-}
-
-// Ignoring integration test of UpdateMovieScore,
-// because we are going to move the feature to event consumers
-func (s *movieService) UpdateMovieScore(movieId string) error {
-	reviews, err := s.reviewService.GetAll(movieId)
-	if err != nil {
-		log.Println("ERROR: Unable to get movie reviews", err)
-		return err
-	}
-
-	if len(*reviews) == 0 {
-		return nil
-	}
-
-	totalScore := 0
-	for _, r := range *reviews {
-		totalScore += r.Rating
-	}
-
-	avgScore := float64(totalScore) / float64(len(*reviews))
-	score := math.Round(avgScore*100) / 100
-
-	err = s.movieRepository.UpdateScore(movieId, score)
-	if err != nil {
-		log.Println("ERROR: Unable to update score", err)
-		return err
-	}
-	return nil
 }
 
 func (s *movieService) Delete(movieId string) error {

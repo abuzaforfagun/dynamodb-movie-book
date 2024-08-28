@@ -3,17 +3,20 @@ package services
 import (
 	"context"
 	"errors"
+	"fmt"
 	"log"
 
 	"github.com/abuzaforfagun/dynamodb-movie-book/movie-event-consumer/internal/models"
+	"github.com/aws/aws-sdk-go-v2/aws"
 	"github.com/aws/aws-sdk-go-v2/feature/dynamodb/attributevalue"
+	"github.com/aws/aws-sdk-go-v2/feature/dynamodb/expression"
 	"github.com/aws/aws-sdk-go-v2/service/dynamodb"
 	"github.com/aws/aws-sdk-go-v2/service/dynamodb/types"
-	"github.com/aws/aws-sdk-go/aws"
 )
 
 type MovieService interface {
 	GetInfo(movieId string) (*models.Movie, error)
+	UpdateMovieScore(movieId string, score float64) error
 }
 
 type movieService struct {
@@ -58,4 +61,34 @@ func (r *movieService) GetInfo(movieId string) (*models.Movie, error) {
 		return nil, err
 	}
 	return &movie, nil
+}
+
+func (r *movieService) UpdateMovieScore(movieId string, score float64) error {
+	pk := "MOVIE#" + movieId
+	sk := "MOVIE#" + movieId
+	updateBuilder := expression.Set(expression.Name("Score"), expression.Value(score))
+
+	expr, err := expression.NewBuilder().WithUpdate(updateBuilder).Build()
+	if err != nil {
+		return fmt.Errorf("failed to build expression: %v", err)
+	}
+
+	input := &dynamodb.UpdateItemInput{
+		TableName: aws.String(r.tableName),
+		Key: map[string]types.AttributeValue{
+			"PK": &types.AttributeValueMemberS{Value: pk},
+			"SK": &types.AttributeValueMemberS{Value: sk},
+		},
+		ExpressionAttributeNames:  expr.Names(),
+		ExpressionAttributeValues: expr.Values(),
+		UpdateExpression:          expr.Update(),
+		ReturnValues:              types.ReturnValueUpdatedNew,
+	}
+
+	_, err = r.client.UpdateItem(context.TODO(), input)
+	if err != nil {
+		log.Println("ERROR: Unable to update score", err)
+		return err
+	}
+	return nil
 }

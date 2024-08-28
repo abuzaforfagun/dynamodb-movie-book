@@ -23,7 +23,6 @@ type MovieRepository interface {
 	Add(movie *db_model.AddMovie, actors []db_model.MovieActor) error
 	GetAll(searchQuery string) (*[]response_model.Movie, error)
 	GetByGenre(genreName string) (*[]response_model.Movie, error)
-	UpdateScore(movieId string, score float64) error
 	HasMovie(movieId string) (bool, error)
 	Delete(movieId string) error
 	Get(movieId string) (*response_model.MovieDetails, error)
@@ -60,14 +59,6 @@ func (r *movieRepository) Add(movie *db_model.AddMovie, actors []db_model.MovieA
 		return err
 	}
 	return nil
-}
-
-func (r *movieRepository) UpdateScore(movieId string, score float64) error {
-	pk := "MOVIE#" + movieId
-	sk := "MOVIE#" + movieId
-	updateBuilder := expression.Set(expression.Name("Score"), expression.Value(score))
-
-	return r.UpdateByPKSK(context.TODO(), pk, sk, updateBuilder)
 }
 
 func (r *movieRepository) GetAll(movieName string) (*[]response_model.Movie, error) {

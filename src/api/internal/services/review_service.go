@@ -4,10 +4,12 @@ import (
 	"encoding/json"
 	"log"
 
+	"github.com/abuzaforfagun/dynamodb-movie-book/api/internal/infrastructure"
 	"github.com/abuzaforfagun/dynamodb-movie-book/api/internal/models/custom_errors"
 	db_model "github.com/abuzaforfagun/dynamodb-movie-book/api/internal/models/db"
 	request_model "github.com/abuzaforfagun/dynamodb-movie-book/api/internal/models/requests"
 	"github.com/abuzaforfagun/dynamodb-movie-book/api/internal/repositories"
+	"github.com/abuzaforfagun/dynamodb-movie-book/events"
 )
 
 type ReviewService interface {
@@ -17,15 +19,22 @@ type ReviewService interface {
 }
 
 type reviewService struct {
-	reviewRepository repositories.ReviewRepository
-	userService      UserService
+	reviewRepository        repositories.ReviewRepository
+	userService             UserService
+	rabbitMq                infrastructure.RabbitMQ
+	reviewAddedExchangeName string
 }
 
-func NewReviewService(reviewRepository repositories.ReviewRepository,
-	userService UserService) ReviewService {
+func NewReviewService(
+	reviewRepository repositories.ReviewRepository,
+	userService UserService,
+	rabbitMq infrastructure.RabbitMQ,
+	reviewAddedExchangeName string) ReviewService {
 	return &reviewService{
-		reviewRepository: reviewRepository,
-		userService:      userService,
+		reviewRepository:        reviewRepository,
+		userService:             userService,
+		rabbitMq:                rabbitMq,
+		reviewAddedExchangeName: reviewAddedExchangeName,
 	}
 }
 
@@ -65,6 +74,13 @@ func (s *reviewService) Add(movieId string, reviewRequest request_model.AddRevie
 
 		return err
 	}
+
+	event := events.ReviewAdded{
+		MovieId: movieId,
+		UserId:  reviewRequest.UserId,
+		Score:   reviewRequest.Rating,
+	}
+	s.rabbitMq.PublishMessage(event, s.reviewAddedExchangeName)
 
 	return nil
 }
