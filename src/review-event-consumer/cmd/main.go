@@ -3,14 +3,16 @@ package main
 import (
 	"fmt"
 	"log"
-	"net/http"
 	"os"
 
+	"github.com/abuzaforfagun/dynamodb-movie-book/grpc/userpb"
 	"github.com/abuzaforfagun/dynamodb-movie-book/review-event-consumer/internal/infrastructure"
 	"github.com/abuzaforfagun/dynamodb-movie-book/review-event-consumer/internal/initializers"
 	"github.com/abuzaforfagun/dynamodb-movie-book/review-event-consumer/internal/processor"
 	"github.com/abuzaforfagun/dynamodb-movie-book/review-event-consumer/internal/rabbitmq"
 	"github.com/abuzaforfagun/dynamodb-movie-book/review-event-consumer/internal/services"
+	"google.golang.org/grpc"
+	"google.golang.org/grpc/credentials/insecure"
 )
 
 func main() {
@@ -30,13 +32,15 @@ func main() {
 
 	dynamoDbClient := infrastructure.NewDynamoDBClient(awsConfig)
 
-	reviewService := services.NewReviewService(dynamoDbClient, tableName)
+	userConn, err := grpc.NewClient(":6002", grpc.WithTransportCredentials(insecure.NewCredentials()))
+	if err != nil {
+		log.Fatalf("Failed to connect: %v", err)
+	}
+	defer userConn.Close()
+	userClient := userpb.NewUserServiceClient(userConn)
+	reviewService := services.NewReviewService(dynamoDbClient, userClient, tableName)
 
-	httpClient := &http.Client{}
-	userApiBaseAddress := os.Getenv("USER_API_BASE_ADDRESS")
-	userService := services.NewUserService(httpClient, userApiBaseAddress)
-
-	userUpdatedHandler := processor.NewUserUpdatedHandler(reviewService, userService)
+	userUpdatedHandler := processor.NewUserUpdatedHandler(reviewService)
 
 	rabbitmq.RegisterQueueExchange(conn, userUpdatedQueueName, userUpdatedExchangeName, userUpdatedHandler.HandleMessage)
 	fmt.Println("Ready to process events...")

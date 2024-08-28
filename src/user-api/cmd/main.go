@@ -2,11 +2,14 @@ package main
 
 import (
 	"log"
+	"net"
 	"os"
 
+	"github.com/abuzaforfagun/dynamodb-movie-book/grpc/userpb"
 	_ "github.com/abuzaforfagun/dynamodb-movie-book/user-api/docs"
 	"github.com/abuzaforfagun/dynamodb-movie-book/user-api/internal/configuration"
 	"github.com/abuzaforfagun/dynamodb-movie-book/user-api/internal/database"
+	"github.com/abuzaforfagun/dynamodb-movie-book/user-api/internal/grpc_services"
 	"github.com/abuzaforfagun/dynamodb-movie-book/user-api/internal/handlers"
 	"github.com/abuzaforfagun/dynamodb-movie-book/user-api/internal/infrastructure"
 	"github.com/abuzaforfagun/dynamodb-movie-book/user-api/internal/initializers"
@@ -15,6 +18,7 @@ import (
 	"github.com/gin-gonic/gin"
 	swaggerFiles "github.com/swaggo/files"
 	ginSwagger "github.com/swaggo/gin-swagger"
+	"google.golang.org/grpc"
 )
 
 // @title           Swagger Example API
@@ -58,12 +62,28 @@ func main() {
 
 	userService := services.NewUserService(userRepository, rabbitMq, userUpdatedExchageName)
 
+	grpcUserService := grpc_services.NewUserService(userRepository)
+
+	go func(userService *grpc_services.UserService) {
+		listener, err := net.Listen("tcp", ":6002")
+		if err != nil {
+			log.Fatal("Unable to listen port", err)
+		}
+
+		server := grpc.NewServer()
+
+		userpb.RegisterUserServiceServer(server, userService)
+		if err = server.Serve(listener); err != nil {
+			log.Fatalf("failed to serve: %v", err)
+		}
+
+	}(grpcUserService)
+
 	router := gin.Default()
 	router.GET("/swagger/*any", ginSwagger.WrapHandler(swaggerFiles.Handler))
 
 	userHandler := handlers.NewUserHandler(userService)
 	router.GET("/users/:id", userHandler.GetUserDetails)
-	router.GET("/users/:id/info", userHandler.GetUserBasicInfo)
 	router.POST("/users/", userHandler.AddUser)
 	router.PUT("/users/:id", userHandler.UpdateUser)
 

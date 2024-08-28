@@ -112,35 +112,6 @@ const docTemplate = `{
                     }
                 }
             }
-        },
-        "/users/{id}/info": {
-            "get": {
-                "description": "Get user details",
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "users"
-                ],
-                "summary": "Get user details",
-                "parameters": [
-                    {
-                        "type": "string",
-                        "description": "User id",
-                        "name": "id",
-                        "in": "path",
-                        "required": true
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "OK",
-                        "schema": {
-                            "$ref": "#/definitions/response_model.UserInfo"
-                        }
-                    }
-                }
-            }
         }
     },
     "definitions": {
@@ -217,20 +188,6 @@ const docTemplate = `{
                     "items": {
                         "$ref": "#/definitions/response_model.WatchListMovie"
                     }
-                }
-            }
-        },
-        "response_model.UserInfo": {
-            "type": "object",
-            "properties": {
-                "email": {
-                    "type": "string"
-                },
-                "name": {
-                    "type": "string"
-                },
-                "user_id": {
-                    "type": "string"
                 }
             }
         },

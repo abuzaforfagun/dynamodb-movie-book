@@ -11,12 +11,10 @@ import (
 
 type UserUpdatedHandler struct {
 	reviewService services.ReviewService
-	userService   services.UserService
 }
 
-func NewUserUpdatedHandler(reviewService services.ReviewService, userService services.UserService) *UserUpdatedHandler {
+func NewUserUpdatedHandler(reviewService services.ReviewService) *UserUpdatedHandler {
 	return &UserUpdatedHandler{
-		userService:   userService,
 		reviewService: reviewService,
 	}
 }
@@ -30,17 +28,7 @@ func (h *UserUpdatedHandler) HandleMessage(msg amqp.Delivery) {
 		log.Println("Invalid message", payload)
 	}
 
-	user, err := h.userService.GetInfo(payload.UserId)
-	if err != nil {
-		return
-	}
-
-	if user == nil {
-		log.Println("Invalid user")
-		return
-	}
-
-	err = h.reviewService.UpdateReviewerName(payload.UserId, user.Name)
+	err := h.reviewService.UpdateReviewerName(payload.UserId)
 
 	if err != nil {
 		log.Printf("ERROR: Unable to update reviewer %v\n", err)

@@ -68,40 +68,6 @@ const docTemplate = `{
                 }
             }
         },
-        "/actors/info": {
-            "post": {
-                "description": "Get user details",
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "actors"
-                ],
-                "summary": "Get user details",
-                "parameters": [
-                    {
-                        "description": "actor ids",
-                        "name": "payload",
-                        "in": "body",
-                        "required": true,
-                        "schema": {
-                            "$ref": "#/definitions/request_model.GetActors"
-                        }
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "OK",
-                        "schema": {
-                            "type": "array",
-                            "items": {
-                                "$ref": "#/definitions/response_model.ActorInfo"
-                            }
-                        }
-                    }
-                }
-            }
-        },
         "/actors/{id}": {
             "get": {
                 "description": "Get actor details",
@@ -171,17 +137,6 @@ const docTemplate = `{
         }
     },
     "definitions": {
-        "request_model.GetActors": {
-            "type": "object",
-            "properties": {
-                "actor_ids": {
-                    "type": "array",
-                    "items": {
-                        "type": "string"
-                    }
-                }
-            }
-        },
         "response_model.ActorDetails": {
             "type": "object",
             "properties": {
@@ -204,17 +159,6 @@ const docTemplate = `{
                     "type": "string"
                 },
                 "thumbnail_url": {
-                    "type": "string"
-                }
-            }
-        },
-        "response_model.ActorInfo": {
-            "type": "object",
-            "properties": {
-                "id": {
-                    "type": "string"
-                },
-                "name": {
                     "type": "string"
                 }
             }

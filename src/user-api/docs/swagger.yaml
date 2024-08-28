@@ -48,15 +48,6 @@ definitions:
           $ref: '#/definitions/response_model.WatchListMovie'
         type: array
     type: object
-  response_model.UserInfo:
-    properties:
-      email:
-        type: string
-      name:
-        type: string
-      user_id:
-        type: string
-    type: object
   response_model.WatchListMovie:
     properties:
       id:
@@ -136,25 +127,6 @@ paths:
         "202":
           description: Accepted
       summary: Update user
-      tags:
-      - users
-  /users/{id}/info:
-    get:
-      description: Get user details
-      parameters:
-      - description: User id
-        in: path
-        name: id
-        required: true
-        type: string
-      produces:
-      - application/json
-      responses:
-        "200":
-          description: OK
-          schema:
-            $ref: '#/definitions/response_model.UserInfo'
-      summary: Get user details
       tags:
       - users
 swagger: "2.0"

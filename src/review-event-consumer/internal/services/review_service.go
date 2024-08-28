@@ -5,6 +5,7 @@ import (
 	"log"
 	"sync"
 
+	"github.com/abuzaforfagun/dynamodb-movie-book/grpc/userpb"
 	"github.com/abuzaforfagun/dynamodb-movie-book/review-event-consumer/internal/constants"
 	"github.com/abuzaforfagun/dynamodb-movie-book/review-event-consumer/internal/models"
 	"github.com/aws/aws-sdk-go-v2/feature/dynamodb/attributevalue"
@@ -15,23 +16,39 @@ import (
 )
 
 type ReviewService interface {
-	UpdateReviewerName(userId string, name string) error
+	UpdateReviewerName(userId string) error
 	GetUserReviews(userId string) ([]models.Review, error)
 }
 
 type reviewService struct {
-	client    *dynamodb.Client
-	tableName string
+	client     *dynamodb.Client
+	tableName  string
+	userClient userpb.UserServiceClient
 }
 
-func NewReviewService(client *dynamodb.Client, tableName string) ReviewService {
+func NewReviewService(client *dynamodb.Client, userClient userpb.UserServiceClient, tableName string) ReviewService {
 	return &reviewService{
-		client:    client,
-		tableName: tableName,
+		client:     client,
+		tableName:  tableName,
+		userClient: userClient,
 	}
 }
 
-func (r *reviewService) UpdateReviewerName(userId string, name string) error {
+func (r *reviewService) UpdateReviewerName(userId string) error {
+
+	user, err := r.userClient.GetUserBasicInfo(context.TODO(), &userpb.GetUserInfoRequest{
+		UserId: userId,
+	})
+
+	if err != nil {
+		return err
+	}
+
+	if user == nil {
+		log.Println("Invalid user")
+		return err
+	}
+
 	reviews, err := r.GetUserReviews(userId)
 	if err != nil {
 		return err
@@ -46,14 +63,14 @@ func (r *reviewService) UpdateReviewerName(userId string, name string) error {
 		go func(review models.Review) {
 			defer wg.Done()
 
-			if review.ReviewerName == name {
+			if review.ReviewerName == user.Name {
 				return
 			}
 
 			pk := "MOVIE#" + review.MovieId
 			sk := "USER#" + review.UserId
 
-			updateExpression := expression.Set(expression.Name("Name"), expression.Value(name))
+			updateExpression := expression.Set(expression.Name("Name"), expression.Value(user.Name))
 
 			// need to take care
 			expr, err := expression.NewBuilder().WithUpdate(updateExpression).Build()

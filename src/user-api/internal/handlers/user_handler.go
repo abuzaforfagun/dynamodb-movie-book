@@ -76,39 +76,6 @@ func (h *UserHandler) AddUser(c *gin.Context) {
 // @Router /users/{id} [get]
 func (uh *UserHandler) GetUserDetails(c *gin.Context) {}
 
-// @Summary Get user details
-// @Description Get user details
-// @Tags users
-// @Param id path string true "User id"
-// @Produce json
-// @Success 200 {object} response_model.UserInfo
-// @Router /users/{id}/info [get]
-func (h *UserHandler) GetUserBasicInfo(c *gin.Context) {
-	userId := c.Param("id")
-	if userId == "" {
-		err := custom_errors.BadRequestError{
-			Message: "Please specify user id",
-		}
-
-		c.JSON(http.StatusBadRequest, err)
-		return
-	}
-
-	result, err := h.userService.GetInfo(userId)
-
-	if err != nil {
-		c.JSON(http.StatusInternalServerError, err)
-		return
-	}
-
-	if result == nil {
-		c.JSON(http.StatusNotFound, gin.H{})
-		return
-	}
-
-	c.JSON(http.StatusOK, &result)
-}
-
 // @Summary Update user
 // @Description Update existing user
 // @Tags users

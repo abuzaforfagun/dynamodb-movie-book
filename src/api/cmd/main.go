@@ -2,7 +2,6 @@ package main
 
 import (
 	"log"
-	"net/http"
 	"os"
 
 	_ "github.com/abuzaforfagun/dynamodb-movie-book/api/docs"
@@ -16,6 +15,7 @@ import (
 	"github.com/abuzaforfagun/dynamodb-movie-book/api/internal/routers"
 	"github.com/abuzaforfagun/dynamodb-movie-book/api/internal/services"
 	"github.com/abuzaforfagun/dynamodb-movie-book/grpc/actorpb"
+	"github.com/abuzaforfagun/dynamodb-movie-book/grpc/userpb"
 	"github.com/gin-gonic/gin"
 	swaggerFiles "github.com/swaggo/files"
 	ginSwagger "github.com/swaggo/gin-swagger"
@@ -67,17 +67,21 @@ func main() {
 	movieRepository := repositories.NewMovieRepository(dbService.Client, dbService.TableName)
 	reviewRepository := repositories.NewReviewRepository(dbService.Client, dbService.TableName)
 
-	httpClient := &http.Client{}
-	userApiBaseAddress := os.Getenv("USER_API_BASE_ADDRESS")
-	userService := services.NewUserService(httpClient, userApiBaseAddress)
-
-	conn, err := grpc.NewClient("localhost:6003", grpc.WithTransportCredentials(insecure.NewCredentials()))
+	userConn, err := grpc.NewClient(":6002", grpc.WithTransportCredentials(insecure.NewCredentials()))
 	if err != nil {
 		log.Fatalf("Failed to connect: %v", err)
 	}
-	defer conn.Close()
-	actorClient := actorpb.NewActorsServiceClient(conn)
-	reviewService := services.NewReviewService(reviewRepository, userService, rabbitMq, reviewAddedExchageName)
+	defer userConn.Close()
+	userClient := userpb.NewUserServiceClient(userConn)
+	reviewService := services.NewReviewService(reviewRepository, userClient, rabbitMq, reviewAddedExchageName)
+
+	actorConn, err := grpc.NewClient(":6003", grpc.WithTransportCredentials(insecure.NewCredentials()))
+	if err != nil {
+		log.Fatalf("Failed to connect: %v", err)
+	}
+	defer actorConn.Close()
+
+	actorClient := actorpb.NewActorsServiceClient(actorConn)
 	movieService := services.NewMovieService(movieRepository, reviewService, rabbitMq, actorClient, movieAddedExchageName)
 
 	router := gin.Default()

@@ -1,6 +1,7 @@
 package services
 
 import (
+	"context"
 	"encoding/json"
 	"log"
 
@@ -10,6 +11,7 @@ import (
 	request_model "github.com/abuzaforfagun/dynamodb-movie-book/api/internal/models/requests"
 	"github.com/abuzaforfagun/dynamodb-movie-book/api/internal/repositories"
 	"github.com/abuzaforfagun/dynamodb-movie-book/events"
+	"github.com/abuzaforfagun/dynamodb-movie-book/grpc/userpb"
 )
 
 type ReviewService interface {
@@ -20,26 +22,28 @@ type ReviewService interface {
 
 type reviewService struct {
 	reviewRepository        repositories.ReviewRepository
-	userService             UserService
 	rabbitMq                infrastructure.RabbitMQ
 	reviewAddedExchangeName string
+	userClient              userpb.UserServiceClient
 }
 
 func NewReviewService(
 	reviewRepository repositories.ReviewRepository,
-	userService UserService,
+	userClient userpb.UserServiceClient,
 	rabbitMq infrastructure.RabbitMQ,
 	reviewAddedExchangeName string) ReviewService {
 	return &reviewService{
 		reviewRepository:        reviewRepository,
-		userService:             userService,
+		userClient:              userClient,
 		rabbitMq:                rabbitMq,
 		reviewAddedExchangeName: reviewAddedExchangeName,
 	}
 }
 
 func (s *reviewService) Add(movieId string, reviewRequest request_model.AddReview) error {
-	user, err := s.userService.GetInfo(reviewRequest.UserId)
+	user, err := s.userClient.GetUserBasicInfo(context.TODO(), &userpb.GetUserInfoRequest{
+		UserId: reviewRequest.UserId,
+	})
 	if err != nil {
 		log.Printf("ERROR: unable to get user [UserId=%s] Error: %v\n", reviewRequest.UserId, err)
 		return err
