@@ -3,10 +3,16 @@
 api:
 	cd src/api && swag init -g cmd/main.go && cd cmd && go run .
 actor-api:
-	cd src/actor-api && swag init -g cmd/main.go && cd cmd && go run .
+	cd src/actor-api && swag init -g cmd/api/main.go && cd cmd/api && go run .
+
+actor-grpc:
+	cd src/actor-api/cmd/grpc && go run .
 
 user-api:
-	cd src/user-api && swag init -g cmd/main.go && cd cmd && go run .
+	cd src/user-api && swag init -g cmd/api/main.go && cd cmd/api && go run .
+
+user-grpc:
+	cd src/user-api/cmd/grpc && go run .
 
 movie-event-processor:
 	cd src/movie-event-consumer/cmd && go run .

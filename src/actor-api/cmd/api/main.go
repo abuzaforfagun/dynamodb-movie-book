@@ -2,21 +2,17 @@ package main
 
 import (
 	"log"
-	"net"
 	"os"
 
 	_ "github.com/abuzaforfagun/dynamodb-movie-book/actor-api/docs"
 	"github.com/abuzaforfagun/dynamodb-movie-book/actor-api/internal/configuration"
 	"github.com/abuzaforfagun/dynamodb-movie-book/actor-api/internal/database"
-	"github.com/abuzaforfagun/dynamodb-movie-book/actor-api/internal/grpc_services"
 	"github.com/abuzaforfagun/dynamodb-movie-book/actor-api/internal/handlers"
 	"github.com/abuzaforfagun/dynamodb-movie-book/actor-api/internal/initializers"
 	"github.com/abuzaforfagun/dynamodb-movie-book/actor-api/internal/repositories"
-	"github.com/abuzaforfagun/dynamodb-movie-book/grpc/actorpb"
 	"github.com/gin-gonic/gin"
 	swaggerFiles "github.com/swaggo/files"
 	ginSwagger "github.com/swaggo/gin-swagger"
-	"google.golang.org/grpc"
 )
 
 // @title           Swagger Example API
@@ -30,7 +26,7 @@ import (
 
 // @host      localhost:5003
 func main() {
-	initializers.LoadEnvVariables("../.env")
+	initializers.LoadEnvVariables("../../.env")
 
 	awsRegion := os.Getenv("AWS_REGION")
 	awsSecretKey := os.Getenv("AWS_ACCESS_KEY_ID")
@@ -52,22 +48,6 @@ func main() {
 	}
 
 	actorRepository := repositories.NewActorRepository(dbService.Client, dbService.TableName)
-
-	go func() {
-		listener, err := net.Listen("tcp", ":6003")
-		if err != nil {
-			log.Fatalf("Unable to listen port", err)
-		}
-
-		server := grpc.NewServer()
-
-		grpcActorService := grpc_services.NewActorService(actorRepository)
-		actorpb.RegisterActorsServiceServer(server, grpcActorService)
-		if err = server.Serve(listener); err != nil {
-			log.Fatalf("failed to serve: %v", err)
-		}
-
-	}()
 
 	router := gin.Default()
 	router.GET("/swagger/*any", ginSwagger.WrapHandler(swaggerFiles.Handler))
