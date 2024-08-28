@@ -4,7 +4,8 @@ import (
 	"context"
 	"log"
 
-	db_model "github.com/abuzaforfagun/dynamodb-movie-book/api/internal/models/db"
+	db_model "github.com/abuzaforfagun/dynamodb-movie-book/actor-api/internal/models/db"
+	"github.com/abuzaforfagun/dynamodb-movie-book/actor-api/internal/models/response_model"
 	"github.com/aws/aws-sdk-go-v2/aws"
 	"github.com/aws/aws-sdk-go-v2/feature/dynamodb/attributevalue"
 	"github.com/aws/aws-sdk-go-v2/service/dynamodb"
@@ -13,7 +14,7 @@ import (
 
 type ActorRepository interface {
 	Add(actor *db_model.AddActor) error
-	Get(actorIds []string) (*[]db_model.ActorInfo, error)
+	Get(actorIds []string) (*[]response_model.ActorInfo, error)
 }
 
 type actorRepository struct {
@@ -45,7 +46,7 @@ func (r *actorRepository) Add(actor *db_model.AddActor) error {
 	return nil
 }
 
-func (r *actorRepository) Get(actorIds []string) (*[]db_model.ActorInfo, error) {
+func (r *actorRepository) Get(actorIds []string) (*[]response_model.ActorInfo, error) {
 	keys := []map[string]types.AttributeValue{}
 	for _, actorId := range actorIds {
 		keys = append(keys, map[string]types.AttributeValue{
@@ -69,7 +70,7 @@ func (r *actorRepository) Get(actorIds []string) (*[]db_model.ActorInfo, error) 
 	}
 
 	actorsResponse := resp.Responses[r.tableName]
-	var actors []db_model.ActorInfo
+	var actors []response_model.ActorInfo
 
 	err = attributevalue.UnmarshalListOfMaps(actorsResponse, &actors)
 	if err != nil {

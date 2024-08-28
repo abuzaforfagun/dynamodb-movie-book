@@ -5,6 +5,7 @@ import (
 
 	"github.com/abuzaforfagun/dynamodb-movie-book/api/internal/models/custom_errors"
 	db_model "github.com/abuzaforfagun/dynamodb-movie-book/api/internal/models/db"
+	"github.com/abuzaforfagun/dynamodb-movie-book/api/internal/models/dto"
 	request_model "github.com/abuzaforfagun/dynamodb-movie-book/api/internal/models/requests"
 	"github.com/abuzaforfagun/dynamodb-movie-book/api/internal/models/response_model"
 )
@@ -68,13 +69,20 @@ func (m *MockRabbitMQ) DeclareFanoutExchange(exchangename string) error {
 	return nil
 }
 
+type MockActorService struct{}
+
+func (m *MockActorService) GetActorsBasicInfo(ids []string) (*[]dto.ActorInfo, error) {
+	return nil, nil
+}
+
 func TestDelete(t *testing.T) {
 
 	movieRepository := &MockMovieRepository{}
 	reviewService := &MockReviewService{}
 	rabbitMq := &MockRabbitMQ{}
+	actorService := &MockActorService{}
 
-	service := NewMovieService(movieRepository, reviewService, rabbitMq, "")
+	service := NewMovieService(movieRepository, reviewService, rabbitMq, actorService, "")
 
 	tests := []struct {
 		testName    string

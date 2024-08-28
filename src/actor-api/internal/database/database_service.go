@@ -6,16 +6,12 @@ import (
 	"fmt"
 	"log"
 
-	"github.com/abuzaforfagun/dynamodb-movie-book/user-api/internal/configuration"
-	"github.com/abuzaforfagun/dynamodb-movie-book/user-api/internal/infrastructure"
+	"github.com/abuzaforfagun/dynamodb-movie-book/actor-api/internal/configuration"
+	"github.com/abuzaforfagun/dynamodb-movie-book/actor-api/internal/infrastructure"
 	"github.com/aws/aws-sdk-go-v2/aws"
 	"github.com/aws/aws-sdk-go-v2/service/dynamodb"
 	"github.com/aws/aws-sdk-go-v2/service/dynamodb/types"
 )
-
-const GSI_NAME = "GSI"
-const GSI_PK = "GSI_PK"
-const GSI_SK = "GSI_SK"
 
 type DatabaseService struct {
 	Client    *dynamodb.Client

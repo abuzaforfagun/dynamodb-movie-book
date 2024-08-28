@@ -20,121 +20,6 @@ const docTemplate = `{
     "host": "{{.Host}}",
     "basePath": "{{.BasePath}}",
     "paths": {
-        "/actors": {
-            "post": {
-                "description": "Add acotr with thumbnail image and multiple picture files",
-                "consumes": [
-                    "multipart/form-data"
-                ],
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "actors"
-                ],
-                "summary": "Add new actor",
-                "parameters": [
-                    {
-                        "type": "string",
-                        "name": "date_of_birth",
-                        "in": "formData"
-                    },
-                    {
-                        "type": "string",
-                        "name": "name",
-                        "in": "formData"
-                    },
-                    {
-                        "type": "file",
-                        "description": "Upload thumbnail image",
-                        "name": "thumbnail",
-                        "in": "formData",
-                        "required": true
-                    },
-                    {
-                        "type": "file",
-                        "description": "Upload multiple pictures (Swagger 2.0 UI does not support multiple file upload, use curl or Postman)",
-                        "name": "pictures",
-                        "in": "formData"
-                    }
-                ],
-                "responses": {
-                    "201": {
-                        "description": "Created",
-                        "schema": {
-                            "$ref": "#/definitions/response_model.CreateActorResponse"
-                        }
-                    }
-                }
-            }
-        },
-        "/actors/{id}": {
-            "get": {
-                "description": "Get actor details",
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "actors"
-                ],
-                "summary": "Get actor details",
-                "parameters": [
-                    {
-                        "type": "string",
-                        "description": "Actor id",
-                        "name": "id",
-                        "in": "query",
-                        "required": true
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "OK",
-                        "schema": {
-                            "type": "array",
-                            "items": {
-                                "$ref": "#/definitions/response_model.ActorDetails"
-                            }
-                        }
-                    }
-                }
-            }
-        },
-        "/actors/{id}/photos": {
-            "post": {
-                "description": "Add pictures of the actor",
-                "consumes": [
-                    "multipart/form-data"
-                ],
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "actors"
-                ],
-                "summary": "Add picture of actor",
-                "parameters": [
-                    {
-                        "type": "integer",
-                        "description": "actor id",
-                        "name": "id",
-                        "in": "query",
-                        "required": true
-                    },
-                    {
-                        "type": "file",
-                        "description": "Upload multiple pictures (Swagger 2.0 UI does not support multiple file upload, use curl or Postman)",
-                        "name": "pictures",
-                        "in": "formData"
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "OK"
-                    }
-                }
-            }
-        },
         "/movie/{id}/reviews/{review_id}": {
             "delete": {
                 "description": "Add review",
@@ -452,40 +337,6 @@ const docTemplate = `{
                 }
             }
         },
-        "response_model.ActorDetails": {
-            "type": "object",
-            "properties": {
-                "id": {
-                    "type": "integer"
-                },
-                "movies": {
-                    "type": "array",
-                    "items": {
-                        "$ref": "#/definitions/response_model.MovieOfActor"
-                    }
-                },
-                "pictures": {
-                    "type": "array",
-                    "items": {
-                        "type": "string"
-                    }
-                },
-                "string": {
-                    "type": "string"
-                },
-                "thumbnail_url": {
-                    "type": "string"
-                }
-            }
-        },
-        "response_model.CreateActorResponse": {
-            "type": "object",
-            "properties": {
-                "actor_id": {
-                    "type": "string"
-                }
-            }
-        },
         "response_model.CreateMovieResponse": {
             "type": "object",
             "properties": {
@@ -576,23 +427,6 @@ const docTemplate = `{
                     }
                 },
                 "title": {
-                    "type": "string"
-                }
-            }
-        },
-        "response_model.MovieOfActor": {
-            "type": "object",
-            "properties": {
-                "id": {
-                    "type": "string"
-                },
-                "name": {
-                    "type": "string"
-                },
-                "score": {
-                    "type": "number"
-                },
-                "thumbnail_url": {
                     "type": "string"
                 }
             }

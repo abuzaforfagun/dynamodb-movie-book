@@ -4,12 +4,10 @@ import (
 	"encoding/json"
 	"net/http"
 	"net/http/httptest"
-	"reflect"
 	"strings"
 	"testing"
 
 	"github.com/abuzaforfagun/dynamodb-movie-book/api/internal/models/custom_errors"
-	db_model "github.com/abuzaforfagun/dynamodb-movie-book/api/internal/models/db"
 	request_model "github.com/abuzaforfagun/dynamodb-movie-book/api/internal/models/requests"
 	"github.com/abuzaforfagun/dynamodb-movie-book/api/internal/models/response_model"
 	"github.com/gin-gonic/gin"
@@ -18,7 +16,17 @@ import (
 
 type MockMovieService struct{}
 
-func (m *MockMovieService) Add(movie *request_model.AddMovie, actors []db_model.MovieActor) (string, error) {
+var validActorId string = "b4ba7c40-fdf2-4446-975e-b74c78a4c852"
+
+func (m *MockMovieService) Add(movie *request_model.AddMovie) (string, error) {
+	for _, actor := range movie.Actors {
+		_, err := actor.Role.ToString()
+		if actor.ActorId != validActorId || err != nil {
+			return "", &custom_errors.BadRequestError{
+				Message: "Invalid actor id",
+			}
+		}
+	}
 	return uuid.NewString(), nil
 }
 
@@ -51,33 +59,10 @@ func (m *MockMovieService) Get(movieId string) (*response_model.MovieDetails, er
 	return nil, nil
 }
 
-type MockActorRepository struct {
-}
-
-func (m *MockActorRepository) Add(actor *db_model.AddActor) error {
-	return nil
-}
-func (m *MockActorRepository) Get(actorIds []string) (*[]db_model.ActorInfo, error) {
-	validActorIds := []string{"b4ba7c40-fdf2-4446-975e-b74c78a4c852"}
-
-	if reflect.DeepEqual(validActorIds, actorIds) {
-		return &[]db_model.ActorInfo{
-			{
-				PK:   "ACTOR#b4ba7c40-fdf2-4446-975e-b74c78a4c852",
-				SK:   "ACTOR#b4ba7c40-fdf2-4446-975e-b74c78a4c852",
-				Id:   "b4ba7c40-fdf2-4446-975e-b74c78a4c852",
-				Name: "Jack",
-			},
-		}, nil
-	}
-	return &[]db_model.ActorInfo{}, nil
-}
-
 func Test_GetAllMovies(t *testing.T) {
 	t.Run("Should return Ok status", func(t *testing.T) {
 		movieService := &MockMovieService{}
-		actorRepository := &MockActorRepository{}
-		handler := New(movieService, actorRepository)
+		handler := New(movieService)
 
 		router := gin.Default()
 		router.GET("/movies", handler.GetAllMovies)
@@ -98,8 +83,7 @@ func Test_GetAllMovies(t *testing.T) {
 
 func Test_GetMovieDetails(t *testing.T) {
 	movieService := &MockMovieService{}
-	actorRepository := &MockActorRepository{}
-	handler := New(movieService, actorRepository)
+	handler := New(movieService)
 
 	router := gin.Default()
 	router.GET("/movies/:id", handler.GetMovieDetails)
@@ -142,8 +126,7 @@ func Test_GetMovieDetails(t *testing.T) {
 
 func Test_GetMoviesByGenre(t *testing.T) {
 	movieService := &MockMovieService{}
-	actorRepository := &MockActorRepository{}
-	handler := New(movieService, actorRepository)
+	handler := New(movieService)
 
 	router := gin.Default()
 	router.GET("/movies/genres/:genre", handler.GetMoviesByGenre)
@@ -188,13 +171,11 @@ func Test_GetMoviesByGenre(t *testing.T) {
 
 func Test_AddMovie(t *testing.T) {
 	movieService := &MockMovieService{}
-	actorRepository := &MockActorRepository{}
-	handler := New(movieService, actorRepository)
+	handler := New(movieService)
 
 	router := gin.Default()
 	router.POST("/movies", handler.AddMovie)
 
-	validActorId := "b4ba7c40-fdf2-4446-975e-b74c78a4c852"
 	tests := []struct {
 		testName           string
 		expectedStatusCode int
@@ -321,8 +302,7 @@ func Test_AddMovie(t *testing.T) {
 
 func Test_DeleteMovie(t *testing.T) {
 	movieService := &MockMovieService{}
-	actorRepository := &MockActorRepository{}
-	handler := New(movieService, actorRepository)
+	handler := New(movieService)
 
 	router := gin.Default()
 	router.DELETE("/movies/:id", handler.DeleteMovie)

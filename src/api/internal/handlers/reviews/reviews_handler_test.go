@@ -36,7 +36,7 @@ func (r *MockReviewService) Delete(movieId string, userId string) error {
 
 type MockMovieService struct{}
 
-func (m *MockMovieService) Add(movie *request_model.AddMovie, actors []db_model.MovieActor) (string, error) {
+func (m *MockMovieService) Add(movie *request_model.AddMovie) (string, error) {
 	return "", nil
 }
 func (m *MockMovieService) GetAll(searchQuery string) (*[]response_model.Movie, error) {

@@ -3,7 +3,7 @@ package db_model
 import (
 	"time"
 
-	"github.com/abuzaforfagun/dynamodb-movie-book/api/internal/models/custom_errors"
+	"github.com/abuzaforfagun/dynamodb-movie-book/actor-api/internal/models/custom_errors"
 )
 
 type AddActor struct {

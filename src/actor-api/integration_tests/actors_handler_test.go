@@ -1,7 +1,7 @@
 //go:build integration
 // +build integration
 
-package actors_handler_tests
+package integration_tests
 
 import (
 	"bytes"
@@ -13,10 +13,9 @@ import (
 	"os"
 	"testing"
 
-	database_setup "github.com/abuzaforfagun/dynamodb-movie-book/api/integration_tests"
-	actors_handler "github.com/abuzaforfagun/dynamodb-movie-book/api/internal/handlers/actors"
-	"github.com/abuzaforfagun/dynamodb-movie-book/api/internal/models/response_model"
-	"github.com/abuzaforfagun/dynamodb-movie-book/api/internal/repositories"
+	"github.com/abuzaforfagun/dynamodb-movie-book/actor-api/internal/handlers"
+	"github.com/abuzaforfagun/dynamodb-movie-book/actor-api/internal/models/response_model"
+	"github.com/abuzaforfagun/dynamodb-movie-book/actor-api/internal/repositories"
 	"github.com/aws/aws-sdk-go-v2/aws"
 	"github.com/aws/aws-sdk-go-v2/service/dynamodb"
 	"github.com/aws/aws-sdk-go-v2/service/dynamodb/types"
@@ -25,13 +24,13 @@ import (
 
 func TestMain(m *testing.M) {
 	// Set up the test database
-	database_setup.SetupTestDatabase()
+	SetupTestDatabase()
 
 	// Run the tests
 	code := m.Run()
 
 	// Tear down the test database
-	database_setup.TearDownTestDatabase()
+	TearDownTestDatabase()
 
 	// Exit with the test result code
 	os.Exit(code)
@@ -42,8 +41,8 @@ func TestAddActor_ValidInput(t *testing.T) {
 	gin.SetMode(gin.TestMode)
 	router := gin.Default()
 
-	actorRepository := repositories.NewActorRepository(database_setup.DbService.Client, database_setup.DbService.TableName)
-	handler := actors_handler.New(actorRepository)
+	actorRepository := repositories.NewActorRepository(DbService.Client, DbService.TableName)
+	handler := handlers.NewActorHandler(actorRepository)
 	router.POST("/actors", handler.Add)
 
 	// Create a request payload
@@ -77,8 +76,8 @@ func TestAddActor_ValidInput(t *testing.T) {
 	}
 
 	actorId := "ACTOR#" + response.ActorId
-	result, err := database_setup.DbService.Client.GetItem(context.TODO(), &dynamodb.GetItemInput{
-		TableName: aws.String(database_setup.DbService.TableName),
+	result, err := DbService.Client.GetItem(context.TODO(), &dynamodb.GetItemInput{
+		TableName: aws.String(DbService.TableName),
 		Key: map[string]types.AttributeValue{
 			"PK": &types.AttributeValueMemberS{Value: actorId},
 			"SK": &types.AttributeValueMemberS{Value: actorId},
@@ -99,8 +98,8 @@ func TestAddActor_InValidInput(t *testing.T) {
 	gin.SetMode(gin.TestMode)
 	router := gin.Default()
 
-	actorRepository := repositories.NewActorRepository(database_setup.DbService.Client, database_setup.DbService.TableName)
-	handler := actors_handler.New(actorRepository)
+	actorRepository := repositories.NewActorRepository(DbService.Client, DbService.TableName)
+	handler := handlers.NewActorHandler(actorRepository)
 	router.POST("/actors", handler.Add)
 
 	tests := []struct {

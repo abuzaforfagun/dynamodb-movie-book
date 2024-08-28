@@ -1,15 +1,15 @@
-package actors_handler
+package handlers
 
 import (
 	"log"
 	"net/http"
 	"time"
 
-	"github.com/abuzaforfagun/dynamodb-movie-book/api/internal/models/custom_errors"
-	db_model "github.com/abuzaforfagun/dynamodb-movie-book/api/internal/models/db"
-	request_model "github.com/abuzaforfagun/dynamodb-movie-book/api/internal/models/requests"
-	"github.com/abuzaforfagun/dynamodb-movie-book/api/internal/models/response_model"
-	"github.com/abuzaforfagun/dynamodb-movie-book/api/internal/repositories"
+	"github.com/abuzaforfagun/dynamodb-movie-book/actor-api/internal/models/custom_errors"
+	db_model "github.com/abuzaforfagun/dynamodb-movie-book/actor-api/internal/models/db"
+	request_model "github.com/abuzaforfagun/dynamodb-movie-book/actor-api/internal/models/requests"
+	"github.com/abuzaforfagun/dynamodb-movie-book/actor-api/internal/models/response_model"
+	"github.com/abuzaforfagun/dynamodb-movie-book/actor-api/internal/repositories"
 	"github.com/gin-gonic/gin"
 	"github.com/google/uuid"
 )
@@ -18,7 +18,7 @@ type ActorsHandler struct {
 	actorRepository repositories.ActorRepository
 }
 
-func New(actorRepository repositories.ActorRepository) *ActorsHandler {
+func NewActorHandler(actorRepository repositories.ActorRepository) *ActorsHandler {
 	return &ActorsHandler{
 		actorRepository: actorRepository,
 	}
@@ -111,6 +111,44 @@ func (h *ActorsHandler) Add(c *gin.Context) {
 	}
 
 	c.JSON(http.StatusCreated, response)
+}
+
+// @Summary Get user details
+// @Description Get user details
+// @Tags actors
+// @Param payload body request_model.GetActors true "actor ids"
+// @Produce json
+// @Success 200 {array} response_model.ActorInfo
+// @Router /actors/info [post]
+func (h *ActorsHandler) GetActorsBasicInfo(c *gin.Context) {
+	var requestModel request_model.GetActors
+	err := c.BindJSON(&requestModel)
+	if err != nil {
+		err := &custom_errors.BadRequestError{
+			Message: "Please verify payload",
+		}
+		c.JSON(http.StatusBadRequest, err)
+		return
+	}
+
+	if len(requestModel.ActorIds) == 0 {
+		c.JSON(http.StatusBadRequest, gin.H{})
+		return
+	}
+
+	result, err := h.actorRepository.Get(requestModel.ActorIds)
+
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, err)
+		return
+	}
+
+	if result == nil {
+		c.JSON(http.StatusNotFound, gin.H{})
+		return
+	}
+
+	c.JSON(http.StatusOK, &result)
 }
 
 func deleteUploadedPhotos(photos []string) {

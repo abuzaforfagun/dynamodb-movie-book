@@ -1,7 +1,7 @@
 //go:build integration
 // +build integration
 
-package movies_handler_tests
+package movies_handler_test
 
 import (
 	"bytes"
@@ -14,7 +14,7 @@ import (
 	"testing"
 	"time"
 
-	database_setup "github.com/abuzaforfagun/dynamodb-movie-book/api/integration_tests"
+	"github.com/abuzaforfagun/dynamodb-movie-book/api/integration_tests"
 	movies_handler "github.com/abuzaforfagun/dynamodb-movie-book/api/internal/handlers/movies"
 	"github.com/abuzaforfagun/dynamodb-movie-book/api/internal/infrastructure"
 	db_model "github.com/abuzaforfagun/dynamodb-movie-book/api/internal/models/db"
@@ -30,41 +30,57 @@ import (
 	"github.com/google/uuid"
 )
 
+var (
+	ValidUserId     string = uuid.NewString()
+	MockActorServer *httptest.Server
+	MockUserServer  *httptest.Server
+)
+
 func TestMain(m *testing.M) {
 	// Set up the test database
-	database_setup.SetupTestDatabase()
+	integration_tests.SetupTestDatabase()
+	mockActorHandler := http.HandlerFunc(integration_tests.ActorHandler)
+	MockActorServer = httptest.NewServer(mockActorHandler)
+
+	MockUserServer = httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		if r.URL.Path == "/"+ValidUserId+"/info" {
+			w.WriteHeader(http.StatusOK)
+			w.Write([]byte(`{"name": "Jack"}`))
+		} else {
+			w.WriteHeader(http.StatusNotFound)
+		}
+	}))
 
 	// Run the tests
 	code := m.Run()
 
 	// Tear down the test database
-	database_setup.TearDownTestDatabase()
+	integration_tests.TearDownTestDatabase()
+
+	defer MockActorServer.Close()
+	defer MockUserServer.Close()
 
 	// Exit with the test result code
 	os.Exit(code)
 }
 
 func newMovieHandler() *movies_handler.MoviesHandler {
-	actorRepository := repositories.NewActorRepository(database_setup.DbService.Client, database_setup.DbService.TableName)
-	movieRepository := repositories.NewMovieRepository(database_setup.DbService.Client, database_setup.DbService.TableName)
-	reviewRepository := repositories.NewReviewRepository(database_setup.DbService.Client, database_setup.DbService.TableName)
+	movieRepository := repositories.NewMovieRepository(integration_tests.DbService.Client, integration_tests.DbService.TableName)
+	reviewRepository := repositories.NewReviewRepository(integration_tests.DbService.Client, integration_tests.DbService.TableName)
 
 	serverUri := os.Getenv("AMQP_SERVER_URL")
 	movieAddedExchangeName := os.Getenv("EXCHANGE_NAME_MOVIE_ADDED")
 
 	rabbitMq := infrastructure.NewRabbitMQ(serverUri)
 
-	mockServer := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		w.WriteHeader(http.StatusOK)
-		w.Write([]byte(`{"key": "value"}`))
-	}))
-	defer mockServer.Close()
 	httpClient := &http.Client{}
-	userService := services.NewUserService(httpClient, mockServer.URL)
+	userService := services.NewUserService(httpClient, MockUserServer.URL)
+
+	actorService := services.NewActorService(httpClient, MockActorServer.URL)
 
 	reviewService := services.NewReviewService(reviewRepository, userService)
-	moviesService := services.NewMovieService(movieRepository, reviewService, rabbitMq, movieAddedExchangeName)
-	return movies_handler.New(moviesService, actorRepository)
+	moviesService := services.NewMovieService(movieRepository, reviewService, rabbitMq, actorService, movieAddedExchangeName)
+	return movies_handler.New(moviesService)
 }
 func TestGetAll(t *testing.T) {
 	// Setup Gin router
@@ -76,8 +92,8 @@ func TestGetAll(t *testing.T) {
 	movie1, _ := db_model.NewMovieModel(uuid.NewString(), "Movie 1", 2024, []string{"history"}, nil)
 	movie2, _ := db_model.NewMovieModel(uuid.NewString(), "Movie 2", 2024, []string{"documentary"}, nil)
 
-	database_setup.AddItem(movie1)
-	database_setup.AddItem(movie2)
+	integration_tests.AddItem(movie1)
+	integration_tests.AddItem(movie2)
 
 	router.GET("/movies", handler.GetAllMovies)
 
@@ -116,8 +132,8 @@ func TestSearch(t *testing.T) {
 	movie1, _ := db_model.NewMovieModel(uuid.NewString(), "Catch me if you can", 2024, []string{"history"}, nil)
 	movie2, _ := db_model.NewMovieModel(uuid.NewString(), "Now you see me", 2024, []string{"documentary"}, nil)
 
-	database_setup.AddItem(movie1)
-	database_setup.AddItem(movie2)
+	integration_tests.AddItem(movie1)
+	integration_tests.AddItem(movie2)
 
 	router.GET("/movies", handler.GetAllMovies)
 
@@ -156,8 +172,8 @@ func TestGetMovieDetails_InvalidMovieId(t *testing.T) {
 	movie1, _ := db_model.NewMovieModel(uuid.NewString(), "Catch me if you can", 2024, []string{"history"}, nil)
 	movie2, _ := db_model.NewMovieModel(uuid.NewString(), "Now you see me", 2024, []string{"documentary"}, nil)
 
-	database_setup.AddItem(movie1)
-	database_setup.AddItem(movie2)
+	integration_tests.AddItem(movie1)
+	integration_tests.AddItem(movie2)
 
 	router.GET("/movies/:id", handler.GetMovieDetails)
 
@@ -188,8 +204,8 @@ func TestGetMovieDetails(t *testing.T) {
 	movie1, _ := db_model.NewMovieModel(movie1Id, "Catch me if you can", 2024, []string{"history"}, movie1Actors)
 	movie2, _ := db_model.NewMovieModel(movie2Id, "Now you see me", 2024, []string{"documentary"}, nil)
 
-	database_setup.AddItem(movie1)
-	database_setup.AddItem(movie2)
+	integration_tests.AddItem(movie1)
+	integration_tests.AddItem(movie2)
 
 	router.GET("/movies/:id", handler.GetMovieDetails)
 
@@ -233,9 +249,9 @@ func TestGetMoviesByGenre(t *testing.T) {
 	genreMovie2 := NewGenre("documentary", uuid.NewString(), "Movie 2", 2024)
 	genreMovie3 := NewGenre("documentary", uuid.NewString(), "Movie 3", 2024)
 
-	database_setup.AddItem(genreMovie1)
-	database_setup.AddItem(genreMovie2)
-	database_setup.AddItem(genreMovie3)
+	integration_tests.AddItem(genreMovie1)
+	integration_tests.AddItem(genreMovie2)
+	integration_tests.AddItem(genreMovie3)
 
 	router.GET("/movies/genres/:genre", handler.GetMoviesByGenre)
 
@@ -297,14 +313,6 @@ func TestAddMovie(t *testing.T) {
 
 	handler := newMovieHandler()
 
-	actor1Id := uuid.NewString()
-	actor1, _ := db_model.NewAddActor(actor1Id, "Jack", "1990-02-01", "", []string{})
-	actor2Id := uuid.NewString()
-	actor2, _ := db_model.NewAddActor(actor2Id, "Nick", "1991-02-01", "", []string{})
-
-	database_setup.AddItem(actor1)
-	database_setup.AddItem(actor2)
-
 	router.POST("/movies", handler.AddMovie)
 
 	tests := []struct {
@@ -352,7 +360,7 @@ func TestAddMovie(t *testing.T) {
 		{
 			TestName:           "Should return 201, for valid movie payload",
 			MovieTitle:         "PK",
-			Actors:             []string{actor1Id, actor2Id},
+			Actors:             []string{integration_tests.ValidActor1Id, integration_tests.ValidActor2Id},
 			Genres:             []string{"comedy", "action"},
 			ExpectedStatusCode: http.StatusCreated,
 			ExpectedError:      false,
@@ -401,8 +409,8 @@ func TestAddMovie(t *testing.T) {
 				}
 
 				movieId := "MOVIE#" + response.MovieId
-				result, err := database_setup.DbService.Client.GetItem(context.TODO(), &dynamodb.GetItemInput{
-					TableName: aws.String(database_setup.DbService.TableName),
+				result, err := integration_tests.DbService.Client.GetItem(context.TODO(), &dynamodb.GetItemInput{
+					TableName: aws.String(integration_tests.DbService.TableName),
 					Key: map[string]types.AttributeValue{
 						"PK": &types.AttributeValueMemberS{Value: movieId},
 						"SK": &types.AttributeValueMemberS{Value: movieId},
@@ -449,7 +457,7 @@ func TestDeleteMovie(t *testing.T) {
 		{ActorId: uuid.NewString(), Name: "Cat", Role: "Lead Heroin"},
 	}
 	movie1, _ := db_model.NewMovieModel(movie1Id, "Catch me if you can", 2024, []string{"history"}, movie1Actors)
-	database_setup.AddItem(movie1)
+	integration_tests.AddItem(movie1)
 
 	router.DELETE("/movies/:id", handler.DeleteMovie)
 
@@ -506,8 +514,8 @@ func TestDeleteMovie(t *testing.T) {
 
 func getMovie(movieId string) (map[string]types.AttributeValue, error) {
 	pk := "MOVIE#" + movieId
-	result, err := database_setup.DbService.Client.GetItem(context.TODO(), &dynamodb.GetItemInput{
-		TableName: aws.String(database_setup.DbService.TableName),
+	result, err := integration_tests.DbService.Client.GetItem(context.TODO(), &dynamodb.GetItemInput{
+		TableName: aws.String(integration_tests.DbService.TableName),
 		Key: map[string]types.AttributeValue{
 			"PK": &types.AttributeValueMemberS{Value: pk},
 			"SK": &types.AttributeValueMemberS{Value: pk},

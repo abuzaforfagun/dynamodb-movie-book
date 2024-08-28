@@ -2,6 +2,8 @@
 
 api:
 	cd src/api && swag init -g cmd/main.go && cd cmd && go run .
+actor-api:
+	cd src/actor-api && swag init -g cmd/main.go && cd cmd && go run .
 
 user-api:
 	cd src/user-api && swag init -g cmd/main.go && cd cmd && go run .
@@ -17,6 +19,14 @@ actor-event-processor:
 
 api-unit-test:
 	cd src/api && go test -tags='!integration' ./...
+user-api-unit-test:
+	cd src/user-api && go test -tags='!integration' ./...
+actor-api-unit-test:
+	cd src/user-api && go test -tags='!integration' ./...
 
 api-integration-test:
+	cd src/api/integration_tests && go test -tags=integration  ./...
+user-api-integration-test:
+	cd src/api/integration_tests && go test -tags=integration  ./...
+actor-integration-test:
 	cd src/api/integration_tests && go test -tags=integration  ./...

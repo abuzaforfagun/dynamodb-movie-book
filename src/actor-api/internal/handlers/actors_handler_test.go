@@ -1,4 +1,4 @@
-package actors_handler
+package handlers
 
 import (
 	"bytes"
@@ -7,7 +7,8 @@ import (
 	"net/http/httptest"
 	"testing"
 
-	db_model "github.com/abuzaforfagun/dynamodb-movie-book/api/internal/models/db"
+	db_model "github.com/abuzaforfagun/dynamodb-movie-book/actor-api/internal/models/db"
+	"github.com/abuzaforfagun/dynamodb-movie-book/actor-api/internal/models/response_model"
 	"github.com/gin-gonic/gin"
 )
 
@@ -17,13 +18,13 @@ type MockActorRepository struct {
 func (m *MockActorRepository) Add(actor *db_model.AddActor) error {
 	return nil
 }
-func (m *MockActorRepository) Get(actorIds []string) (*[]db_model.ActorInfo, error) {
+func (m *MockActorRepository) Get(actorIds []string) (*[]response_model.ActorInfo, error) {
 	return nil, nil
 }
 
 func TestAdd_InvalidName_ShouldReturn_BadRequest(t *testing.T) {
 	mockRepo := &MockActorRepository{}
-	handler := New(mockRepo)
+	handler := NewActorHandler(mockRepo)
 
 	router := gin.Default()
 	router.POST("/actors", handler.Add)
@@ -50,7 +51,7 @@ func TestAdd_InvalidName_ShouldReturn_BadRequest(t *testing.T) {
 
 func TestAdd_InvalidDateOfBirth_ShouldReturn_BadRequest(t *testing.T) {
 	mockRepo := &MockActorRepository{}
-	handler := New(mockRepo)
+	handler := NewActorHandler(mockRepo)
 
 	router := gin.Default()
 	router.POST("/actors", handler.Add)

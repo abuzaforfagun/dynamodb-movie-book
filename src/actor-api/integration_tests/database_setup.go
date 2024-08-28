@@ -6,9 +6,9 @@ import (
 	"log"
 	"os"
 
-	"github.com/abuzaforfagun/dynamodb-movie-book/api/internal/configuration"
-	"github.com/abuzaforfagun/dynamodb-movie-book/api/internal/database"
-	"github.com/abuzaforfagun/dynamodb-movie-book/api/internal/initializers"
+	"github.com/abuzaforfagun/dynamodb-movie-book/actor-api/internal/configuration"
+	"github.com/abuzaforfagun/dynamodb-movie-book/actor-api/internal/database"
+	"github.com/abuzaforfagun/dynamodb-movie-book/actor-api/internal/initializers"
 	"github.com/aws/aws-sdk-go-v2/aws"
 	"github.com/aws/aws-sdk-go-v2/feature/dynamodb/attributevalue"
 	"github.com/aws/aws-sdk-go-v2/service/dynamodb"

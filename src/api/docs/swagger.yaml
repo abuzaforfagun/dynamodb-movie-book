@@ -49,28 +49,6 @@ definitions:
         description: 'TODO: Need to get from the logged in user'
         type: string
     type: object
-  response_model.ActorDetails:
-    properties:
-      id:
-        type: integer
-      movies:
-        items:
-          $ref: '#/definitions/response_model.MovieOfActor'
-        type: array
-      pictures:
-        items:
-          type: string
-        type: array
-      string:
-        type: string
-      thumbnail_url:
-        type: string
-    type: object
-  response_model.CreateActorResponse:
-    properties:
-      actor_id:
-        type: string
-    type: object
   response_model.CreateMovieResponse:
     properties:
       movie_id:
@@ -132,17 +110,6 @@ definitions:
       title:
         type: string
     type: object
-  response_model.MovieOfActor:
-    properties:
-      id:
-        type: string
-      name:
-        type: string
-      score:
-        type: number
-      thumbnail_url:
-        type: string
-    type: object
   response_model.Review:
     properties:
       comment:
@@ -163,83 +130,6 @@ info:
   title: Swagger Example API
   version: "1.0"
 paths:
-  /actors:
-    post:
-      consumes:
-      - multipart/form-data
-      description: Add acotr with thumbnail image and multiple picture files
-      parameters:
-      - in: formData
-        name: date_of_birth
-        type: string
-      - in: formData
-        name: name
-        type: string
-      - description: Upload thumbnail image
-        in: formData
-        name: thumbnail
-        required: true
-        type: file
-      - description: Upload multiple pictures (Swagger 2.0 UI does not support multiple
-          file upload, use curl or Postman)
-        in: formData
-        name: pictures
-        type: file
-      produces:
-      - application/json
-      responses:
-        "201":
-          description: Created
-          schema:
-            $ref: '#/definitions/response_model.CreateActorResponse'
-      summary: Add new actor
-      tags:
-      - actors
-  /actors/{id}:
-    get:
-      description: Get actor details
-      parameters:
-      - description: Actor id
-        in: query
-        name: id
-        required: true
-        type: string
-      produces:
-      - application/json
-      responses:
-        "200":
-          description: OK
-          schema:
-            items:
-              $ref: '#/definitions/response_model.ActorDetails'
-            type: array
-      summary: Get actor details
-      tags:
-      - actors
-  /actors/{id}/photos:
-    post:
-      consumes:
-      - multipart/form-data
-      description: Add pictures of the actor
-      parameters:
-      - description: actor id
-        in: query
-        name: id
-        required: true
-        type: integer
-      - description: Upload multiple pictures (Swagger 2.0 UI does not support multiple
-          file upload, use curl or Postman)
-        in: formData
-        name: pictures
-        type: file
-      produces:
-      - application/json
-      responses:
-        "200":
-          description: OK
-      summary: Add picture of actor
-      tags:
-      - actors
   /movie/{id}/reviews/{review_id}:
     delete:
       description: Add review

@@ -12,7 +12,7 @@ import (
 	"os"
 	"testing"
 
-	database_setup "github.com/abuzaforfagun/dynamodb-movie-book/api/integration_tests"
+	"github.com/abuzaforfagun/dynamodb-movie-book/api/integration_tests"
 	"github.com/abuzaforfagun/dynamodb-movie-book/api/integration_tests/models"
 	reviews_handler "github.com/abuzaforfagun/dynamodb-movie-book/api/internal/handlers/reviews"
 	"github.com/abuzaforfagun/dynamodb-movie-book/api/internal/infrastructure"
@@ -29,37 +29,23 @@ import (
 	"github.com/google/uuid"
 )
 
-func TestMain(m *testing.M) {
-	// Set up the test database
-	database_setup.SetupTestDatabase()
-
-	// Run the tests
-	code := m.Run()
-
-	// Tear down the test database
-	database_setup.TearDownTestDatabase()
-	mockServer.Close()
-
-	// Exit with the test result code
-	os.Exit(code)
-}
-
 var (
-	userId     string = uuid.NewString()
-	mockServer *httptest.Server
+	MockUserServer  *httptest.Server
+	MockActorServer *httptest.Server
+	ValidUserId     string = uuid.NewString()
 )
 
-func newReviewHandler() *reviews_handler.ReviewHandler {
-	movieRepository := repositories.NewMovieRepository(database_setup.DbService.Client, database_setup.DbService.TableName)
-	reviewRepository := repositories.NewReviewRepository(database_setup.DbService.Client, database_setup.DbService.TableName)
+func TestMain(m *testing.M) {
+	// Set up the test database
+	integration_tests.SetupTestDatabase()
 
-	serverUri := os.Getenv("AMQP_SERVER_URL")
-	movieAddedExchangeName := os.Getenv("EXCHANGE_NAME_MOVIE_ADDED")
+	MockActorServer = httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		w.WriteHeader(http.StatusOK)
+		w.Write([]byte(`{"key": "value"}`))
+	}))
 
-	rabbitMq := infrastructure.NewRabbitMQ(serverUri)
-
-	mockServer = httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		if r.URL.Path == "/"+userId+"/info" {
+	MockUserServer = httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		if r.URL.Path == "/"+ValidUserId+"/info" {
 			w.WriteHeader(http.StatusOK)
 			w.Write([]byte(`{"name": "Jack"}`))
 		} else {
@@ -67,11 +53,36 @@ func newReviewHandler() *reviews_handler.ReviewHandler {
 		}
 	}))
 
+	// Run the tests
+	code := m.Run()
+
+	// Tear down the test database
+	integration_tests.TearDownTestDatabase()
+
+	defer MockActorServer.Close()
+	defer MockUserServer.Close()
+
+	// Exit with the test result code
+	os.Exit(code)
+}
+
+func newReviewHandler() *reviews_handler.ReviewHandler {
+	movieRepository := repositories.NewMovieRepository(integration_tests.DbService.Client, integration_tests.DbService.TableName)
+	reviewRepository := repositories.NewReviewRepository(integration_tests.DbService.Client, integration_tests.DbService.TableName)
+
+	serverUri := os.Getenv("AMQP_SERVER_URL")
+	movieAddedExchangeName := os.Getenv("EXCHANGE_NAME_MOVIE_ADDED")
+
+	rabbitMq := infrastructure.NewRabbitMQ(serverUri)
+
 	httpClient := &http.Client{}
-	userService := services.NewUserService(httpClient, mockServer.URL)
+
+	userService := services.NewUserService(httpClient, MockUserServer.URL)
+
+	actorService := services.NewActorService(httpClient, MockActorServer.URL)
 
 	reviewService := services.NewReviewService(reviewRepository, userService)
-	moviesService := services.NewMovieService(movieRepository, reviewService, rabbitMq, movieAddedExchangeName)
+	moviesService := services.NewMovieService(movieRepository, reviewService, rabbitMq, actorService, movieAddedExchangeName)
 
 	return reviews_handler.New(reviewService, moviesService)
 }
@@ -84,10 +95,10 @@ func TestAddReview(t *testing.T) {
 
 	movieId := uuid.NewString()
 	movie1, _ := db_model.NewMovieModel(movieId, "Movie 1", 2024, []string{"history"}, nil)
-	database_setup.AddItem(movie1)
+	integration_tests.AddItem(movie1)
 
-	user1 := models.NewAddUser(userId, "Jack", "jack@email.com")
-	database_setup.AddItem(user1)
+	user1 := models.NewAddUser(ValidUserId, "Jack", "jack@email.com")
+	integration_tests.AddItem(user1)
 
 	router.POST("/movies/:id/reviews", handler.AddReview)
 
@@ -109,14 +120,14 @@ func TestAddReview(t *testing.T) {
 		{
 			TestName:           "Should return bad request for invalid movie id",
 			MovieId:            uuid.NewString(),
-			UserId:             userId,
+			UserId:             ValidUserId,
 			ExpectedStatusCode: http.StatusBadRequest,
 			ExpectedMovieScore: 0,
 		},
 		{
 			TestName:           "Should works for valid request",
 			MovieId:            movieId,
-			UserId:             userId,
+			UserId:             ValidUserId,
 			ExpectedStatusCode: http.StatusAccepted,
 			Rating:             1,
 			ExpectedMovieScore: 1,
@@ -143,8 +154,8 @@ func TestAddReview(t *testing.T) {
 			}
 
 			movieId := "MOVIE#" + test.MovieId
-			result, err := database_setup.DbService.Client.GetItem(context.TODO(), &dynamodb.GetItemInput{
-				TableName: aws.String(database_setup.DbService.TableName),
+			result, err := integration_tests.DbService.Client.GetItem(context.TODO(), &dynamodb.GetItemInput{
+				TableName: aws.String(integration_tests.DbService.TableName),
 				Key: map[string]types.AttributeValue{
 					"PK": &types.AttributeValueMemberS{Value: movieId},
 					"SK": &types.AttributeValueMemberS{Value: movieId},

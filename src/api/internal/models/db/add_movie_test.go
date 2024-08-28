@@ -9,13 +9,6 @@ import (
 )
 
 func TestNewAddMovie(t *testing.T) {
-	t.Run("Should throw error for empty movie id", func(t *testing.T) {
-		_, err := NewAddActor("", "", "", "", nil)
-
-		if err == nil {
-			t.Error("Expected error")
-		}
-	})
 
 	t.Run("Should generate correct PK", func(t *testing.T) {
 		movieId := uuid.New().String()

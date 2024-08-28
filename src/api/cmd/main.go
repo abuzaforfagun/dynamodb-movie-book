@@ -8,7 +8,6 @@ import (
 	_ "github.com/abuzaforfagun/dynamodb-movie-book/api/docs"
 	"github.com/abuzaforfagun/dynamodb-movie-book/api/internal/configuration"
 	"github.com/abuzaforfagun/dynamodb-movie-book/api/internal/database"
-	actors_handler "github.com/abuzaforfagun/dynamodb-movie-book/api/internal/handlers/actors"
 	movies_handler "github.com/abuzaforfagun/dynamodb-movie-book/api/internal/handlers/movies"
 	reviews_handler "github.com/abuzaforfagun/dynamodb-movie-book/api/internal/handlers/reviews"
 	"github.com/abuzaforfagun/dynamodb-movie-book/api/internal/infrastructure"
@@ -60,7 +59,6 @@ func main() {
 	rabbitMq.DeclareFanoutExchange(movieAddedExchageName)
 	rabbitMq.DeclareFanoutExchange(userUpdatedExchageName)
 
-	actorRepository := repositories.NewActorRepository(dbService.Client, dbService.TableName)
 	movieRepository := repositories.NewMovieRepository(dbService.Client, dbService.TableName)
 	reviewRepository := repositories.NewReviewRepository(dbService.Client, dbService.TableName)
 
@@ -68,20 +66,20 @@ func main() {
 	userApiBaseAddress := os.Getenv("USER_API_BASE_ADDRESS")
 	userService := services.NewUserService(httpClient, userApiBaseAddress)
 
+	actorApiBaseAddress := os.Getenv("ACTOR_API_BASE_ADDRESS")
+	actorService := services.NewActorService(httpClient, actorApiBaseAddress)
+
 	reviewService := services.NewReviewService(reviewRepository, userService)
-	movieService := services.NewMovieService(movieRepository, reviewService, rabbitMq, movieAddedExchageName)
+	movieService := services.NewMovieService(movieRepository, reviewService, rabbitMq, actorService, movieAddedExchageName)
 
 	router := gin.Default()
 	router.GET("/swagger/*any", ginSwagger.WrapHandler(swaggerFiles.Handler))
 
-	movieHandler := movies_handler.New(movieService, actorRepository)
+	movieHandler := movies_handler.New(movieService)
 	routers.SetupMovies(router, movieHandler)
 
 	reviewHandler := reviews_handler.New(reviewService, movieService)
 	routers.SetupReviewes(router, reviewHandler)
-
-	actorHandler := actors_handler.New(actorRepository)
-	routers.SetupActors(router, actorHandler)
 
 	err = router.Run(":5001")
 
