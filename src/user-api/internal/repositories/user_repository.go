@@ -61,6 +61,10 @@ func (r *userRepository) GetInfo(userId string) (*response_model.UserInfo, error
 		return nil, err
 	}
 
+	if dbResponse == nil {
+		return nil, nil
+	}
+
 	var userInfo *response_model.UserInfo
 	err = attributevalue.UnmarshalMap(*dbResponse, &userInfo)
 	if err != nil {

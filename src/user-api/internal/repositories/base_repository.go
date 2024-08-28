@@ -2,7 +2,6 @@ package repositories
 
 import (
 	"context"
-	"errors"
 	"fmt"
 	"log"
 
@@ -63,7 +62,7 @@ func (r *baseRepository) GetOneByPKSK(ctx context.Context, pk string, sk string)
 
 	if result.Item == nil {
 		log.Printf("ERROR: [pk=%s] [sk=%s] not found\n", pk, sk)
-		return nil, errors.New("not found")
+		return nil, nil
 	}
 	return &result.Item, nil
 }

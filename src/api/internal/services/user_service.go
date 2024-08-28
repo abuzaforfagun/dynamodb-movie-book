@@ -2,6 +2,7 @@ package services
 
 import (
 	"encoding/json"
+	"errors"
 	"io"
 	"log"
 	"net/http"
@@ -46,6 +47,10 @@ func (s *userService) GetInfo(userId string) (*dto.UserInfo, error) {
 
 	if resp.StatusCode == http.StatusNotFound {
 		return nil, nil
+	}
+
+	if resp.StatusCode != http.StatusOK {
+		return nil, errors.New("Failed to retrieve user data")
 	}
 
 	body, err := io.ReadAll(resp.Body)

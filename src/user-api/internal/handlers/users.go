@@ -103,6 +103,7 @@ func (h *UserHandler) GetUserBasicInfo(c *gin.Context) {
 
 	if result == nil {
 		c.JSON(http.StatusNotFound, gin.H{})
+		return
 	}
 
 	c.JSON(http.StatusOK, &result)
