@@ -12,6 +12,9 @@ movie-event-processor:
 review-event-processor:
 	cd src/review-event-consumer/cmd && go run .
 
+actor-event-processor:
+	cd src/actor-event-consumer/cmd && go run .
+
 api-unit-test:
 	cd src/api && go test -tags='!integration' ./...
 

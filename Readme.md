@@ -6,7 +6,7 @@ _How to generate the swagger docs?_
 
 - `swag init -g cmd/api/main.go` from the root directory
 
-## Access patterns
+<!-- ## Access patterns
 
 MOVIE#1 MOVIE#1 MOVIE MOVIE#1 // MOVIE
 USER#1 USER#1 USER USER#1 // USER
@@ -21,4 +21,4 @@ Get all users: GSI_PK: USER
 Get single user: PK:USER#1 - user details - added review to movies
 Get all actors: GSI_PK: ACTOR
 Get single actor: ACTOR#1 - actor details - actor movies
-Get genre movies: GENRE#1
+Get genre movies: GENRE#1 -->
