@@ -3,13 +3,14 @@ package main
 import (
 	"fmt"
 	"log"
+	"net/http"
 	"os"
 
-	"github.com/abuzaforfagun/dynamodb-movie-book/user-event-consumer/internal/infrastructure"
-	"github.com/abuzaforfagun/dynamodb-movie-book/user-event-consumer/internal/initializers"
-	"github.com/abuzaforfagun/dynamodb-movie-book/user-event-consumer/internal/processor"
-	"github.com/abuzaforfagun/dynamodb-movie-book/user-event-consumer/internal/rabbitmq"
-	"github.com/abuzaforfagun/dynamodb-movie-book/user-event-consumer/internal/services"
+	"github.com/abuzaforfagun/dynamodb-movie-book/review-event-consumer/internal/infrastructure"
+	"github.com/abuzaforfagun/dynamodb-movie-book/review-event-consumer/internal/initializers"
+	"github.com/abuzaforfagun/dynamodb-movie-book/review-event-consumer/internal/processor"
+	"github.com/abuzaforfagun/dynamodb-movie-book/review-event-consumer/internal/rabbitmq"
+	"github.com/abuzaforfagun/dynamodb-movie-book/review-event-consumer/internal/services"
 )
 
 func main() {
@@ -30,7 +31,10 @@ func main() {
 	dynamoDbClient := infrastructure.NewDynamoDBClient(awsConfig)
 
 	reviewService := services.NewReviewService(dynamoDbClient, tableName)
-	userService := services.NewUserService(dynamoDbClient, tableName)
+
+	httpClient := &http.Client{}
+	userApiBaseAddress := os.Getenv("USER_API_BASE_ADDRESS")
+	userService := services.NewUserService(httpClient, userApiBaseAddress)
 
 	userUpdatedHandler := processor.NewUserUpdatedHandler(reviewService, userService)
 

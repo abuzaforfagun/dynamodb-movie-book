@@ -5,7 +5,7 @@ import (
 	"log"
 
 	"github.com/abuzaforfagun/dynamodb-movie-book/events"
-	"github.com/abuzaforfagun/dynamodb-movie-book/user-event-consumer/internal/services"
+	"github.com/abuzaforfagun/dynamodb-movie-book/review-event-consumer/internal/services"
 	"github.com/streadway/amqp"
 )
 
@@ -32,6 +32,11 @@ func (h *UserUpdatedHandler) HandleMessage(msg amqp.Delivery) {
 
 	user, err := h.userService.GetInfo(payload.UserId)
 	if err != nil {
+		return
+	}
+
+	if user == nil {
+		log.Println("Invalid user")
 		return
 	}
 

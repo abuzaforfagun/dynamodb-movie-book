@@ -1,4 +1,4 @@
-module github.com/abuzaforfagun/dynamodb-movie-book/user-event-consumer
+module github.com/abuzaforfagun/dynamodb-movie-book/review-event-consumer
 
 go 1.22.5
 

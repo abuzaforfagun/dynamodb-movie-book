@@ -9,8 +9,8 @@ user-api:
 movie-event-processor:
 	cd src/movie-event-consumer/cmd && go run .
 	
-user-event-processor:
-	cd src/user-event-consumer/cmd && go run .
+review-event-processor:
+	cd src/review-event-consumer/cmd && go run .
 
 api-unit-test:
 	cd src/api && go test -tags='!integration' ./...
