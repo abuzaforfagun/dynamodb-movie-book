@@ -19,6 +19,6 @@ type ReviewOfUser struct {
 	MovieId        string `json:"movie_id"`
 	MovieTitle     string `json:"movie_title"`
 	MovieThumbnail string `json:"movie_thumbnail"`
-	Rating         int    `json:"rating"`
+	Score          int    `json:"score"`
 	Comment        string `json:"comment"`
 }

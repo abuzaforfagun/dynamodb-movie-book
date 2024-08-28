@@ -6,7 +6,7 @@ type MovieDetails struct {
 	ReleaseYear string       `json:"release_year"`
 	Actors      []MovieActor `json:"actors"`
 	Genres      []string     `json:"genres"`
-	Score       float64      `json:"rating"`
+	Score       float64      `json:"score"`
 	Reviews     []Review     `json:"reviews"`
 	Pictures    []string     `json:"pictures"`
 }
@@ -18,7 +18,7 @@ type MovieActor struct {
 }
 
 type Review struct {
-	Rating    float64 `json:"rating"`
+	Score     float64 `json:"score"`
 	Comment   string  `json:"comment"`
 	CreatedBy Creator `json:"created_by"`
 }

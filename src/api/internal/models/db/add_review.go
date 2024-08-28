@@ -14,12 +14,12 @@ type AddReview struct {
 	UserId    string  `dynamodbav:"UserId"`
 	MovieId   string  `dynamodbav:"MovieId"`
 	Name      string  `dynamodbav:"Name"`
-	Rating    float64 `dynamodbav:"Rating"`
+	Score     float64 `dynamodbav:"Score"`
 	Comment   string  `dynamodbav:"Comment"`
 	CreatedAt string  `dynamodbav:"CreatedAt"`
 }
 
-func NewAddReview(movieId string, userId string, userName string, rating float64, comment string) (*AddReview, error) {
+func NewAddReview(movieId string, userId string, userName string, score float64, comment string) (*AddReview, error) {
 	if movieId == "" {
 		return nil, &custom_errors.BadRequestError{
 			Message: "Unable to create review with empty movie id",
@@ -40,7 +40,7 @@ func NewAddReview(movieId string, userId string, userName string, rating float64
 		UserId:    userId,
 		MovieId:   movieId,
 		Name:      userName,
-		Rating:    rating,
+		Score:     score,
 		Comment:   comment,
 		CreatedAt: time.Now().UTC().String(),
 	}, nil

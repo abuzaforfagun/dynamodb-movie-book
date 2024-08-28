@@ -50,7 +50,7 @@ func (h *ReviewAddedHandler) HandleMessage(msg amqp.Delivery) {
 		return
 	}
 
-	totalScore := payload.Score
+	totalScore := 0.0
 	for _, review := range *reviews {
 		totalScore += review.Score
 	}

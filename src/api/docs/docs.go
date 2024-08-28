@@ -328,7 +328,7 @@ const docTemplate = `{
                 "comment": {
                     "type": "string"
                 },
-                "rating": {
+                "score": {
                     "type": "number"
                 },
                 "user_id": {
@@ -414,9 +414,6 @@ const docTemplate = `{
                         "type": "string"
                     }
                 },
-                "rating": {
-                    "type": "number"
-                },
                 "release_year": {
                     "type": "string"
                 },
@@ -425,6 +422,9 @@ const docTemplate = `{
                     "items": {
                         "$ref": "#/definitions/response_model.Review"
                     }
+                },
+                "score": {
+                    "type": "number"
                 },
                 "title": {
                     "type": "string"
@@ -440,7 +440,7 @@ const docTemplate = `{
                 "created_by": {
                     "$ref": "#/definitions/response_model.Creator"
                 },
-                "rating": {
+                "score": {
                     "type": "number"
                 }
             }

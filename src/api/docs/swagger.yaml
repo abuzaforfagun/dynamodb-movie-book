@@ -43,7 +43,7 @@ definitions:
     properties:
       comment:
         type: string
-      rating:
+      score:
         type: number
       user_id:
         description: 'TODO: Need to get from the logged in user'
@@ -99,14 +99,14 @@ definitions:
         items:
           type: string
         type: array
-      rating:
-        type: number
       release_year:
         type: string
       reviews:
         items:
           $ref: '#/definitions/response_model.Review'
         type: array
+      score:
+        type: number
       title:
         type: string
     type: object
@@ -116,7 +116,7 @@ definitions:
         type: string
       created_by:
         $ref: '#/definitions/response_model.Creator'
-      rating:
+      score:
         type: number
     type: object
 host: localhost:5001

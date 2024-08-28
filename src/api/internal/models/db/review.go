@@ -4,12 +4,12 @@ type Review struct {
 	MovieId string `dynamodbav:"MovieId"`
 	UserId  string `dynamodbav:"UserId"`
 	Comment string `dynamdbav:"Comment"`
-	Rating  int    `dynamodbav:"Rating"`
+	Score   int    `dynamodbav:"Score"`
 }
 
 type GetReview struct {
 	UserId      string  `dynamodbav:"UserId"`
-	Rating      float64 `dynamodbav:"Rating"`
+	Score       float64 `dynamodbav:"Score"`
 	Comment     string  `dynamodbav:"Comment"`
 	CreatedAt   string  `dynamodbav:"CreatedAt"`
 	CreatorName string  `dynamodbav:"Name"`

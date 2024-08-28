@@ -106,7 +106,7 @@ func TestAddReview(t *testing.T) {
 		TestName           string
 		MovieId            string
 		UserId             string
-		Rating             float64
+		Score              float64
 		ExpectedStatusCode int
 		ExpectedMovieScore float64
 	}{
@@ -129,7 +129,7 @@ func TestAddReview(t *testing.T) {
 			MovieId:            movieId,
 			UserId:             ValidUserId,
 			ExpectedStatusCode: http.StatusAccepted,
-			Rating:             1,
+			Score:              1,
 			ExpectedMovieScore: 1,
 		},
 	}
@@ -138,7 +138,7 @@ func TestAddReview(t *testing.T) {
 		t.Run(test.TestName, func(t *testing.T) {
 			payload := request_model.AddReview{
 				UserId:  test.UserId,
-				Rating:  test.Rating,
+				Score:   test.Score,
 				Comment: "...",
 			}
 

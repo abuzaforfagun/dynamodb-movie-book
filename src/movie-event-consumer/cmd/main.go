@@ -34,9 +34,10 @@ func main() {
 	genreService := services.NewGenreService(dynamoDbClient, tableName)
 	actorService := services.NewActorService(dynamoDbClient, tableName)
 	movieService := services.NewMovieService(dynamoDbClient, tableName)
+	reviewService := services.NewReviewService(dynamoDbClient, tableName)
 
-	moviedAddedHandler := processor.NewMovieAddedHandler(movieService, actorService, genreService)
-	reviewAddedHandler := processor.NewMovieAddedHandler(movieService, actorService, genreService)
+	moviedAddedHandler := processor.NewMovieAddedHandler(&movieService, &actorService, &genreService)
+	reviewAddedHandler := processor.NewReviewAddedHandler(&movieService, &reviewService)
 
 	rabbitmq.RegisterQueueExchange(conn, movieAddedQueueName, movieAddedExchangeName, moviedAddedHandler.HandleMessage)
 	rabbitmq.RegisterQueueExchange(conn, reviewAddedQueueName, reviewAddedExchangeName, reviewAddedHandler.HandleMessage)

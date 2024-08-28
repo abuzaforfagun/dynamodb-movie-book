@@ -70,10 +70,10 @@ func TestNewAddReview(t *testing.T) {
 		movieId := uuid.NewString()
 		userId := uuid.NewString()
 		userName := "Jack"
-		rating := 3
+		score := 3
 		comment := "Good one"
 
-		model, _ := NewAddReview(movieId, userId, userName, float64(rating), comment)
+		model, _ := NewAddReview(movieId, userId, userName, float64(score), comment)
 
 		if model.UserId != userId {
 			t.Errorf("UserId: got '%s', expected '%s'", model.UserId, userId)
@@ -87,12 +87,12 @@ func TestNewAddReview(t *testing.T) {
 			t.Errorf("UserName: got '%s', expected '%s'", model.Name, userName)
 		}
 
-		if model.Rating != float64(rating) {
-			t.Errorf("Rating: got '%f', expected '%f'", model.Rating, float64(rating))
+		if model.Score != float64(score) {
+			t.Errorf("Score: got '%f', expected '%f'", model.Score, float64(score))
 		}
 
 		if model.Comment != comment {
-			t.Errorf("Rating: got '%s', expected '%s'", model.Comment, comment)
+			t.Errorf("Score: got '%s', expected '%s'", model.Comment, comment)
 		}
 	})
 }

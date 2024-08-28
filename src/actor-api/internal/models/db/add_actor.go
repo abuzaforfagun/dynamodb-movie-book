@@ -11,7 +11,7 @@ type AddActor struct {
 	SK           string   `dynamodbav:"SK"`
 	GSI_PK       string   `dynamodbav:"GSI_PK"`
 	GSI_SK       string   `dynamodbav:"GSI_SK"`
-	Id           string   `dynamodbav:"ActorId"`
+	Id           string   `dynamodbav:"Id"`
 	Name         string   `dynamodbav:"Name"`
 	DateOfBirth  string   `dynamodbav:"DateOfBirth"`
 	ThumbnailUrl string   `dynamodbav:"ThumbnailUrl"`

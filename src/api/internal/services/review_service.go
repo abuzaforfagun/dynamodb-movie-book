@@ -75,11 +75,8 @@ func (s *reviewService) Add(movieId string, reviewRequest request_model.AddRevie
 		return err
 	}
 
-	event := events.ReviewAdded{
-		MovieId: movieId,
-		UserId:  reviewRequest.UserId,
-		Score:   reviewRequest.Rating,
-	}
+	event := events.NewReviewAdded(movieId, reviewRequest.UserId, reviewRequest.Score)
+
 	s.rabbitMq.PublishMessage(event, s.reviewAddedExchangeName)
 
 	return nil

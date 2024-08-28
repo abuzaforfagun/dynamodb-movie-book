@@ -4,6 +4,6 @@ type Review struct {
 	MovieId      string `dynamodbav:"MovieId"`
 	UserId       string `dynamodbav:"UserId"`
 	Comment      string `dynamdbav:"Comment"`
-	Rating       int    `dynamodbav:"Rating"`
+	Score        int    `dynamodbav:"Score"`
 	ReviewerName string `dynamodbav:"Name"`
 }

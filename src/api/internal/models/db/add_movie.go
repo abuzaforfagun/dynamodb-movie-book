@@ -18,6 +18,7 @@ type AddMovie struct {
 	ReleaseYear     int          `dynamodbav:"ReleaseYear"`
 	Genres          []string     `dynamodbav:"Genres"`
 	Actors          []MovieActor `dynamodbav:"Actors"`
+	Score           float64      `dynamodbav:"Score"`
 	CreatedAt       string       `dynamodbav:"CreatedAt"`
 }
 
@@ -38,6 +39,7 @@ func NewMovieModel(id string, title string, releaseYear int, genres []string, ac
 		ReleaseYear:     releaseYear,
 		Genres:          genres,
 		Actors:          actors,
+		Score:           0,
 		CreatedAt:       time.Now().UTC().String(),
 	}
 

@@ -15,11 +15,11 @@ type MovieAddedHandler struct {
 	genreService services.GenreService
 }
 
-func NewMovieAddedHandler(movieService services.MovieService, actorService services.ActorService, genreService services.GenreService) *MovieAddedHandler {
+func NewMovieAddedHandler(movieService *services.MovieService, actorService *services.ActorService, genreService *services.GenreService) *MovieAddedHandler {
 	return &MovieAddedHandler{
-		movieService: movieService,
-		actorService: actorService,
-		genreService: genreService,
+		movieService: *movieService,
+		actorService: *actorService,
+		genreService: *genreService,
 	}
 }
 

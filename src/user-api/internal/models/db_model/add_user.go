@@ -11,7 +11,7 @@ type AddUser struct {
 	SK        string `dynamodbav:"SK"`
 	GSI_PK    string `dynamodbav:"GSI_PK"`
 	GSI_SK    string `dynamodbav:"GSI_SK"`
-	Id        string `dynamodbav:"UserId"`
+	Id        string `dynamodbav:"Id"`
 	Name      string `dynamodbav:"Name"`
 	Email     string `dynamodbav:"Email"`
 	CreatedAt string `dynamodbav:"CreatedAt"`

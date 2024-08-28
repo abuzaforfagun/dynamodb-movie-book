@@ -28,7 +28,7 @@ definitions:
         type: string
       movie_title:
         type: string
-      rating:
+      score:
         type: integer
     type: object
   response_model.User:

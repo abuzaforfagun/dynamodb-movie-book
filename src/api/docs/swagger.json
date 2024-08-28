@@ -321,7 +321,7 @@
                 "comment": {
                     "type": "string"
                 },
-                "rating": {
+                "score": {
                     "type": "number"
                 },
                 "user_id": {
@@ -407,9 +407,6 @@
                         "type": "string"
                     }
                 },
-                "rating": {
-                    "type": "number"
-                },
                 "release_year": {
                     "type": "string"
                 },
@@ -418,6 +415,9 @@
                     "items": {
                         "$ref": "#/definitions/response_model.Review"
                     }
+                },
+                "score": {
+                    "type": "number"
                 },
                 "title": {
                     "type": "string"
@@ -433,7 +433,7 @@
                 "created_by": {
                     "$ref": "#/definitions/response_model.Creator"
                 },
-                "rating": {
+                "score": {
                     "type": "number"
                 }
             }

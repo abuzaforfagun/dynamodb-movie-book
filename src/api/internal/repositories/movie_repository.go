@@ -231,7 +231,7 @@ func (r *movieRepository) Get(movieId string) (*response_model.MovieDetails, err
 			var review db_model.GetReview
 			attributevalue.UnmarshalMap(item, &review)
 			reviews = append(reviews, response_model.Review{
-				Rating:  review.Rating,
+				Score:   review.Score,
 				Comment: review.Comment,
 				CreatedBy: response_model.Creator{
 					Id:   review.UserId,

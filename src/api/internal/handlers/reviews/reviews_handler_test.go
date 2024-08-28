@@ -74,7 +74,7 @@ func TestAddReview(t *testing.T) {
 		testName           string
 		movieId            string
 		userId             string
-		rating             float64
+		score              float64
 		comment            string
 		expectedStatusCode int
 	}{
@@ -82,7 +82,7 @@ func TestAddReview(t *testing.T) {
 			testName:           "Should return bad request for empty movie id",
 			userId:             validUserId,
 			movieId:            "",
-			rating:             5,
+			score:              5,
 			comment:            "test",
 			expectedStatusCode: http.StatusBadRequest,
 		},
@@ -90,7 +90,7 @@ func TestAddReview(t *testing.T) {
 			testName:           "Should return bad request for invalid movie id",
 			userId:             validUserId,
 			movieId:            "67cc095d-6864-4b67-1231-ad8564f80dd4",
-			rating:             5,
+			score:              5,
 			comment:            "test",
 			expectedStatusCode: http.StatusBadRequest,
 		},
@@ -98,7 +98,7 @@ func TestAddReview(t *testing.T) {
 			testName:           "Should return bad request for empty user id",
 			userId:             "",
 			movieId:            validMovieId,
-			rating:             5,
+			score:              5,
 			comment:            "test",
 			expectedStatusCode: http.StatusBadRequest,
 		},
@@ -106,7 +106,7 @@ func TestAddReview(t *testing.T) {
 			testName:           "Should return bad request for invalid user id",
 			userId:             "67cc095d-6864-4b67-1231-ad8564f80dd4",
 			movieId:            validMovieId,
-			rating:             5,
+			score:              5,
 			comment:            "test",
 			expectedStatusCode: http.StatusBadRequest,
 		},
@@ -114,7 +114,7 @@ func TestAddReview(t *testing.T) {
 			testName:           "Should return accepted for valid data",
 			userId:             validUserId,
 			movieId:            validMovieId,
-			rating:             5,
+			score:              5,
 			comment:            "test",
 			expectedStatusCode: http.StatusAccepted,
 		},
@@ -124,7 +124,7 @@ func TestAddReview(t *testing.T) {
 		t.Run(test.testName, func(t *testing.T) {
 			payload := request_model.AddReview{
 				UserId:  test.userId,
-				Rating:  test.rating,
+				Score:   test.score,
 				Comment: test.comment,
 			}
 			payloadJson, _ := json.Marshal(payload)

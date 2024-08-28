@@ -189,7 +189,7 @@ const docTemplate = `{
                 "movie_title": {
                     "type": "string"
                 },
-                "rating": {
+                "score": {
                     "type": "integer"
                 }
             }
