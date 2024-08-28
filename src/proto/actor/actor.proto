@@ -1,0 +1,20 @@
+syntax = "proto3";
+
+option go_package = "../../src/grpc/actorpb;actorpb";
+
+message GetActorBasicInforRequestModel {
+    repeated string actor_ids = 1;
+}
+
+message ActorBasicInfo {
+    string id = 1;
+    string name = 2;
+}
+
+message GetActorBasicInforResponseModel {
+    repeated ActorBasicInfo actors = 1;
+}
+
+service ActorsService {
+    rpc GetActorBasicInfo(GetActorBasicInforRequestModel) returns (GetActorBasicInforResponseModel) {}
+}

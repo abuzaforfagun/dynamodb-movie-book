@@ -113,44 +113,6 @@ func (h *ActorsHandler) Add(c *gin.Context) {
 	c.JSON(http.StatusCreated, response)
 }
 
-// @Summary Get user details
-// @Description Get user details
-// @Tags actors
-// @Param payload body request_model.GetActors true "actor ids"
-// @Produce json
-// @Success 200 {array} response_model.ActorInfo
-// @Router /actors/info [post]
-func (h *ActorsHandler) GetActorsBasicInfo(c *gin.Context) {
-	var requestModel request_model.GetActors
-	err := c.BindJSON(&requestModel)
-	if err != nil {
-		err := &custom_errors.BadRequestError{
-			Message: "Please verify payload",
-		}
-		c.JSON(http.StatusBadRequest, err)
-		return
-	}
-
-	if len(requestModel.ActorIds) == 0 {
-		c.JSON(http.StatusBadRequest, gin.H{})
-		return
-	}
-
-	result, err := h.actorRepository.Get(requestModel.ActorIds)
-
-	if err != nil {
-		c.JSON(http.StatusInternalServerError, err)
-		return
-	}
-
-	if result == nil {
-		c.JSON(http.StatusNotFound, gin.H{})
-		return
-	}
-
-	c.JSON(http.StatusOK, &result)
-}
-
 func deleteUploadedPhotos(photos []string) {
 	//TODO: Delete photos
 }

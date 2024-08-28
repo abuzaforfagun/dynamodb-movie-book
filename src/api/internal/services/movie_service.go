@@ -1,6 +1,7 @@
 package services
 
 import (
+	"context"
 	"log"
 	"strings"
 
@@ -11,6 +12,7 @@ import (
 	"github.com/abuzaforfagun/dynamodb-movie-book/api/internal/models/response_model"
 	"github.com/abuzaforfagun/dynamodb-movie-book/api/internal/repositories"
 	"github.com/abuzaforfagun/dynamodb-movie-book/events"
+	"github.com/abuzaforfagun/dynamodb-movie-book/grpc/actorpb"
 	"github.com/google/uuid"
 )
 
@@ -29,20 +31,20 @@ type movieService struct {
 	reviewService          ReviewService
 	rabbitMq               infrastructure.RabbitMQ
 	movieAddedExchangeName string
-	actorService           ActorService
+	actorClient            actorpb.ActorsServiceClient
 }
 
 func NewMovieService(movieRepository repositories.MovieRepository,
 	reviewService ReviewService,
 	rabbitMq infrastructure.RabbitMQ,
-	actorService ActorService,
+	actorClient actorpb.ActorsServiceClient,
 	movieAddedExchangeName string) MovieService {
 	return &movieService{
 		movieRepository:        movieRepository,
 		reviewService:          reviewService,
 		movieAddedExchangeName: movieAddedExchangeName,
 		rabbitMq:               rabbitMq,
-		actorService:           actorService,
+		actorClient:            actorClient,
 	}
 }
 
@@ -72,7 +74,11 @@ func (s *movieService) Add(movie *request_model.AddMovie) (string, error) {
 
 	movieActors := []db_model.MovieActor{}
 	if len(actorIds) != 0 {
-		actorsInfo, err := s.actorService.GetActorsBasicInfo(actorIds)
+
+		actorsInfo, err := s.actorClient.GetActorBasicInfo(context.TODO(), &actorpb.GetActorBasicInforRequestModel{
+			ActorIds: actorIds,
+		})
+
 		if err != nil {
 			return "", err
 		}
@@ -83,7 +89,7 @@ func (s *movieService) Add(movie *request_model.AddMovie) (string, error) {
 			}
 		}
 
-		for _, actor := range *actorsInfo {
+		for _, actor := range actorsInfo.Actors {
 			role := actorRoleMap[actor.Id]
 			movieActor := db_model.MovieActor{
 				ActorId: actor.Id,

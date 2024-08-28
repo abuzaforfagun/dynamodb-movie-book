@@ -15,9 +15,12 @@ import (
 	"github.com/abuzaforfagun/dynamodb-movie-book/api/internal/repositories"
 	"github.com/abuzaforfagun/dynamodb-movie-book/api/internal/routers"
 	"github.com/abuzaforfagun/dynamodb-movie-book/api/internal/services"
+	"github.com/abuzaforfagun/dynamodb-movie-book/grpc/actorpb"
 	"github.com/gin-gonic/gin"
 	swaggerFiles "github.com/swaggo/files"
 	ginSwagger "github.com/swaggo/gin-swagger"
+	"google.golang.org/grpc"
+	"google.golang.org/grpc/credentials/insecure"
 )
 
 // @title           Swagger Example API
@@ -68,11 +71,14 @@ func main() {
 	userApiBaseAddress := os.Getenv("USER_API_BASE_ADDRESS")
 	userService := services.NewUserService(httpClient, userApiBaseAddress)
 
-	actorApiBaseAddress := os.Getenv("ACTOR_API_BASE_ADDRESS")
-	actorService := services.NewActorService(httpClient, actorApiBaseAddress)
-
+	conn, err := grpc.NewClient("localhost:6003", grpc.WithTransportCredentials(insecure.NewCredentials()))
+	if err != nil {
+		log.Fatalf("Failed to connect: %v", err)
+	}
+	defer conn.Close()
+	actorClient := actorpb.NewActorsServiceClient(conn)
 	reviewService := services.NewReviewService(reviewRepository, userService, rabbitMq, reviewAddedExchageName)
-	movieService := services.NewMovieService(movieRepository, reviewService, rabbitMq, actorService, movieAddedExchageName)
+	movieService := services.NewMovieService(movieRepository, reviewService, rabbitMq, actorClient, movieAddedExchageName)
 
 	router := gin.Default()
 	router.GET("/swagger/*any", ginSwagger.WrapHandler(swaggerFiles.Handler))
