@@ -34,6 +34,10 @@ func (m *MockMovieService) GetAll(searchQuery string) (*[]response_model.Movie, 
 	return &[]response_model.Movie{}, nil
 }
 
+func (m *MockMovieService) GetTopRated() (*[]response_model.Movie, error) {
+	return nil, nil
+}
+
 func (m *MockMovieService) GetByGenre(genreName string) (*[]response_model.Movie, error) {
 	return &[]response_model.Movie{}, nil
 }

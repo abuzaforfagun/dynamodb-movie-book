@@ -36,6 +36,10 @@ func (r *MockReviewService) Delete(movieId string, userId string) error {
 
 type MockMovieService struct{}
 
+func (m *MockMovieService) GetTopRated() (*[]response_model.Movie, error) {
+	return nil, nil
+}
+
 func (m *MockMovieService) Add(movie *request_model.AddMovie) (string, error) {
 	return "", nil
 }

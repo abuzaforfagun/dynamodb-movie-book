@@ -1,13 +1,15 @@
 package services
 
 import (
+	"context"
 	"testing"
 
 	"github.com/abuzaforfagun/dynamodb-movie-book/api/internal/models/custom_errors"
 	db_model "github.com/abuzaforfagun/dynamodb-movie-book/api/internal/models/db"
-	"github.com/abuzaforfagun/dynamodb-movie-book/api/internal/models/dto"
 	request_model "github.com/abuzaforfagun/dynamodb-movie-book/api/internal/models/requests"
 	"github.com/abuzaforfagun/dynamodb-movie-book/api/internal/models/response_model"
+	"github.com/abuzaforfagun/dynamodb-movie-book/grpc/actorpb"
+	"google.golang.org/grpc"
 )
 
 const existingMovieId string = "67cc095d-6864-4b67-846d-ad8564f80dd4"
@@ -45,6 +47,10 @@ func (m *MockMovieRepository) Get(movieId string) (*response_model.MovieDetails,
 	return nil, nil
 }
 
+func (m *MockMovieRepository) GetTopRated() (*[]response_model.Movie, error) {
+	return nil, nil
+}
+
 type MockReviewService struct{}
 
 func (m *MockReviewService) Add(movieId string, reviewRequest request_model.AddReview) error {
@@ -69,9 +75,9 @@ func (m *MockRabbitMQ) DeclareFanoutExchange(exchangename string) error {
 	return nil
 }
 
-type MockActorService struct{}
+type MockActorClient struct{}
 
-func (m *MockActorService) GetActorsBasicInfo(ids []string) (*[]dto.ActorInfo, error) {
+func (m *MockActorClient) GetActorBasicInfo(ctx context.Context, in *actorpb.GetActorBasicInforRequestModel, opts ...grpc.CallOption) (*actorpb.GetActorBasicInforResponseModel, error) {
 	return nil, nil
 }
 
@@ -80,9 +86,9 @@ func TestDelete(t *testing.T) {
 	movieRepository := &MockMovieRepository{}
 	reviewService := &MockReviewService{}
 	rabbitMq := &MockRabbitMQ{}
-	actorService := &MockActorService{}
+	actorClient := &MockActorClient{}
 
-	service := NewMovieService(movieRepository, reviewService, rabbitMq, actorService, "")
+	service := NewMovieService(movieRepository, reviewService, rabbitMq, actorClient, "")
 
 	tests := []struct {
 		testName    string
