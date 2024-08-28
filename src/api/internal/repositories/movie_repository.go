@@ -3,10 +3,12 @@ package repositories
 import (
 	"context"
 	"fmt"
+	"log"
 	"strings"
 
 	"github.com/abuzaforfagun/dynamodb-movie-book/api/internal/database"
 	db_model "github.com/abuzaforfagun/dynamodb-movie-book/api/internal/models/db"
+	"github.com/abuzaforfagun/dynamodb-movie-book/api/internal/models/dto"
 	"github.com/abuzaforfagun/dynamodb-movie-book/api/internal/models/response_model"
 	"github.com/aws/aws-sdk-go-v2/aws"
 	"github.com/aws/aws-sdk-go-v2/feature/dynamodb/attributevalue"
@@ -26,6 +28,7 @@ type MovieRepository interface {
 	HasMovie(movieId string) (bool, error)
 	Delete(movieId string) error
 	Get(movieId string) (*response_model.MovieDetails, error)
+	GetTopRated() (*[]response_model.Movie, error)
 }
 
 func NewMovieRepository(client *dynamodb.Client, tableName string) MovieRepository {
@@ -35,6 +38,40 @@ func NewMovieRepository(client *dynamodb.Client, tableName string) MovieReposito
 			tableName: tableName,
 		},
 	}
+}
+
+func (r *movieRepository) GetTopRated() (*[]response_model.Movie, error) {
+	pk := "TOP-RATED-MOVIE"
+	key := map[string]types.AttributeValue{
+		"PK": &types.AttributeValueMemberS{Value: pk},
+		"SK": &types.AttributeValueMemberS{Value: pk},
+	}
+
+	getItemInput := &dynamodb.GetItemInput{
+		TableName: aws.String(r.tableName),
+		Key:       key,
+	}
+
+	result, err := r.client.GetItem(context.TODO(), getItemInput)
+	if err != nil {
+		log.Printf("ERROR: unable to get item: %v\n", err)
+		return nil, err
+	}
+
+	if result.Item == nil {
+		log.Printf("ERROR: [pk=%s] [sk=%s] not found\n", pk, pk)
+		return &[]response_model.Movie{}, nil
+	}
+
+	var topMovies dto.TopRatedMovies
+
+	err = attributevalue.UnmarshalMap(result.Item, &topMovies)
+	if err != nil {
+		log.Println("unable to unmarshal", err)
+		return nil, err
+	}
+
+	return &topMovies.Movies, nil
 }
 
 func (r *movieRepository) HasMovie(movieId string) (bool, error) {

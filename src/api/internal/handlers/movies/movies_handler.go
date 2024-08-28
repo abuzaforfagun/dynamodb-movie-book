@@ -45,6 +45,24 @@ func (h *MoviesHandler) GetAllMovies(c *gin.Context) {
 	c.JSON(http.StatusOK, movies)
 }
 
+// @Summary Get movies
+// @Description Get all movies
+// @Tags movies
+// @Produce json
+// @Success 200 {array} response_model.Movie
+// @Router /movies/best-rated [get]
+func (h *MoviesHandler) GetTopRatedMovies(c *gin.Context) {
+	movies, err := h.movieService.GetTopRated()
+
+	if err != nil {
+		log.Println("ERROR: Unable to top rated movies", err)
+		c.JSON(http.StatusInternalServerError, gin.H{})
+		return
+	}
+
+	c.JSON(http.StatusOK, movies)
+}
+
 // @Summary Get movie
 // @Description Get all movies
 // @Tags movies

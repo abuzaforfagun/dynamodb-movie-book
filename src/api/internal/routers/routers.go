@@ -8,6 +8,7 @@ import (
 
 func SetupMovies(router *gin.Engine, movieHandler *movies_handler.MoviesHandler) {
 	router.GET("/movies", movieHandler.GetAllMovies)
+	router.GET("/movies/best-rated", movieHandler.GetTopRatedMovies)
 	router.POST("/movies", movieHandler.AddMovie)
 	router.POST("/movies/:id/photos", movieHandler.AddPictures)
 	router.GET("/movies/:id", movieHandler.GetMovieDetails)

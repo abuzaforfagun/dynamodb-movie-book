@@ -52,3 +52,12 @@ func RegisterQueueExchange(conn *amqp.Connection, queueName string, exchangeName
 
 	go ConsumeMessages(conn, queue.Name, messageHandler)
 }
+
+func RegisterQueue(conn *amqp.Connection, queueName string, messageHandler MessageHandler) {
+	queue, err := DeclareQueue(conn, queueName)
+	if err != nil {
+		log.Fatalf("Failed to declare queue: %s", err)
+	}
+
+	go ConsumeMessages(conn, queue.Name, messageHandler)
+}

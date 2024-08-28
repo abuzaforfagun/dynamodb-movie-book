@@ -17,6 +17,7 @@ import (
 type MovieService interface {
 	Add(movie *request_model.AddMovie) (string, error)
 	GetAll(searchQuery string) (*[]response_model.Movie, error)
+	GetTopRated() (*[]response_model.Movie, error)
 	GetByGenre(genreName string) (*[]response_model.Movie, error)
 	HasMovie(movieId string) (bool, error)
 	Delete(movieId string) error
@@ -43,6 +44,10 @@ func NewMovieService(movieRepository repositories.MovieRepository,
 		rabbitMq:               rabbitMq,
 		actorService:           actorService,
 	}
+}
+
+func (s *movieService) GetTopRated() (*[]response_model.Movie, error) {
+	return s.movieRepository.GetTopRated()
 }
 
 func (s *movieService) HasMovie(movieId string) (bool, error) {

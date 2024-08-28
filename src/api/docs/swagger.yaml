@@ -271,6 +271,21 @@ paths:
       summary: Add movie review
       tags:
       - reviews
+  /movies/best-rated:
+    get:
+      description: Get all movies
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/response_model.Movie'
+            type: array
+      summary: Get movies
+      tags:
+      - movies
   /movies/genres/{genre}:
     get:
       description: Get movies by genre

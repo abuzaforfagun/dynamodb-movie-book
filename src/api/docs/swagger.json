@@ -106,6 +106,29 @@
                 }
             }
         },
+        "/movies/best-rated": {
+            "get": {
+                "description": "Get all movies",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "movies"
+                ],
+                "summary": "Get movies",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "array",
+                            "items": {
+                                "$ref": "#/definitions/response_model.Movie"
+                            }
+                        }
+                    }
+                }
+            }
+        },
         "/movies/genres/{genre}": {
             "get": {
                 "description": "Get movies by genre",

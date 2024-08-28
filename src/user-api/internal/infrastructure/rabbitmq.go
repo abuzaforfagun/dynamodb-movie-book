@@ -21,6 +21,7 @@ func NewRabbitMQ(serverUri string) RabbitMQ {
 		serverUri: serverUri,
 	}
 }
+
 func (r *rabbitMQ) PublishMessage(message interface{}, topicName string) error {
 	json, err := json.Marshal(message)
 	if err != nil {
