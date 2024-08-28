@@ -19,7 +19,7 @@ var (
 )
 
 func SetupTestDatabase() {
-	initializers.LoadEnvVariables("../../.env.test")
+	initializers.LoadEnvVariables("../.env.test")
 
 	awsRegion := os.Getenv("AWS_REGION")
 	awsSecretKey := os.Getenv("AWS_ACCESS_KEY_ID")
