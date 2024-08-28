@@ -8,7 +8,7 @@ import (
 	"testing"
 
 	"github.com/abuzaforfagun/dynamodb-movie-book/movie-api/internal/models/custom_errors"
-	request_model "github.com/abuzaforfagun/dynamodb-movie-book/movie-api/internal/models/requests"
+	"github.com/abuzaforfagun/dynamodb-movie-book/movie-api/internal/models/request_model"
 	"github.com/abuzaforfagun/dynamodb-movie-book/movie-api/internal/models/response_model"
 	"github.com/gin-gonic/gin"
 	"github.com/google/uuid"

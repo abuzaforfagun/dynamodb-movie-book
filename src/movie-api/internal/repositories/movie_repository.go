@@ -7,7 +7,7 @@ import (
 	"strings"
 
 	"github.com/abuzaforfagun/dynamodb-movie-book/movie-api/internal/database"
-	db_model "github.com/abuzaforfagun/dynamodb-movie-book/movie-api/internal/models/db"
+	"github.com/abuzaforfagun/dynamodb-movie-book/movie-api/internal/models/db_model"
 	"github.com/abuzaforfagun/dynamodb-movie-book/movie-api/internal/models/dto"
 	"github.com/abuzaforfagun/dynamodb-movie-book/movie-api/internal/models/response_model"
 	"github.com/aws/aws-sdk-go-v2/aws"

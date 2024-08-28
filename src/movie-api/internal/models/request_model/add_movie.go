@@ -1,8 +1,6 @@
 package request_model
 
-import (
-	core_models "github.com/abuzaforfagun/dynamodb-movie-book/movie-api/internal/models/core"
-)
+import "github.com/abuzaforfagun/dynamodb-movie-book/movie-api/internal/models/core_models"
 
 type AddMovie struct {
 	Title       string      `json:"title"`

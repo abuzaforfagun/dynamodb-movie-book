@@ -15,10 +15,10 @@ import (
 	"time"
 
 	"github.com/abuzaforfagun/dynamodb-movie-book/movie-api/integration_tests"
-	movies_handler "github.com/abuzaforfagun/dynamodb-movie-book/movie-api/internal/handlers/movies"
+	"github.com/abuzaforfagun/dynamodb-movie-book/movie-api/internal/handlers/movies_handler"
 	"github.com/abuzaforfagun/dynamodb-movie-book/movie-api/internal/infrastructure"
-	db_model "github.com/abuzaforfagun/dynamodb-movie-book/movie-api/internal/models/db"
-	request_model "github.com/abuzaforfagun/dynamodb-movie-book/movie-api/internal/models/requests"
+	"github.com/abuzaforfagun/dynamodb-movie-book/movie-api/internal/models/db_model"
+	"github.com/abuzaforfagun/dynamodb-movie-book/movie-api/internal/models/request_model"
 	"github.com/abuzaforfagun/dynamodb-movie-book/movie-api/internal/models/response_model"
 	"github.com/abuzaforfagun/dynamodb-movie-book/movie-api/internal/repositories"
 	"github.com/abuzaforfagun/dynamodb-movie-book/movie-api/internal/services"

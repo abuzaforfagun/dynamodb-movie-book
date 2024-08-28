@@ -1,8 +1,8 @@
 package routers
 
 import (
-	movies_handler "github.com/abuzaforfagun/dynamodb-movie-book/movie-api/internal/handlers/movies"
-	reviews_handler "github.com/abuzaforfagun/dynamodb-movie-book/movie-api/internal/handlers/reviews"
+	"github.com/abuzaforfagun/dynamodb-movie-book/movie-api/internal/handlers/movies_handler"
+	"github.com/abuzaforfagun/dynamodb-movie-book/movie-api/internal/handlers/reviews_handler"
 	"github.com/gin-gonic/gin"
 )
 
