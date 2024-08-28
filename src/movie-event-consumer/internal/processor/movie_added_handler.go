@@ -11,14 +11,12 @@ import (
 
 type MovieAddedHandler struct {
 	movieService services.MovieService
-	actorService services.ActorService
 	genreService services.GenreService
 }
 
-func NewMovieAddedHandler(movieService *services.MovieService, actorService *services.ActorService, genreService *services.GenreService) *MovieAddedHandler {
+func NewMovieAddedHandler(movieService *services.MovieService, genreService *services.GenreService) *MovieAddedHandler {
 	return &MovieAddedHandler{
 		movieService: *movieService,
-		actorService: *actorService,
 		genreService: *genreService,
 	}
 }
@@ -44,15 +42,6 @@ func (h *MovieAddedHandler) HandleMessage(msg amqp.Delivery) {
 	if err != nil || movie == nil {
 		log.Printf("ERROR: Invalid [MovieId=%s]\n", payload.MovieId)
 		return
-	}
-
-	if len(movie.Actors) != 0 {
-		err = h.actorService.PopulateMovieItems(movie.MovieId, movie.Title, movie.Actors)
-
-		if err != nil {
-			log.Println("ERROR: Unable to populate actor movies", err)
-			return
-		}
 	}
 
 	err = h.genreService.AddMovieToGenres(payload.MovieId, movie.Title, movie.ReleaseYear, movie.Genres)

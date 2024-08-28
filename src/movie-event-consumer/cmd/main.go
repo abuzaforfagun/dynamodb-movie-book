@@ -40,12 +40,11 @@ func main() {
 	dynamoDbClient := infrastructure.NewDynamoDBClient(awsConfig)
 
 	genreService := services.NewGenreService(dynamoDbClient, tableName)
-	actorService := services.NewActorService(dynamoDbClient, tableName)
 	movieService := services.NewMovieService(dynamoDbClient, tableName, numberOfTopRatedMovies)
 	reviewService := services.NewReviewService(dynamoDbClient, tableName)
 	rabbitmqPublisher := rabbitmq.NewPublisher(amqpServerURL)
 
-	moviedAddedHandler := processor.NewMovieAddedHandler(&movieService, &actorService, &genreService)
+	moviedAddedHandler := processor.NewMovieAddedHandler(&movieService, &genreService)
 	reviewAddedHandler := processor.NewReviewAddedHandler(&movieService, &reviewService, &rabbitmqPublisher, movieScoreUpdatedQueueName)
 	movieScoreUpdatedHandler := processor.NewMovieScoreUpdatedHandler(&movieService)
 
