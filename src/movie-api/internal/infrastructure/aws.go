@@ -16,10 +16,21 @@ func NewAWSConfig(awsConfig *configuration.DatabaseConfig) *aws.Config {
 		awsConfig.SecretKey,
 		awsConfig.SessionToken,
 	))
+	endpointResolver := aws.EndpointResolverFunc(func(service, region string) (aws.Endpoint, error) {
+		if service == dynamodb.ServiceID && region == "local" {
+			return aws.Endpoint{
+				PartitionID:   "aws",
+				URL:           awsConfig.Url, // Use Docker service name and port
+				SigningRegion: region,
+			}, nil
+		}
+		return aws.Endpoint{}, &aws.EndpointNotFoundError{}
+	})
 	conf, err := config.LoadDefaultConfig(
 		context.Background(),
 		config.WithRegion(awsConfig.Region),
 		config.WithCredentialsProvider(credProvider),
+		config.WithEndpointResolver(endpointResolver),
 	)
 	if err != nil {
 		panic(err)

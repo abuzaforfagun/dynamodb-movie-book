@@ -1,0 +1,27 @@
+FROM golang:1.22.5 AS builder
+
+WORKDIR /app
+
+COPY src/movie-api ./movie-api
+COPY src/grpc ./grpc
+COPY src/events ./events
+
+WORKDIR /app/movie-api
+RUN go mod download
+
+WORKDIR /app/grpc
+RUN go mod download
+
+WORKDIR /app/events
+RUN go mod download
+
+WORKDIR /app/movie-api/cmd/api
+RUN CGO_ENABLED=0 GOOS=linux go build -o /app/movieapi .
+
+
+FROM alpine:latest
+WORKDIR /app
+
+COPY --from=builder /app/movieapi .
+
+CMD ["./movieapi"]

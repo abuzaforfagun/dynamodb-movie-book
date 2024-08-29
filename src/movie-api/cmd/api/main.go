@@ -36,7 +36,12 @@ import (
 func main() {
 	log.SetFlags(log.LstdFlags | log.Lshortfile)
 
-	initializers.LoadEnvVariables("../../.env")
+	enviornment := os.Getenv("ENVOIRNMENT")
+
+	if enviornment != "production" {
+		initializers.LoadEnvVariables("../../.env")
+	}
+
 	awsRegion := os.Getenv("AWS_REGION")
 	awsSecretKey := os.Getenv("AWS_ACCESS_KEY_ID")
 	awsAccessKey := os.Getenv("AWS_SECRET_ACCESS_KEY")
@@ -45,6 +50,7 @@ func main() {
 	actorGrpcUrl := os.Getenv("ACTOR_GRPC_API")
 	userGrpcUrl := os.Getenv("USER_GRPC_API")
 	apiPort := os.Getenv("API_PORT")
+	dynamodbUrl := os.Getenv("DYNAMODB_URL")
 
 	dbConfig := configuration.DatabaseConfig{
 		TableName:    awsTableName,
@@ -52,6 +58,7 @@ func main() {
 		SecretKey:    awsSecretKey,
 		Region:       awsRegion,
 		SessionToken: awsSessionToken,
+		Url:          dynamodbUrl,
 	}
 
 	dbService, err := database.New(&dbConfig)

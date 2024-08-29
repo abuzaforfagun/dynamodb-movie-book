@@ -17,12 +17,17 @@ import (
 func main() {
 	log.SetFlags(log.LstdFlags | log.Lshortfile)
 
-	initializers.LoadEnvVariables("../../.env")
+	enviornment := os.Getenv("ENVOIRNMENT")
+	if enviornment != "production" {
+		initializers.LoadEnvVariables("../../.env")
+	}
+
 	awsRegion := os.Getenv("AWS_REGION")
 	awsSecretKey := os.Getenv("AWS_ACCESS_KEY_ID")
 	awsAccessKey := os.Getenv("AWS_SECRET_ACCESS_KEY")
 	awsSessionToken := os.Getenv("AWS_SESSION_TOKEN")
 	awsTableName := os.Getenv("TABLE_NAME")
+	dynamodbUrl := os.Getenv("DYNAMODB_URL")
 	port := os.Getenv("GRPC_PORT")
 
 	dbConfig := configuration.DatabaseConfig{
@@ -31,6 +36,7 @@ func main() {
 		SecretKey:    awsSecretKey,
 		Region:       awsRegion,
 		SessionToken: awsSessionToken,
+		Url:          dynamodbUrl,
 	}
 
 	dbService, err := database.New(&dbConfig)

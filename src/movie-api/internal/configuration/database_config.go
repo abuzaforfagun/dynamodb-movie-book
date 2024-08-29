@@ -6,4 +6,5 @@ type DatabaseConfig struct {
 	SecretKey    string
 	Region       string
 	SessionToken string
+	Url          string
 }
