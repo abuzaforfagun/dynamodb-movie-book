@@ -46,7 +46,7 @@ Create a movie book, where admin can create movies with actors. And user can che
 
 #### Component Communication
 
-![Relation between components](https://github.com/user-attachments/assets/668eac82-fe8e-45ed-baa3-795cc1e98382)
+![Service communication](https://github.com/user-attachments/assets/90c4d251-64ee-4374-9a6a-ea727cf2e28d)
 
 Looks scary? Let's break down the user actions:
 
