@@ -3,10 +3,11 @@ module github.com/abuzaforfagun/dynamodb-movie-book/actor-api
 go 1.22.5
 
 require (
+	github.com/abuzaforfagun/dynamodb-movie-book/dynamodb_connector v0.0.0-00010101000000-000000000000
 	github.com/abuzaforfagun/dynamodb-movie-book/grpc v0.0.0-00010101000000-000000000000
 	github.com/aws/aws-sdk-go-v2 v1.30.4
-	github.com/aws/aws-sdk-go-v2/config v1.27.31
-	github.com/aws/aws-sdk-go-v2/credentials v1.17.30
+	github.com/aws/aws-sdk-go-v2/config v1.27.31 // indirect
+	github.com/aws/aws-sdk-go-v2/credentials v1.17.30 // indirect
 	github.com/aws/aws-sdk-go-v2/feature/dynamodb/attributevalue v1.15.0
 	github.com/aws/aws-sdk-go-v2/feature/dynamodb/expression v1.7.35
 	github.com/aws/aws-sdk-go-v2/service/dynamodb v1.34.6
@@ -20,10 +21,15 @@ require (
 
 replace github.com/abuzaforfagun/dynamodb-movie-book/grpc => ../grpc/
 
+replace github.com/abuzaforfagun/dynamodb-movie-book/dynamodb_connector => ../dynamodb_connector/
+
+require google.golang.org/grpc v1.66.0
+
 require (
 	github.com/KyleBanks/depth v1.2.1 // indirect
 	github.com/PuerkitoBio/purell v1.1.1 // indirect
 	github.com/PuerkitoBio/urlesc v0.0.0-20170810143723-de5bf2ad4578 // indirect
+	github.com/aws/aws-sdk-go v1.55.5 // indirect
 	github.com/aws/aws-sdk-go-v2/feature/ec2/imds v1.16.12 // indirect
 	github.com/aws/aws-sdk-go-v2/internal/configsources v1.3.16 // indirect
 	github.com/aws/aws-sdk-go-v2/internal/endpoints/v2 v2.6.16 // indirect
@@ -69,7 +75,6 @@ require (
 	golang.org/x/text v0.16.0 // indirect
 	golang.org/x/tools v0.21.1-0.20240508182429-e35e4ccd0d2d // indirect
 	google.golang.org/genproto/googleapis/rpc v0.0.0-20240604185151-ef581f913117 // indirect
-	google.golang.org/grpc v1.66.0 // indirect
 	google.golang.org/protobuf v1.34.2 // indirect
 	gopkg.in/yaml.v2 v2.4.0 // indirect
 	gopkg.in/yaml.v3 v3.0.1 // indirect

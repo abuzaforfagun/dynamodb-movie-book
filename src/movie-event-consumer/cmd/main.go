@@ -1,12 +1,11 @@
 package main
 
 import (
-	"fmt"
 	"log"
 	"os"
 	"strconv"
 
-	"github.com/abuzaforfagun/dynamodb-movie-book/movie-event-consumer/internal/infrastructure"
+	"github.com/abuzaforfagun/dynamodb-movie-book/dynamodb_connector"
 	"github.com/abuzaforfagun/dynamodb-movie-book/movie-event-consumer/internal/initializers"
 	"github.com/abuzaforfagun/dynamodb-movie-book/movie-event-consumer/internal/processor"
 	"github.com/abuzaforfagun/dynamodb-movie-book/movie-event-consumer/internal/rabbitmq"
@@ -16,7 +15,29 @@ import (
 func main() {
 	log.SetFlags(log.LstdFlags | log.Lshortfile)
 
-	initializers.LoadEnvVariables()
+	enviornment := os.Getenv("ENVOIRNMENT")
+
+	if enviornment != "production" {
+		initializers.LoadEnvVariables()
+	}
+
+	awsRegion := os.Getenv("AWS_REGION")
+	awsSecretKey := os.Getenv("AWS_ACCESS_KEY_ID")
+	awsAccessKey := os.Getenv("AWS_SECRET_ACCESS_KEY")
+	awsSessionToken := os.Getenv("AWS_SESSION_TOKEN")
+	awsTableName := os.Getenv("TABLE_NAME")
+	dynamodbUrl := os.Getenv("DYNAMODB_URL")
+
+	dbConfig := dynamodb_connector.DatabaseConfig{
+		TableName:    awsTableName,
+		AccessKey:    awsAccessKey,
+		SecretKey:    awsSecretKey,
+		Region:       awsRegion,
+		SessionToken: awsSessionToken,
+		Url:          dynamodbUrl,
+	}
+
+	dbConnector, err := dynamodb_connector.New(&dbConfig)
 
 	amqpServerURL := os.Getenv("AMQP_SERVER_URL")
 	movieAddedExchangeName := os.Getenv("EXCHANGE_NAME_MOVIE_ADDED")
@@ -36,14 +57,9 @@ func main() {
 		log.Fatalf("Failed to connect to RabbitMQ: %s", err)
 	}
 
-	awsConfig := infrastructure.NewAWSConfig()
-	tableName := os.Getenv("TABLE_NAME")
-
-	dynamoDbClient := infrastructure.NewDynamoDBClient(awsConfig)
-
-	genreService := services.NewGenreService(dynamoDbClient, tableName)
-	movieService := services.NewMovieService(dynamoDbClient, tableName, numberOfTopRatedMovies)
-	reviewService := services.NewReviewService(dynamoDbClient, tableName)
+	genreService := services.NewGenreService(dbConnector.Client, awsTableName)
+	movieService := services.NewMovieService(dbConnector.Client, awsTableName, numberOfTopRatedMovies)
+	reviewService := services.NewReviewService(dbConnector.Client, awsTableName)
 	rabbitmqPublisher := rabbitmq.NewPublisher(amqpServerURL)
 
 	moviedAddedHandler := processor.NewMovieAddedHandler(&movieService, &genreService)
@@ -54,6 +70,6 @@ func main() {
 	rabbitmq.RegisterQueueExchange(conn, reviewAddedQueueName, reviewAddedExchangeName, reviewAddedHandler.HandleMessage)
 	rabbitmq.RegisterQueue(conn, movieScoreUpdatedQueueName, movieScoreUpdatedHandler.HandleMessage)
 
-	fmt.Println("Ready to process events...")
+	log.Println("Ready to process events...")
 	select {}
 }

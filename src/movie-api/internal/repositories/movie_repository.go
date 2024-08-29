@@ -6,7 +6,7 @@ import (
 	"log"
 	"strings"
 
-	"github.com/abuzaforfagun/dynamodb-movie-book/movie-api/internal/database"
+	"github.com/abuzaforfagun/dynamodb-movie-book/dynamodb_connector"
 	"github.com/abuzaforfagun/dynamodb-movie-book/movie-api/internal/models/db_model"
 	"github.com/abuzaforfagun/dynamodb-movie-book/movie-api/internal/models/dto"
 	"github.com/abuzaforfagun/dynamodb-movie-book/movie-api/internal/models/response_model"
@@ -103,7 +103,7 @@ func (r *movieRepository) GetAll(movieName string) (*[]response_model.Movie, err
 
 	var filterExpression *string
 	attributeNames := map[string]string{}
-	attributeNames["#pk"] = database.GSI_PK
+	attributeNames["#pk"] = dynamodb_connector.GSI_PK
 
 	attributeValues := map[string]types.AttributeValue{}
 	attributeValues[":v"] = &types.AttributeValueMemberS{Value: partitionKeyValue}
@@ -117,7 +117,7 @@ func (r *movieRepository) GetAll(movieName string) (*[]response_model.Movie, err
 
 	queryInput := &dynamodb.QueryInput{
 		TableName:                 aws.String(r.tableName),
-		IndexName:                 aws.String(database.GSI_NAME),
+		IndexName:                 aws.String(dynamodb_connector.GSI_NAME),
 		KeyConditionExpression:    aws.String("#pk = :v"),
 		FilterExpression:          filterExpression,
 		ExpressionAttributeNames:  attributeNames,

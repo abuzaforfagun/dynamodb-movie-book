@@ -1,12 +1,11 @@
 package main
 
 import (
-	"fmt"
 	"log"
 	"os"
 
+	"github.com/abuzaforfagun/dynamodb-movie-book/dynamodb_connector"
 	"github.com/abuzaforfagun/dynamodb-movie-book/grpc/userpb"
-	"github.com/abuzaforfagun/dynamodb-movie-book/review-event-consumer/internal/infrastructure"
 	"github.com/abuzaforfagun/dynamodb-movie-book/review-event-consumer/internal/initializers"
 	"github.com/abuzaforfagun/dynamodb-movie-book/review-event-consumer/internal/processor"
 	"github.com/abuzaforfagun/dynamodb-movie-book/review-event-consumer/internal/rabbitmq"
@@ -17,7 +16,30 @@ import (
 
 func main() {
 	log.SetFlags(log.LstdFlags | log.Lshortfile)
-	initializers.LoadEnvVariables()
+
+	enviornment := os.Getenv("ENVOIRNMENT")
+
+	if enviornment != "production" {
+		initializers.LoadEnvVariables()
+	}
+
+	awsRegion := os.Getenv("AWS_REGION")
+	awsSecretKey := os.Getenv("AWS_ACCESS_KEY_ID")
+	awsAccessKey := os.Getenv("AWS_SECRET_ACCESS_KEY")
+	awsSessionToken := os.Getenv("AWS_SESSION_TOKEN")
+	awsTableName := os.Getenv("TABLE_NAME")
+	dynamodbUrl := os.Getenv("DYNAMODB_URL")
+
+	dbConfig := dynamodb_connector.DatabaseConfig{
+		TableName:    awsTableName,
+		AccessKey:    awsAccessKey,
+		SecretKey:    awsSecretKey,
+		Region:       awsRegion,
+		SessionToken: awsSessionToken,
+		Url:          dynamodbUrl,
+	}
+
+	dbConnector, err := dynamodb_connector.New(&dbConfig)
 
 	amqpServerURL := os.Getenv("AMQP_SERVER_URL")
 	userUpdatedExchangeName := os.Getenv("EXCHANGE_NAME_USER_UPDATED")
@@ -29,22 +51,17 @@ func main() {
 		log.Fatalf("Failed to connect to RabbitMQ: %s", err)
 	}
 
-	awsConfig := infrastructure.NewAWSConfig()
-	tableName := os.Getenv("TABLE_NAME")
-
-	dynamoDbClient := infrastructure.NewDynamoDBClient(awsConfig)
-
 	userConn, err := grpc.NewClient(userGrpcUrl, grpc.WithTransportCredentials(insecure.NewCredentials()))
 	if err != nil {
 		log.Fatalf("Failed to connect: %v", err)
 	}
 	defer userConn.Close()
 	userClient := userpb.NewUserServiceClient(userConn)
-	reviewService := services.NewReviewService(dynamoDbClient, userClient, tableName)
+	reviewService := services.NewReviewService(dbConnector.Client, userClient, awsTableName)
 
 	userUpdatedHandler := processor.NewUserUpdatedHandler(reviewService)
 
 	rabbitmq.RegisterQueueExchange(conn, userUpdatedQueueName, userUpdatedExchangeName, userUpdatedHandler.HandleMessage)
-	fmt.Println("Ready to process events...")
+	log.Println("Ready to process events...")
 	select {}
 }

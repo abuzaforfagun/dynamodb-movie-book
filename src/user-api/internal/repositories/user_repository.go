@@ -5,7 +5,8 @@ import (
 	"fmt"
 	"log"
 
-	"github.com/abuzaforfagun/dynamodb-movie-book/user-api/internal/database"
+	"github.com/abuzaforfagun/dynamodb-movie-book/dynamodb_connector"
+
 	"github.com/abuzaforfagun/dynamodb-movie-book/user-api/internal/models/db_model"
 	"github.com/abuzaforfagun/dynamodb-movie-book/user-api/internal/models/response_model"
 	"github.com/aws/aws-sdk-go-v2/aws"
@@ -94,8 +95,8 @@ func (r *userRepository) HasUserByEmail(email string) (bool, error) {
 
 	queryInput := &dynamodb.QueryInput{
 		TableName:              aws.String(r.tableName),
-		IndexName:              aws.String(database.GSI_NAME),
-		KeyConditionExpression: aws.String(database.GSI_PK + " = :pk AND " + database.GSI_SK + "= :skPrefix"),
+		IndexName:              aws.String(dynamodb_connector.GSI_NAME),
+		KeyConditionExpression: aws.String(dynamodb_connector.GSI_PK + " = :pk AND " + dynamodb_connector.GSI_SK + "= :skPrefix"),
 		ExpressionAttributeValues: map[string]types.AttributeValue{
 			":pk":       &types.AttributeValueMemberS{Value: partitionKeyValue},
 			":skPrefix": &types.AttributeValueMemberS{Value: sortKeyContainsValue},

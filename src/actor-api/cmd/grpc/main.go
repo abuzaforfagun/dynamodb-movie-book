@@ -5,11 +5,10 @@ import (
 	"net"
 	"os"
 
-	"github.com/abuzaforfagun/dynamodb-movie-book/actor-api/internal/configuration"
-	"github.com/abuzaforfagun/dynamodb-movie-book/actor-api/internal/database"
 	"github.com/abuzaforfagun/dynamodb-movie-book/actor-api/internal/grpc_services"
 	"github.com/abuzaforfagun/dynamodb-movie-book/actor-api/internal/initializers"
 	"github.com/abuzaforfagun/dynamodb-movie-book/actor-api/internal/repositories"
+	"github.com/abuzaforfagun/dynamodb-movie-book/dynamodb_connector"
 	"github.com/abuzaforfagun/dynamodb-movie-book/grpc/actorpb"
 	"google.golang.org/grpc"
 )
@@ -33,22 +32,24 @@ func main() {
 	awsAccessKey := os.Getenv("AWS_SECRET_ACCESS_KEY")
 	awsSessionToken := os.Getenv("AWS_SESSION_TOKEN")
 	awsTableName := os.Getenv("TABLE_NAME")
+	dynamodbUrl := os.Getenv("DYNAMODB_URL")
 	port := os.Getenv("GRPC_PORT")
 
-	dbConfig := configuration.DatabaseConfig{
+	dbConfig := dynamodb_connector.DatabaseConfig{
 		TableName:    awsTableName,
 		AccessKey:    awsAccessKey,
 		SecretKey:    awsSecretKey,
 		Region:       awsRegion,
 		SessionToken: awsSessionToken,
+		Url:          dynamodbUrl,
 	}
 
-	dbService, err := database.New(&dbConfig)
+	dbConnector, err := dynamodb_connector.New(&dbConfig)
 	if err != nil {
 		log.Fatalf("failed to connect database %v", err)
 	}
 
-	actorRepository := repositories.NewActorRepository(dbService.Client, dbService.TableName)
+	actorRepository := repositories.NewActorRepository(dbConnector.Client, dbConnector.TableName)
 
 	listener, err := net.Listen("tcp", port)
 	if err != nil {

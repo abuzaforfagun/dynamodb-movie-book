@@ -1,16 +1,15 @@
-package infrastructure
+package dynamodb_connector
 
 import (
 	"context"
 
-	"github.com/abuzaforfagun/dynamodb-movie-book/movie-api/internal/configuration"
 	"github.com/aws/aws-sdk-go-v2/aws"
 	"github.com/aws/aws-sdk-go-v2/config"
 	"github.com/aws/aws-sdk-go-v2/credentials"
 	"github.com/aws/aws-sdk-go-v2/service/dynamodb"
 )
 
-func NewAWSConfig(awsConfig *configuration.DatabaseConfig) *aws.Config {
+func NewAWSConfig(awsConfig *DatabaseConfig) *aws.Config {
 	credProvider := aws.NewCredentialsCache(credentials.NewStaticCredentialsProvider(
 		awsConfig.AccessKey,
 		awsConfig.SecretKey,

@@ -4,11 +4,10 @@ import (
 	"log"
 	"os"
 
+	"github.com/abuzaforfagun/dynamodb-movie-book/dynamodb_connector"
 	"github.com/abuzaforfagun/dynamodb-movie-book/grpc/actorpb"
 	"github.com/abuzaforfagun/dynamodb-movie-book/grpc/userpb"
 	_ "github.com/abuzaforfagun/dynamodb-movie-book/movie-api/docs"
-	"github.com/abuzaforfagun/dynamodb-movie-book/movie-api/internal/configuration"
-	"github.com/abuzaforfagun/dynamodb-movie-book/movie-api/internal/database"
 	"github.com/abuzaforfagun/dynamodb-movie-book/movie-api/internal/handlers/movies_handler"
 	"github.com/abuzaforfagun/dynamodb-movie-book/movie-api/internal/handlers/reviews_handler"
 	"github.com/abuzaforfagun/dynamodb-movie-book/movie-api/internal/infrastructure"
@@ -52,16 +51,17 @@ func main() {
 	apiPort := os.Getenv("API_PORT")
 	dynamodbUrl := os.Getenv("DYNAMODB_URL")
 
-	dbConfig := configuration.DatabaseConfig{
+	dbConfig := dynamodb_connector.DatabaseConfig{
 		TableName:    awsTableName,
 		AccessKey:    awsAccessKey,
 		SecretKey:    awsSecretKey,
 		Region:       awsRegion,
 		SessionToken: awsSessionToken,
 		Url:          dynamodbUrl,
+		GSIRequired:  true,
 	}
 
-	dbService, err := database.New(&dbConfig)
+	dbConnector, err := dynamodb_connector.New(&dbConfig)
 	if err != nil {
 		log.Fatalf("failed to connect database %v", err)
 	}
@@ -76,8 +76,8 @@ func main() {
 	rabbitMq.DeclareFanoutExchange(userUpdatedExchageName)
 	rabbitMq.DeclareFanoutExchange(reviewAddedExchageName)
 
-	movieRepository := repositories.NewMovieRepository(dbService.Client, dbService.TableName)
-	reviewRepository := repositories.NewReviewRepository(dbService.Client, dbService.TableName)
+	movieRepository := repositories.NewMovieRepository(dbConnector.Client, dbConnector.TableName)
+	reviewRepository := repositories.NewReviewRepository(dbConnector.Client, dbConnector.TableName)
 
 	userConn, err := grpc.NewClient(userGrpcUrl, grpc.WithTransportCredentials(insecure.NewCredentials()))
 	if err != nil {

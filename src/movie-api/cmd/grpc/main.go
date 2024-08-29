@@ -5,9 +5,8 @@ import (
 	"net"
 	"os"
 
+	"github.com/abuzaforfagun/dynamodb-movie-book/dynamodb_connector"
 	"github.com/abuzaforfagun/dynamodb-movie-book/grpc/moviepb"
-	"github.com/abuzaforfagun/dynamodb-movie-book/movie-api/internal/configuration"
-	"github.com/abuzaforfagun/dynamodb-movie-book/movie-api/internal/database"
 	"github.com/abuzaforfagun/dynamodb-movie-book/movie-api/internal/grpc_services"
 	"github.com/abuzaforfagun/dynamodb-movie-book/movie-api/internal/initializers"
 	"github.com/abuzaforfagun/dynamodb-movie-book/movie-api/internal/repositories"
@@ -30,21 +29,22 @@ func main() {
 	dynamodbUrl := os.Getenv("DYNAMODB_URL")
 	port := os.Getenv("GRPC_PORT")
 
-	dbConfig := configuration.DatabaseConfig{
+	dbConfig := dynamodb_connector.DatabaseConfig{
 		TableName:    awsTableName,
 		AccessKey:    awsAccessKey,
 		SecretKey:    awsSecretKey,
 		Region:       awsRegion,
 		SessionToken: awsSessionToken,
 		Url:          dynamodbUrl,
+		GSIRequired:  true,
 	}
 
-	dbService, err := database.New(&dbConfig)
+	dbConnector, err := dynamodb_connector.New(&dbConfig)
 	if err != nil {
 		log.Fatalf("failed to connect database %v", err)
 	}
 
-	movieRepository := repositories.NewMovieRepository(dbService.Client, dbService.TableName)
+	movieRepository := repositories.NewMovieRepository(dbConnector.Client, dbConnector.TableName)
 
 	listener, err := net.Listen("tcp", port)
 	if err != nil {

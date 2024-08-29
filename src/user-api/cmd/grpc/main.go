@@ -5,10 +5,9 @@ import (
 	"net"
 	"os"
 
+	"github.com/abuzaforfagun/dynamodb-movie-book/dynamodb_connector"
 	"github.com/abuzaforfagun/dynamodb-movie-book/grpc/userpb"
 	_ "github.com/abuzaforfagun/dynamodb-movie-book/user-api/docs"
-	"github.com/abuzaforfagun/dynamodb-movie-book/user-api/internal/configuration"
-	"github.com/abuzaforfagun/dynamodb-movie-book/user-api/internal/database"
 	"github.com/abuzaforfagun/dynamodb-movie-book/user-api/internal/grpc_services"
 	"github.com/abuzaforfagun/dynamodb-movie-book/user-api/internal/initializers"
 	"github.com/abuzaforfagun/dynamodb-movie-book/user-api/internal/repositories"
@@ -34,22 +33,25 @@ func main() {
 	awsAccessKey := os.Getenv("AWS_SECRET_ACCESS_KEY")
 	awsSessionToken := os.Getenv("AWS_SESSION_TOKEN")
 	awsTableName := os.Getenv("TABLE_NAME")
-	port := os.Getenv("GRPC_PORT")
+	dynamodbUrl := os.Getenv("DYNAMODB_URL")
 
-	dbConfig := configuration.DatabaseConfig{
+	dbConfig := dynamodb_connector.DatabaseConfig{
 		TableName:    awsTableName,
 		AccessKey:    awsAccessKey,
 		SecretKey:    awsSecretKey,
 		Region:       awsRegion,
 		SessionToken: awsSessionToken,
+		Url:          dynamodbUrl,
+		GSIRequired:  true,
 	}
 
-	dbService, err := database.New(&dbConfig)
+	dbConnector, err := dynamodb_connector.New(&dbConfig)
 	if err != nil {
 		log.Fatalf("failed to connect database %v", err)
 	}
+	port := os.Getenv("GRPC_PORT")
 
-	userRepository := repositories.NewUserRepository(dbService.Client, dbService.TableName)
+	userRepository := repositories.NewUserRepository(dbConnector.Client, dbConnector.TableName)
 
 	grpcUserService := grpc_services.NewUserService(userRepository)
 	listener, err := net.Listen("tcp", port)

@@ -4,9 +4,8 @@ import (
 	"log"
 	"os"
 
+	"github.com/abuzaforfagun/dynamodb-movie-book/dynamodb_connector"
 	_ "github.com/abuzaforfagun/dynamodb-movie-book/user-api/docs"
-	"github.com/abuzaforfagun/dynamodb-movie-book/user-api/internal/configuration"
-	"github.com/abuzaforfagun/dynamodb-movie-book/user-api/internal/database"
 	"github.com/abuzaforfagun/dynamodb-movie-book/user-api/internal/handlers"
 	"github.com/abuzaforfagun/dynamodb-movie-book/user-api/internal/infrastructure"
 	"github.com/abuzaforfagun/dynamodb-movie-book/user-api/internal/initializers"
@@ -30,23 +29,32 @@ import (
 func main() {
 	log.SetFlags(log.LstdFlags | log.Lshortfile)
 
-	initializers.LoadEnvVariables("../../.env")
+	enviornment := os.Getenv("ENVOIRNMENT")
+
+	if enviornment != "production" {
+		initializers.LoadEnvVariables("../../.env")
+	}
+	port := os.Getenv("API_PORT")
+
 	awsRegion := os.Getenv("AWS_REGION")
 	awsSecretKey := os.Getenv("AWS_ACCESS_KEY_ID")
 	awsAccessKey := os.Getenv("AWS_SECRET_ACCESS_KEY")
 	awsSessionToken := os.Getenv("AWS_SESSION_TOKEN")
 	awsTableName := os.Getenv("TABLE_NAME")
-	port := os.Getenv("API_PORT")
+	dynamodbUrl := os.Getenv("DYNAMODB_URL")
 
-	dbConfig := configuration.DatabaseConfig{
+	dbConfig := dynamodb_connector.DatabaseConfig{
 		TableName:    awsTableName,
 		AccessKey:    awsAccessKey,
 		SecretKey:    awsSecretKey,
 		Region:       awsRegion,
 		SessionToken: awsSessionToken,
+		Url:          dynamodbUrl,
+		GSIRequired:  true,
 	}
 
-	dbService, err := database.New(&dbConfig)
+	dbConnector, err := dynamodb_connector.New(&dbConfig)
+
 	if err != nil {
 		log.Fatalf("failed to connect database %v", err)
 	}
@@ -57,7 +65,7 @@ func main() {
 
 	rabbitMq.DeclareFanoutExchange(userUpdatedExchageName)
 
-	userRepository := repositories.NewUserRepository(dbService.Client, dbService.TableName)
+	userRepository := repositories.NewUserRepository(dbConnector.Client, dbConnector.TableName)
 
 	userService := services.NewUserService(userRepository, rabbitMq, userUpdatedExchageName)
 

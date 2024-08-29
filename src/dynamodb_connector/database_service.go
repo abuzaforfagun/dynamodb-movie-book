@@ -1,4 +1,4 @@
-package database
+package dynamodb_connector
 
 import (
 	"context"
@@ -6,11 +6,9 @@ import (
 	"fmt"
 	"log"
 
-	"github.com/abuzaforfagun/dynamodb-movie-book/movie-api/internal/configuration"
-	"github.com/abuzaforfagun/dynamodb-movie-book/movie-api/internal/infrastructure"
-	"github.com/aws/aws-sdk-go-v2/aws"
 	"github.com/aws/aws-sdk-go-v2/service/dynamodb"
 	"github.com/aws/aws-sdk-go-v2/service/dynamodb/types"
+	"github.com/aws/aws-sdk-go/aws"
 )
 
 const GSI_NAME = "GSI"
@@ -22,13 +20,13 @@ type DatabaseService struct {
 	TableName string
 }
 
-func New(config *configuration.DatabaseConfig) (*DatabaseService, error) {
+func New(config *DatabaseConfig) (*DatabaseService, error) {
 	if config.TableName == "" {
 		log.Println("failed to load the table name")
 	}
 
-	awsConfig := infrastructure.NewAWSConfig(config)
-	svc := infrastructure.NewDynamoDBClient(awsConfig)
+	awsConfig := NewAWSConfig(config)
+	svc := NewDynamoDBClient(awsConfig)
 
 	ctx := context.TODO()
 	isTableExists, err := tableExists(ctx, svc, config.TableName)
@@ -43,19 +41,22 @@ func New(config *configuration.DatabaseConfig) (*DatabaseService, error) {
 			return nil, err
 		}
 	}
-	isGsiExists, err := existGsi(ctx, svc, config.TableName, GSI_NAME)
-	if err != nil {
-		log.Fatalf("failed to check existing gsi: %v", err)
-		return nil, err
-	}
-	if isGsiExists {
-		return new(config.TableName, svc), nil
-	}
 
-	err = createGsi(svc, config.TableName, GSI_NAME, GSI_PK, GSI_SK)
-	if err != nil {
-		log.Fatalf("failed to create gsi: %v", err)
-		return nil, err
+	if config.GSIRequired {
+		isGsiExists, err := existGsi(ctx, svc, config.TableName, GSI_NAME)
+		if err != nil {
+			log.Fatalf("failed to check existing gsi: %v", err)
+			return nil, err
+		}
+		if isGsiExists {
+			return new(config.TableName, svc), nil
+		}
+
+		err = createGsi(svc, config.TableName, GSI_NAME, GSI_PK, GSI_SK)
+		if err != nil {
+			log.Fatalf("failed to create gsi: %v", err)
+			return nil, err
+		}
 	}
 
 	return new(config.TableName, svc), nil

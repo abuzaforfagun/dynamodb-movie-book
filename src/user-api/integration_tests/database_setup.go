@@ -6,8 +6,7 @@ import (
 	"log"
 	"os"
 
-	"github.com/abuzaforfagun/dynamodb-movie-book/user-api/internal/configuration"
-	"github.com/abuzaforfagun/dynamodb-movie-book/user-api/internal/database"
+	"github.com/abuzaforfagun/dynamodb-movie-book/dynamodb_connector"
 	"github.com/abuzaforfagun/dynamodb-movie-book/user-api/internal/initializers"
 	"github.com/aws/aws-sdk-go-v2/aws"
 	"github.com/aws/aws-sdk-go-v2/feature/dynamodb/attributevalue"
@@ -15,7 +14,7 @@ import (
 )
 
 var (
-	DbService *database.DatabaseService
+	DbService *dynamodb_connector.DatabaseService
 )
 
 func SetupTestDatabase() {
@@ -27,7 +26,7 @@ func SetupTestDatabase() {
 	awsSessionToken := os.Getenv("AWS_SESSION_TOKEN")
 	awsTableName := os.Getenv("TABLE_NAME")
 
-	dbConfig := configuration.DatabaseConfig{
+	dbConfig := dynamodb_connector.DatabaseConfig{
 		TableName:    awsTableName,
 		AccessKey:    awsAccessKey,
 		SecretKey:    awsSecretKey,
@@ -36,7 +35,7 @@ func SetupTestDatabase() {
 	}
 
 	var err error
-	DbService, err = database.New(&dbConfig)
+	DbService, err = dynamodb_connector.New(&dbConfig)
 	if err != nil {
 		log.Fatalf("failed to connect to database: %v", err)
 	}
