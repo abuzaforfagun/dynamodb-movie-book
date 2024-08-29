@@ -42,7 +42,7 @@ Create a movie book, where admin can create movies with actors. And user can che
 
 #### Core components
 
-![Core Components](https://github.com/user-attachments/assets/59a6fda1-3903-4aaf-9814-5088800d5e54)
+![Core components](https://github.com/user-attachments/assets/a205cc5d-af14-4a96-96d7-c843b9d7af15)
 
 #### Component Communication
 
