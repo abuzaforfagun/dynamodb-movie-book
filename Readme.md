@@ -1,24 +1,73 @@
 # MovieBook
 
-## Development
+## Purpose
 
-_How to generate the swagger docs?_
+The purpose of the project is about to develop highly scalable product using microservice architecture, event driven development and dynamodb.
 
-- `swag init -g cmd/api/main.go` from the root directory
+## Project requirement
 
-<!-- ## Access patterns
+Create a movie book, where admin can create movies with actors. And user can check out movie details and submit their review. And we need to keep in mind that, this is a read heavy applicaiton.
 
-MOVIE#1 MOVIE#1 MOVIE MOVIE#1 // MOVIE
-USER#1 USER#1 USER USER#1 // USER
-MOVIE#1 USER#1 REVIEW MOVIE1#USER1 // REVIEW
-ACTOR#1 ACTOR#1 ACTOR ACTOR#1 // ACTOR
-MOVIE#1 ACTOR#1 ACTOR-MOVIE MOVIE#1ACTOR#1 // Movie acttors
-GENRE#1 MOVIE#1 GENRE GENRE#1MOVIE#1 // GENRE
+## Features
 
-Get all movies: GSI_PK: MVOIE
-Get single movie: PK:MOVIE#1 - movie details - movie reviews - movie actors
-Get all users: GSI_PK: USER
-Get single user: PK:USER#1 - user details - added review to movies
-Get all actors: GSI_PK: ACTOR
-Get single actor: ACTOR#1 - actor details - actor movies
-Get genre movies: GENRE#1 -->
+- Add actors
+- Add/Update/Delete users
+- Add movies
+- Add review
+- Get all movies
+- Search movies by name
+- Search by genre
+- List top rated movies
+- List actor details with movies [Feel free to create a PR]
+- List user details with reviews [Feel free to create a PR]
+- Submit review
+- Delete review [Feel free to create a PR]
+
+## Tech stack
+
+- Golang
+- Web API
+- gRPC
+- RabbitMQ
+- Dynamodb
+
+## Testing stretegy
+
+- Unit tests
+- Integration tests
+- E2E tests
+- Manual testing
+
+## Overall architecture design
+
+#### Core components
+
+![Core Components](https://github.com/user-attachments/assets/59a6fda1-3903-4aaf-9814-5088800d5e54)
+
+#### Component Communication
+
+![Relation between components](https://github.com/user-attachments/assets/668eac82-fe8e-45ed-baa3-795cc1e98382)
+
+Looks scary? Let's break down the user actions:
+
+#### User and actor creation
+
+![User and Actor Creation](https://github.com/user-attachments/assets/cfcfa29b-48f2-40ea-a65e-4ceed83c9d82)
+
+User and actor creation are mostly straight forward, it store the data into their own table.
+
+#### Movie creation
+
+Movie creation, is related with few other features, for an example list movies by a single genre, list actor movies. To make those operation scalable, we are going to populate required data for genre and actor details. After storing the data to table, it trigger an event, actor and movie event listener process the event to generate appropriate data for their services.
+![Movie Creation](https://github.com/user-attachments/assets/afe41414-02a6-4161-85cd-3202edbdf2b0)
+
+#### Add review
+
+Reviews are related with movie and user. When a review get added, it trigger an event, that event get processed by movie event listener, and user event listener. Movie event listener change the overall score of movie and re calcualte the top reviewed movies. And user event listener populate the data for user details page where he/she can lookup the reviews he/she made.
+![Add Review](https://github.com/user-attachments/assets/3dd1d0cf-934f-4d96-a45f-f83950cbf62a)
+
+#### User name update
+
+When a user submit review, for better scalability we have dupliated the user data to movie table, and as a result when a user updated their name, we also need to update the related data in movie table, and to achieve that we have triggered another event after updating the user name, and review event listener update the user name accordingly.
+
+![User name updated](https://github.com/user-attachments/assets/d65bee2a-a321-4042-9379-d0d5042c0a78)
