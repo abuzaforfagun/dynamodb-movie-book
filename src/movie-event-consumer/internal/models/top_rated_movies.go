@@ -10,7 +10,7 @@ type TopRatedMovies struct {
 
 func NewTopRatedMovies(movies *[]MovieShortInformation, numberOfMovies int) *TopRatedMovies {
 	uniqueMovies := UniqueMovies(movies)
-	if len(*uniqueMovies) > 10 {
+	if len(*uniqueMovies) > numberOfMovies {
 		*uniqueMovies = (*uniqueMovies)[:numberOfMovies]
 	}
 	return &TopRatedMovies{
