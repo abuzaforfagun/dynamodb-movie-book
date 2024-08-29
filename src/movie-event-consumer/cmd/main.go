@@ -26,7 +26,7 @@ func main() {
 	numberOfTopRatedMoviesStr := os.Getenv("NUMBER_OF_TOP_MOVIES")
 	numberOfTopRatedMovies, err := strconv.Atoi(numberOfTopRatedMoviesStr)
 	if err != nil {
-		log.Fatalf("Faild to initialize the consumer", err)
+		log.Fatal("Faild to initialize the consumer", err)
 	}
 
 	movieScoreUpdatedQueueName := os.Getenv("MOVIE_SCORE_UPDATED_QUEUE")

@@ -33,6 +33,7 @@ func main() {
 	awsAccessKey := os.Getenv("AWS_SECRET_ACCESS_KEY")
 	awsSessionToken := os.Getenv("AWS_SESSION_TOKEN")
 	awsTableName := os.Getenv("TABLE_NAME")
+	port := os.Getenv("GRPC_PORT")
 
 	dbConfig := configuration.DatabaseConfig{
 		TableName:    awsTableName,
@@ -49,7 +50,7 @@ func main() {
 
 	actorRepository := repositories.NewActorRepository(dbService.Client, dbService.TableName)
 
-	listener, err := net.Listen("tcp", ":6003")
+	listener, err := net.Listen("tcp", port)
 	if err != nil {
 		log.Fatal("Unable to listen port", err)
 	}

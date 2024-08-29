@@ -22,6 +22,7 @@ func main() {
 	amqpServerURL := os.Getenv("AMQP_SERVER_URL")
 	userUpdatedExchangeName := os.Getenv("EXCHANGE_NAME_USER_UPDATED")
 	userUpdatedQueueName := os.Getenv("USER_UPDATE_QUEUE")
+	userGrpcUrl := os.Getenv("USER_GRPC_API")
 
 	conn, err := rabbitmq.NewConnection(amqpServerURL)
 	if err != nil {
@@ -33,7 +34,7 @@ func main() {
 
 	dynamoDbClient := infrastructure.NewDynamoDBClient(awsConfig)
 
-	userConn, err := grpc.NewClient(":6002", grpc.WithTransportCredentials(insecure.NewCredentials()))
+	userConn, err := grpc.NewClient(userGrpcUrl, grpc.WithTransportCredentials(insecure.NewCredentials()))
 	if err != nil {
 		log.Fatalf("Failed to connect: %v", err)
 	}

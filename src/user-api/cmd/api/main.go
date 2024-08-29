@@ -36,6 +36,7 @@ func main() {
 	awsAccessKey := os.Getenv("AWS_SECRET_ACCESS_KEY")
 	awsSessionToken := os.Getenv("AWS_SESSION_TOKEN")
 	awsTableName := os.Getenv("TABLE_NAME")
+	port := os.Getenv("API_PORT")
 
 	dbConfig := configuration.DatabaseConfig{
 		TableName:    awsTableName,
@@ -68,7 +69,7 @@ func main() {
 	router.POST("/users/", userHandler.AddUser)
 	router.PUT("/users/:id", userHandler.UpdateUser)
 
-	err = router.Run(":5002")
+	err = router.Run(port)
 
 	if err != nil {
 		panic(err)

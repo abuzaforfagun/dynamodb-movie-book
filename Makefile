@@ -1,7 +1,7 @@
 # Makefile
 
 movie-api:
-	cd src/movie-api && swag init -g cmd/main.go && cd cmd && go run .
+	cd src/movie-api && swag init -g cmd/api/main.go && cd cmd/api && go run .
 actor-api:
 	cd src/actor-api && swag init -g cmd/api/main.go && cd cmd/api && go run .
 
@@ -10,6 +10,9 @@ actor-grpc:
 
 user-api:
 	cd src/user-api && swag init -g cmd/api/main.go && cd cmd/api && go run .
+
+movie-grpc:
+	cd src/movie-api/cmd/grpc && go run .
 
 user-grpc:
 	cd src/user-api/cmd/grpc && go run .

@@ -1,0 +1,25 @@
+syntax = "proto3";
+
+option go_package = "../../src/grpc/moviepb;moviepb";
+
+message GetMovieResponse {
+    string id = 1;
+    string title = 2;
+    string release_year = 3;
+    repeated string genres = 4;
+    repeated ActorInfo actors = 5;
+}
+
+message ActorInfo {
+    string id = 1;
+    string name = 2;
+    string role = 3;
+}
+
+message GetMovieRequest {
+    string movie_id = 1;
+}
+
+service MovieService {
+    rpc GetMovieDetails(GetMovieRequest) returns (GetMovieResponse) {}
+}

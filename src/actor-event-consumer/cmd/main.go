@@ -3,7 +3,6 @@ package main
 import (
 	"fmt"
 	"log"
-	"net/http"
 	"os"
 
 	"github.com/abuzaforfagun/dynamodb-movie-book/actor-event-consumer/internal/infrastructure"
@@ -11,6 +10,9 @@ import (
 	"github.com/abuzaforfagun/dynamodb-movie-book/actor-event-consumer/internal/processor"
 	"github.com/abuzaforfagun/dynamodb-movie-book/actor-event-consumer/internal/rabbitmq"
 	"github.com/abuzaforfagun/dynamodb-movie-book/actor-event-consumer/internal/services"
+	"github.com/abuzaforfagun/dynamodb-movie-book/grpc/moviepb"
+	"google.golang.org/grpc"
+	"google.golang.org/grpc/credentials/insecure"
 )
 
 func main() {
@@ -21,6 +23,7 @@ func main() {
 	amqpServerURL := os.Getenv("AMQP_SERVER_URL")
 	movieAddedExchangeName := os.Getenv("EXCHANGE_NAME_MOVIE_ADDED")
 	movieAddedQueueName := os.Getenv("MOVIE_ADDED_QUEUE")
+	movieGrpcUrl := os.Getenv("MOVIE_GRPC_API")
 
 	conn, err := rabbitmq.NewConnection(amqpServerURL)
 	if err != nil {
@@ -32,13 +35,16 @@ func main() {
 
 	dynamoDbClient := infrastructure.NewDynamoDBClient(awsConfig)
 
-	httpClient := &http.Client{}
-	movieApiBaseAddress := os.Getenv("MOVIE_API_BASE_ADDRESS")
-	movieService := services.NewMovieService(httpClient, movieApiBaseAddress)
+	movieConn, err := grpc.NewClient(movieGrpcUrl, grpc.WithTransportCredentials(insecure.NewCredentials()))
+	if err != nil {
+		log.Fatalf("Failed to connect: %v", err)
+	}
+	defer movieConn.Close()
+	movieClient := moviepb.NewMovieServiceClient(movieConn)
 
-	actorService := services.NewActorService(dynamoDbClient, tableName)
+	actorService := services.NewActorService(dynamoDbClient, movieClient, tableName)
 
-	moviedAddedHandler := processor.NewMovieAddedHandler(movieService, actorService)
+	moviedAddedHandler := processor.NewMovieAddedHandler(actorService)
 
 	rabbitmq.RegisterQueueExchange(conn, movieAddedQueueName, movieAddedExchangeName, moviedAddedHandler.HandleMessage)
 

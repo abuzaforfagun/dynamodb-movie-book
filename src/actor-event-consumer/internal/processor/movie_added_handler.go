@@ -10,13 +10,11 @@ import (
 )
 
 type MovieAddedHandler struct {
-	movieService services.MovieService
 	actorService services.ActorService
 }
 
-func NewMovieAddedHandler(movieService services.MovieService, actorService services.ActorService) *MovieAddedHandler {
+func NewMovieAddedHandler(actorService services.ActorService) *MovieAddedHandler {
 	return &MovieAddedHandler{
-		movieService: movieService,
 		actorService: actorService,
 	}
 }
@@ -37,20 +35,11 @@ func (h *MovieAddedHandler) HandleMessage(msg amqp.Delivery) {
 		return
 	}
 
-	movie, err := h.movieService.GetInfo(payload.MovieId)
+	err = h.actorService.PopulateMovieItems(payload.MovieId)
 
-	if err != nil || movie == nil {
-		log.Printf("ERROR: Invalid [MovieId=%s]\n", payload.MovieId)
+	if err != nil {
+		log.Println("ERROR: Unable to populate actor movies", err)
 		return
-	}
-
-	if len(movie.Actors) != 0 {
-		err = h.actorService.PopulateMovieItems(movie.MovieId, movie.Title, movie.Actors)
-
-		if err != nil {
-			log.Println("ERROR: Unable to populate actor movies", err)
-			return
-		}
 	}
 
 	log.Printf("Message processing completed [MessageId=%s]", payload.MessageId)

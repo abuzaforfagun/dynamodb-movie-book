@@ -36,12 +36,15 @@ import (
 func main() {
 	log.SetFlags(log.LstdFlags | log.Lshortfile)
 
-	initializers.LoadEnvVariables("../.env")
+	initializers.LoadEnvVariables("../../.env")
 	awsRegion := os.Getenv("AWS_REGION")
 	awsSecretKey := os.Getenv("AWS_ACCESS_KEY_ID")
 	awsAccessKey := os.Getenv("AWS_SECRET_ACCESS_KEY")
 	awsSessionToken := os.Getenv("AWS_SESSION_TOKEN")
 	awsTableName := os.Getenv("TABLE_NAME")
+	actorGrpcUrl := os.Getenv("ACTOR_GRPC_API")
+	userGrpcUrl := os.Getenv("USER_GRPC_API")
+	apiPort := os.Getenv("API_PORT")
 
 	dbConfig := configuration.DatabaseConfig{
 		TableName:    awsTableName,
@@ -69,7 +72,7 @@ func main() {
 	movieRepository := repositories.NewMovieRepository(dbService.Client, dbService.TableName)
 	reviewRepository := repositories.NewReviewRepository(dbService.Client, dbService.TableName)
 
-	userConn, err := grpc.NewClient(":6002", grpc.WithTransportCredentials(insecure.NewCredentials()))
+	userConn, err := grpc.NewClient(userGrpcUrl, grpc.WithTransportCredentials(insecure.NewCredentials()))
 	if err != nil {
 		log.Fatalf("Failed to connect: %v", err)
 	}
@@ -77,7 +80,7 @@ func main() {
 	userClient := userpb.NewUserServiceClient(userConn)
 	reviewService := services.NewReviewService(reviewRepository, userClient, rabbitMq, reviewAddedExchageName)
 
-	actorConn, err := grpc.NewClient(":6003", grpc.WithTransportCredentials(insecure.NewCredentials()))
+	actorConn, err := grpc.NewClient(actorGrpcUrl, grpc.WithTransportCredentials(insecure.NewCredentials()))
 	if err != nil {
 		log.Fatalf("Failed to connect: %v", err)
 	}
@@ -95,7 +98,7 @@ func main() {
 	reviewHandler := reviews_handler.New(reviewService, movieService)
 	routers.SetupReviewes(router, reviewHandler)
 
-	err = router.Run(":5001")
+	err = router.Run(apiPort)
 
 	if err != nil {
 		panic(err)
