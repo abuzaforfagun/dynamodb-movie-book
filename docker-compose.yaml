@@ -21,3 +21,196 @@ services:
     volumes:
       - ~/.docker-conf/rabbitmq/data/:/var/lib/rabbitmq/
       - ~/.docker-conf/rabbitmq/log/:/var/log/rabbitmq
+  movie-grpc:
+    build:
+      context: .
+      dockerfile: Dockerfile.Movie.gRPC
+    ports:
+      - "6001:6001"
+    entrypoint: ["sh", "-c", "sleep 30 && ./moviegrpc"]
+    environment:
+      ENVOIRNMENT: production
+      AWS_REGION: local
+      AWS_ACCESS_KEY_ID: local
+      AWS_SECRET_ACCESS_KEY: local
+      AWS_SESSION_TOKEN: ""
+      TABLE_NAME: MovieBook_movie
+      GRPC_PORT: :6001
+      DYNAMODB_URL: http://dynamodb-local:8000
+    depends_on:
+      - rabbitmq
+      - dynamodb-local
+  movie-api:
+    build:
+      context: .
+      dockerfile: Dockerfile.Movie.API
+    ports:
+      - "5001:5001"
+    entrypoint: ["sh", "-c", "sleep 30 && ./movieapi"]
+    environment:
+      ENVOIRNMENT: production
+      AWS_REGION: local
+      AWS_ACCESS_KEY_ID: local
+      AWS_SECRET_ACCESS_KEY: local
+      AWS_SESSION_TOKEN: ""
+      TABLE_NAME: MovieBook_movie
+      AMQP_SERVER_URL: amqp://admin:admin@rabbitmq:5672
+      API_PORT: :5001
+      ACTOR_GRPC_API: "actor-grpc:6003"
+      USER_GRPC_API: "user-grpc:6002"
+      EXCHANGE_NAME_USER_UPDATED: user_updated
+      EXCHANGE_NAME_MOVIE_ADDED: movie_added
+      EXCHANGE_NAME_REVIEW_ADDED: review_added
+      DYNAMODB_URL: http://dynamodb-local:8000
+    depends_on:
+      - rabbitmq
+      - dynamodb-local
+      - actor-grpc
+      - user-grpc
+      - movie-event-consumer
+      - actor-event-consumer
+  actor-api:
+    build:
+      context: .
+      dockerfile: Dockerfile.Actor.API
+    ports:
+      - "5003:5003"
+    entrypoint: ["sh", "-c", "sleep 30 && ./actorapi"]
+    environment:
+      ENVOIRNMENT: production
+      AWS_REGION: local
+      AWS_ACCESS_KEY_ID: local
+      AWS_SECRET_ACCESS_KEY: local
+      AWS_SESSION_TOKEN: ""
+      TABLE_NAME: MovieBook_actor
+      AMQP_SERVER_URL: amqp://admin:admin@rabbitmq:5672
+      API_PORT: :5003
+      DYNAMODB_URL: http://dynamodb-local:8000
+    depends_on:
+      - rabbitmq
+      - dynamodb-local
+  actor-grpc:
+    build:
+      context: .
+      dockerfile: Dockerfile.Actor.gRPC
+    ports:
+      - "6003:6003"
+    entrypoint: ["sh", "-c", "sleep 30 && ./actorgrpc"]
+    environment:
+      ENVOIRNMENT: production
+      AWS_REGION: local
+      AWS_ACCESS_KEY_ID: local
+      AWS_SECRET_ACCESS_KEY: local
+      AWS_SESSION_TOKEN: ""
+      TABLE_NAME: MovieBook_actor
+      GRPC_PORT: :6003
+      DYNAMODB_URL: http://dynamodb-local:8000
+    depends_on:
+      - rabbitmq
+      - dynamodb-local
+  actor-event-consumer:
+    build:
+      context: .
+      dockerfile: Dockerfile.Actor.EventConsumer
+    entrypoint: ["sh", "-c", "sleep 30 && ./actoreventconsumer"]
+    environment:
+      ENVOIRNMENT: production
+      DYNAMODB_URL: http://dynamodb-local:8000
+      AWS_REGION: local
+      AWS_ACCESS_KEY_ID: local
+      AWS_SECRET_ACCESS_KEY: local
+      AWS_SESSION_TOKEN: ""
+      TABLE_NAME: MovieBook_actor
+      AMQP_SERVER_URL: amqp://admin:admin@rabbitmq:5672
+      EXCHANGE_NAME_MOVIE_ADDED: movie_added
+      MOVIE_ADDED_QUEUE: actor_event_consumer.movie_added
+      MOVIE_GRPC_API: "movie-grpc:6001"
+    depends_on:
+      - rabbitmq
+      - dynamodb-local
+      - movie-grpc
+  movie-event-consumer:
+    build:
+      context: .
+      dockerfile: Dockerfile.Movie.EventConsumer
+    entrypoint: ["sh", "-c", "sleep 30 && ./movieeventconsumer"]
+    environment:
+      ENVOIRNMENT: production
+      DYNAMODB_URL: http://dynamodb-local:8000
+      AWS_REGION: local
+      AWS_ACCESS_KEY_ID: local
+      AWS_SECRET_ACCESS_KEY: local
+      AWS_SESSION_TOKEN: ""
+      TABLE_NAME: MovieBook_movie
+      AMQP_SERVER_URL: amqp://admin:admin@rabbitmq:5672
+      EXCHANGE_NAME_MOVIE_ADDED: movie_added
+      EXCHANGE_NAME_REVIEW_ADDED: review_added
+      MOVIE_ADDED_QUEUE: movie_event_consumer.movie_added
+      REVIEW_ADDED_QUEUE: movie_event_consumer.review_added
+      MOVIE_SCORE_UPDATED_QUEUE: movie_event_consumer.movie_score_updated
+      EXCHANGE_NAME_MOVIE_SCORE_UPDATED: move_score_updated
+      NUMBER_OF_TOP_MOVIES: 10
+    depends_on:
+      - rabbitmq
+      - dynamodb-local
+  review-event-consumer:
+    build:
+      context: .
+      dockerfile: Dockerfile.Review.EventConsumer
+    entrypoint: ["sh", "-c", "sleep 30 && ./revieweventconsumer"]
+    environment:
+      ENVOIRNMENT: production
+      DYNAMODB_URL: http://dynamodb-local:8000
+      AWS_REGION: local
+      AWS_ACCESS_KEY_ID: local
+      AWS_SECRET_ACCESS_KEY: local
+      AWS_SESSION_TOKEN: ""
+      TABLE_NAME: MovieBook_movie
+      AMQP_SERVER_URL: amqp://admin:admin@rabbitmq:5672
+      EXCHANGE_NAME_USER_UPDATED: user_updated
+      USER_UPDATE_QUEUE: review_service.user_updated
+      USER_GRPC_API: "user-grpc:6002"
+    depends_on:
+      - rabbitmq
+      - dynamodb-local
+      - user-grpc
+  user-api:
+    build:
+      context: .
+      dockerfile: Dockerfile.Movie.API
+    ports:
+      - "5002:5002"
+    entrypoint: ["sh", "-c", "sleep 30 && ./movieapi"]
+    environment:
+      ENVOIRNMENT: production
+      DYNAMODB_URL: http://dynamodb-local:8000
+      AWS_REGION: local
+      AWS_ACCESS_KEY_ID: local
+      AWS_SECRET_ACCESS_KEY: local
+      AWS_SESSION_TOKEN: ""
+      TABLE_NAME: MovieBook_user
+      AMQP_SERVER_URL: amqp://admin:admin@rabbitmq:5672
+      API_PORT: ":5002"
+      EXCHANGE_NAME_USER_UPDATED: user_updated
+    depends_on:
+      - rabbitmq
+      - dynamodb-local
+  user-grpc:
+    build:
+      context: .
+      dockerfile: Dockerfile.User.gRPC
+    ports:
+      - "6002:6002"
+    entrypoint: ["sh", "-c", "sleep 30 && ./usergrpc"]
+    environment:
+      ENVOIRNMENT: production
+      DYNAMODB_URL: http://dynamodb-local:8000
+      AWS_REGION: local
+      AWS_ACCESS_KEY_ID: local
+      AWS_SECRET_ACCESS_KEY: local
+      AWS_SESSION_TOKEN: ""
+      TABLE_NAME: MovieBook_user
+      GRPC_PORT: :6002
+    depends_on:
+      - rabbitmq
+      - dynamodb-local

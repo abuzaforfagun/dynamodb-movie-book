@@ -22,7 +22,7 @@ import (
 	"google.golang.org/grpc/credentials/insecure"
 )
 
-// @title           Swagger Example API
+// @title           Movie API
 // @version         1.0
 // @description     This is a sample server Petstore server.
 // @termsOfService  http://swagger.io/terms/

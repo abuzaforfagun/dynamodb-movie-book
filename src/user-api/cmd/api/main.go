@@ -16,7 +16,7 @@ import (
 	ginSwagger "github.com/swaggo/gin-swagger"
 )
 
-// @title           Swagger Example API
+// @title           User Api
 // @version         1.0
 // @description     This is a sample server Petstore server.
 // @termsOfService  http://swagger.io/terms/

@@ -14,20 +14,13 @@ import (
 	"google.golang.org/grpc"
 )
 
-// @title           Swagger Example API
-// @version         1.0
-// @description     This is a sample server Petstore server.
-// @termsOfService  http://swagger.io/terms/
-
-// @contact.name   API Support
-// @contact.url    http://www.swagger.io/support
-// @contact.email  support@swagger.io
-
-// @host      localhost:5002
 func main() {
 	log.SetFlags(log.LstdFlags | log.Lshortfile)
 
-	initializers.LoadEnvVariables("../../.env")
+	enviornment := os.Getenv("ENVOIRNMENT")
+	if enviornment != "production" {
+		initializers.LoadEnvVariables("../../.env")
+	}
 	awsRegion := os.Getenv("AWS_REGION")
 	awsSecretKey := os.Getenv("AWS_ACCESS_KEY_ID")
 	awsAccessKey := os.Getenv("AWS_SECRET_ACCESS_KEY")

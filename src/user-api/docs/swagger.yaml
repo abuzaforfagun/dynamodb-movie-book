@@ -65,7 +65,7 @@ info:
     url: http://www.swagger.io/support
   description: This is a sample server Petstore server.
   termsOfService: http://swagger.io/terms/
-  title: Swagger Example API
+  title: User Api
   version: "1.0"
 paths:
   /users:

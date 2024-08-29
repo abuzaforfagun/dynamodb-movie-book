@@ -477,7 +477,7 @@ var SwaggerInfo = &swag.Spec{
 	Host:             "localhost:5001",
 	BasePath:         "",
 	Schemes:          []string{},
-	Title:            "Swagger Example API",
+	Title:            "Movie API",
 	Description:      "This is a sample server Petstore server.",
 	InfoInstanceName: "swagger",
 	SwaggerTemplate:  docTemplate,

@@ -2,12 +2,12 @@ FROM golang:1.22.5 AS builder
 
 WORKDIR /app
 
-COPY src/movie-api ./movie-api
+COPY src/actor-api ./actor-api
 COPY src/grpc ./grpc
 COPY src/events ./events
 COPY src/dynamodb_connector ./dynamodb_connector
 
-WORKDIR /app/movie-api
+WORKDIR /app/actor-api
 RUN go mod download
 
 WORKDIR /app/grpc
@@ -19,13 +19,13 @@ RUN go mod download
 WORKDIR /app/dynamodb_connector
 RUN go mod download
 
-WORKDIR /app/movie-api/cmd/api
-RUN CGO_ENABLED=0 GOOS=linux go build -o /app/movieapi .
+WORKDIR /app/actor-api/cmd/api
+RUN CGO_ENABLED=0 GOOS=linux go build -o /app/actorapi .
 
 
 FROM alpine:latest
 WORKDIR /app
 
-COPY --from=builder /app/movieapi .
+COPY --from=builder /app/actorapi .
 
-CMD ["./movieapi"]
+CMD ["./actorapi"]
