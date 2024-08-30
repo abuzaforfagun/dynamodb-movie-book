@@ -25,6 +25,7 @@ func SetupTestDatabase() {
 	awsAccessKey := os.Getenv("AWS_SECRET_ACCESS_KEY")
 	awsSessionToken := os.Getenv("AWS_SESSION_TOKEN")
 	awsTableName := os.Getenv("TABLE_NAME")
+	dynamodbUrl := os.Getenv("DYNAMODB_URL")
 
 	dbConfig := dynamodb_connector.DatabaseConfig{
 		TableName:    awsTableName,
@@ -32,6 +33,8 @@ func SetupTestDatabase() {
 		SecretKey:    awsSecretKey,
 		Region:       awsRegion,
 		SessionToken: awsSessionToken,
+		GSIRequired:  true,
+		Url:          dynamodbUrl,
 	}
 
 	var err error

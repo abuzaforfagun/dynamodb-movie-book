@@ -49,7 +49,7 @@ func (s *reviewService) Add(movieId string, reviewRequest request_model.AddRevie
 		return err
 	}
 
-	if user == nil {
+	if user.HasError {
 		err = &custom_errors.BadRequestError{
 			Message: "Invalid user id",
 		}

@@ -36,7 +36,7 @@ func (s *actorService) PopulateMovieItems(movieId string) error {
 		MovieId: movieId,
 	})
 
-	if err != nil || movieDetails == nil {
+	if err != nil || movieDetails.HasError {
 		log.Printf("ERROR: Invalid [MovieId=%s]\n", movieId)
 		return errors.New("unable to get movie details")
 	}

@@ -3,9 +3,10 @@ syntax = "proto3";
 option go_package = "../../src/grpc/userpb;userpb";
 
 message GetUserInfoResponse {
-    string id = 1;
-    string name = 2;
-    string email = 3;
+    bool has_error = 1;
+    string id = 2;
+    string name = 3;
+    string email = 4;
 }
 
 message GetUserInfoRequest {

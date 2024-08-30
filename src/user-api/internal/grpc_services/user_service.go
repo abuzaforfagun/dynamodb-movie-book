@@ -27,7 +27,9 @@ func (s *UserService) GetUserBasicInfo(ctx context.Context, request *userpb.GetU
 	}
 
 	if result == nil {
-		return nil, nil
+		return &userpb.GetUserInfoResponse{
+			HasError: true,
+		}, nil
 	}
 	return &userpb.GetUserInfoResponse{
 		Id:    result.Id,

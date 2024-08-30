@@ -7,6 +7,7 @@ import (
 	"bytes"
 	"context"
 	"encoding/json"
+	"net"
 	"net/http"
 	"net/http/httptest"
 	"os"
@@ -14,6 +15,8 @@ import (
 	"testing"
 	"time"
 
+	"github.com/abuzaforfagun/dynamodb-movie-book/grpc/actorpb"
+	"github.com/abuzaforfagun/dynamodb-movie-book/grpc/userpb"
 	"github.com/abuzaforfagun/dynamodb-movie-book/movie-api/integration_tests"
 	"github.com/abuzaforfagun/dynamodb-movie-book/movie-api/internal/handlers/movies_handler"
 	"github.com/abuzaforfagun/dynamodb-movie-book/movie-api/internal/infrastructure"
@@ -28,28 +31,40 @@ import (
 	"github.com/aws/aws-sdk-go-v2/service/dynamodb/types"
 	"github.com/gin-gonic/gin"
 	"github.com/google/uuid"
+	"google.golang.org/grpc"
+	"google.golang.org/grpc/credentials/insecure"
 )
 
 var (
-	ValidUserId     string = uuid.NewString()
-	MockActorServer *httptest.Server
-	MockUserServer  *httptest.Server
+	ActorGrpcConn *grpc.ClientConn
+	UserGrpcConn  *grpc.ClientConn
 )
 
 func TestMain(m *testing.M) {
 	// Set up the test database
 	integration_tests.SetupTestDatabase()
-	mockActorHandler := http.HandlerFunc(integration_tests.ActorHandler)
-	MockActorServer = httptest.NewServer(mockActorHandler)
 
-	MockUserServer = httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		if r.URL.Path == "/"+ValidUserId+"/info" {
-			w.WriteHeader(http.StatusOK)
-			w.Write([]byte(`{"name": "Jack"}`))
-		} else {
-			w.WriteHeader(http.StatusNotFound)
-		}
-	}))
+	actorListener, _ := net.Listen("tcp", ":0") // Listen on a random port
+
+	actorServer := grpc.NewServer()
+	actorpb.RegisterActorsServiceServer(actorServer, &integration_tests.MockActorGrpcServer{})
+
+	go func() {
+		actorServer.Serve(actorListener)
+	}()
+
+	ActorGrpcConn, _ = grpc.NewClient(actorListener.Addr().String(), grpc.WithTransportCredentials(insecure.NewCredentials()))
+
+	userListener, _ := net.Listen("tcp", ":0") // Listen on a random port
+
+	userServer := grpc.NewServer()
+	userpb.RegisterUserServiceServer(userServer, &integration_tests.MockUserGrpcServer{})
+
+	go func() {
+		userServer.Serve(userListener)
+	}()
+
+	UserGrpcConn, _ = grpc.NewClient(userListener.Addr().String(), grpc.WithTransportCredentials(insecure.NewCredentials()))
 
 	// Run the tests
 	code := m.Run()
@@ -57,8 +72,8 @@ func TestMain(m *testing.M) {
 	// Tear down the test database
 	integration_tests.TearDownTestDatabase()
 
-	defer MockActorServer.Close()
-	defer MockUserServer.Close()
+	defer ActorGrpcConn.Close()
+	defer UserGrpcConn.Close()
 
 	// Exit with the test result code
 	os.Exit(code)
@@ -73,13 +88,11 @@ func newMovieHandler() *movies_handler.MoviesHandler {
 
 	rabbitMq := infrastructure.NewRabbitMQ(serverUri)
 
-	httpClient := &http.Client{}
-	userService := services.NewUserService(httpClient, MockUserServer.URL)
+	actorClient := actorpb.NewActorsServiceClient(ActorGrpcConn)
+	userClient := userpb.NewUserServiceClient(UserGrpcConn)
 
-	actorService := services.NewActorService(httpClient, MockActorServer.URL)
-
-	reviewService := services.NewReviewService(reviewRepository, userService)
-	moviesService := services.NewMovieService(movieRepository, reviewService, rabbitMq, actorService, movieAddedExchangeName)
+	reviewService := services.NewReviewService(reviewRepository, userClient, rabbitMq, "test")
+	moviesService := services.NewMovieService(movieRepository, reviewService, rabbitMq, actorClient, movieAddedExchangeName)
 	return movies_handler.New(moviesService)
 }
 func TestGetAll(t *testing.T) {

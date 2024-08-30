@@ -3,11 +3,12 @@ syntax = "proto3";
 option go_package = "../../src/grpc/moviepb;moviepb";
 
 message GetMovieResponse {
-    string id = 1;
-    string title = 2;
-    string release_year = 3;
-    repeated string genres = 4;
-    repeated ActorInfo actors = 5;
+    bool has_error = 1;
+    string id = 2;
+    string title = 3;
+    string release_year = 4;
+    repeated string genres = 5;
+    repeated ActorInfo actors = 6;
 }
 
 message ActorInfo {

@@ -83,7 +83,7 @@ func (s *movieService) Add(movie *request_model.AddMovie) (string, error) {
 			return "", err
 		}
 
-		if actorsInfo == nil {
+		if actorsInfo.HasError {
 			return "", &custom_errors.BadRequestError{
 				Message: "Invalid actor(s) id",
 			}

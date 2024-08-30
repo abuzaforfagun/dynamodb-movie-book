@@ -12,7 +12,8 @@ message ActorBasicInfo {
 }
 
 message GetActorBasicInforResponseModel {
-    repeated ActorBasicInfo actors = 1;
+    bool has_error = 1;
+    repeated ActorBasicInfo actors = 2;
 }
 
 service ActorsService {

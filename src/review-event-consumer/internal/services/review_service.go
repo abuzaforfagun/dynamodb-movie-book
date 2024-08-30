@@ -44,7 +44,7 @@ func (r *reviewService) UpdateReviewerName(userId string) error {
 		return err
 	}
 
-	if user == nil {
+	if user.HasError {
 		log.Println("Invalid user")
 		return err
 	}
