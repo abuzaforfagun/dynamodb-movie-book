@@ -18,7 +18,7 @@ type MockActorRepository struct {
 func (m *MockActorRepository) Add(actor *db_model.AddActor) error {
 	return nil
 }
-func (m *MockActorRepository) Get(actorIds []string) (*[]response_model.ActorInfo, error) {
+func (m *MockActorRepository) Get(actorIds []string) ([]*response_model.ActorInfo, error) {
 	return nil, nil
 }
 

@@ -120,17 +120,17 @@ func (s *movieService) UpdateMostRatedMovies(movieId string) error {
 	}
 
 	if topMovies == nil {
-		topMovies = &[]models.MovieShortInformation{}
+		topMovies = []*models.MovieShortInformation{}
 	}
 
-	*topMovies = append(*topMovies, models.MovieShortInformation{
+	topMovies = append(topMovies, &models.MovieShortInformation{
 		Id:           movieDetails.MovieId,
 		Title:        movieDetails.Title,
 		ReleaseYear:  movieDetails.ReleaseYear,
 		Score:        movieDetails.Score,
 		ThumbnailUrl: movieDetails.ThumbnailUrl,
 	})
-	sort.Sort(models.SortByScore(*topMovies))
+	sort.Sort(models.SortByScore(topMovies))
 
 	topRatedMovies := models.NewTopRatedMovies(topMovies, s.numberOfTopMovies)
 
@@ -160,7 +160,7 @@ func (s *movieService) storeUpdatedTopRatedMovies(payload *models.TopRatedMovies
 	return nil
 }
 
-func (s *movieService) getMostRatedMovies() (*[]models.MovieShortInformation, error) {
+func (s *movieService) getMostRatedMovies() ([]*models.MovieShortInformation, error) {
 	pk := "TOP-RATED-MOVIE"
 	var topRatedMovies models.TopRatedMovies
 	key := map[string]types.AttributeValue{
@@ -189,5 +189,5 @@ func (s *movieService) getMostRatedMovies() (*[]models.MovieShortInformation, er
 		log.Println("ERROR: unable to unmarshal result", err)
 		return nil, err
 	}
-	return &topRatedMovies.Movies, nil
+	return topRatedMovies.Movies, nil
 }

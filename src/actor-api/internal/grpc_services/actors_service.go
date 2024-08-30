@@ -30,7 +30,7 @@ func (s *ActorsService) GetActorBasicInfo(ctx context.Context, request *actorpb.
 	}
 	actors := []*actorpb.ActorBasicInfo{}
 
-	for _, actor := range *dbResult {
+	for _, actor := range dbResult {
 
 		model := actorpb.ActorBasicInfo{
 			Id:   actor.Id,

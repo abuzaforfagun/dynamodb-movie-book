@@ -26,7 +26,7 @@ func (r *MockReviewService) Add(movieId string, reviewRequest request_model.AddR
 	return nil
 }
 
-func (r *MockReviewService) GetAll(movieId string) (*[]db_model.Review, error) {
+func (r *MockReviewService) GetAll(movieId string) ([]*db_model.Review, error) {
 	return nil, nil
 }
 
@@ -36,17 +36,17 @@ func (r *MockReviewService) Delete(movieId string, userId string) error {
 
 type MockMovieService struct{}
 
-func (m *MockMovieService) GetTopRated() (*[]response_model.Movie, error) {
+func (m *MockMovieService) GetTopRated() ([]*response_model.Movie, error) {
 	return nil, nil
 }
 
 func (m *MockMovieService) Add(movie *request_model.AddMovie) (string, error) {
 	return "", nil
 }
-func (m *MockMovieService) GetAll(searchQuery string) (*[]response_model.Movie, error) {
+func (m *MockMovieService) GetAll(searchQuery string) ([]*response_model.Movie, error) {
 	return nil, nil
 }
-func (m *MockMovieService) GetByGenre(genreName string) (*[]response_model.Movie, error) {
+func (m *MockMovieService) GetByGenre(genreName string) ([]*response_model.Movie, error) {
 	return nil, nil
 }
 func (m *MockMovieService) UpdateMovieScore(movieId string) error {

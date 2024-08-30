@@ -30,16 +30,16 @@ func (m *MockMovieService) Add(movie *request_model.AddMovie) (string, error) {
 	return uuid.NewString(), nil
 }
 
-func (m *MockMovieService) GetAll(searchQuery string) (*[]response_model.Movie, error) {
-	return &[]response_model.Movie{}, nil
+func (m *MockMovieService) GetAll(searchQuery string) ([]*response_model.Movie, error) {
+	return []*response_model.Movie{}, nil
 }
 
-func (m *MockMovieService) GetTopRated() (*[]response_model.Movie, error) {
+func (m *MockMovieService) GetTopRated() ([]*response_model.Movie, error) {
 	return nil, nil
 }
 
-func (m *MockMovieService) GetByGenre(genreName string) (*[]response_model.Movie, error) {
-	return &[]response_model.Movie{}, nil
+func (m *MockMovieService) GetByGenre(genreName string) ([]*response_model.Movie, error) {
+	return []*response_model.Movie{}, nil
 }
 func (m *MockMovieService) UpdateMovieScore(movieId string) error {
 	return nil

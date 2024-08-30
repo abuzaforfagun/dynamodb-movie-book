@@ -60,11 +60,11 @@ func (h *ReviewAddedHandler) HandleMessage(msg amqp.Delivery) {
 	}
 
 	totalScore := 0.0
-	for _, review := range *reviews {
+	for _, review := range reviews {
 		totalScore += review.Score
 	}
 
-	avgScore := totalScore / float64(len(*reviews))
+	avgScore := totalScore / float64(len(reviews))
 	err = h.movieService.UpdateMovieScore(payload.MovieId, avgScore)
 	if err != nil {
 		log.Println("ERROR: Unable to update movie score")

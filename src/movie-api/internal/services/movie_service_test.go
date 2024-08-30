@@ -20,11 +20,11 @@ func (m *MockMovieRepository) Add(movie *db_model.AddMovie, actors []db_model.Mo
 	return nil
 }
 
-func (m *MockMovieRepository) GetAll(searchQuery string) (*[]response_model.Movie, error) {
+func (m *MockMovieRepository) GetAll(searchQuery string) ([]*response_model.Movie, error) {
 	return nil, nil
 }
 
-func (m *MockMovieRepository) GetByGenre(genreName string) (*[]response_model.Movie, error) {
+func (m *MockMovieRepository) GetByGenre(genreName string) ([]*response_model.Movie, error) {
 	return nil, nil
 }
 
@@ -47,7 +47,7 @@ func (m *MockMovieRepository) Get(movieId string) (*response_model.MovieDetails,
 	return nil, nil
 }
 
-func (m *MockMovieRepository) GetTopRated() (*[]response_model.Movie, error) {
+func (m *MockMovieRepository) GetTopRated() ([]*response_model.Movie, error) {
 	return nil, nil
 }
 
@@ -57,7 +57,7 @@ func (m *MockReviewService) Add(movieId string, reviewRequest request_model.AddR
 	return nil
 }
 
-func (m *MockReviewService) GetAll(movieId string) (*[]db_model.Review, error) {
+func (m *MockReviewService) GetAll(movieId string) ([]*db_model.Review, error) {
 	return nil, nil
 }
 

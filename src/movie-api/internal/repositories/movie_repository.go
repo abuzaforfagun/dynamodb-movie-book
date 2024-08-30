@@ -23,12 +23,12 @@ type movieRepository struct {
 
 type MovieRepository interface {
 	Add(movie *db_model.AddMovie, actors []db_model.MovieActor) error
-	GetAll(searchQuery string) (*[]response_model.Movie, error)
-	GetByGenre(genreName string) (*[]response_model.Movie, error)
+	GetAll(searchQuery string) ([]*response_model.Movie, error)
+	GetByGenre(genreName string) ([]*response_model.Movie, error)
 	HasMovie(movieId string) (bool, error)
 	Delete(movieId string) error
 	Get(movieId string) (*response_model.MovieDetails, error)
-	GetTopRated() (*[]response_model.Movie, error)
+	GetTopRated() ([]*response_model.Movie, error)
 }
 
 func NewMovieRepository(client *dynamodb.Client, tableName string) MovieRepository {
@@ -40,7 +40,7 @@ func NewMovieRepository(client *dynamodb.Client, tableName string) MovieReposito
 	}
 }
 
-func (r *movieRepository) GetTopRated() (*[]response_model.Movie, error) {
+func (r *movieRepository) GetTopRated() ([]*response_model.Movie, error) {
 	pk := "TOP-RATED-MOVIE"
 	key := map[string]types.AttributeValue{
 		"PK": &types.AttributeValueMemberS{Value: pk},
@@ -60,7 +60,7 @@ func (r *movieRepository) GetTopRated() (*[]response_model.Movie, error) {
 
 	if result.Item == nil {
 		log.Printf("ERROR: [pk=%s] [sk=%s] not found\n", pk, pk)
-		return &[]response_model.Movie{}, nil
+		return []*response_model.Movie{}, nil
 	}
 
 	var topMovies dto.TopRatedMovies
@@ -71,7 +71,7 @@ func (r *movieRepository) GetTopRated() (*[]response_model.Movie, error) {
 		return nil, err
 	}
 
-	return &topMovies.Movies, nil
+	return topMovies.Movies, nil
 }
 
 func (r *movieRepository) HasMovie(movieId string) (bool, error) {
@@ -98,7 +98,7 @@ func (r *movieRepository) Add(movie *db_model.AddMovie, actors []db_model.MovieA
 	return nil
 }
 
-func (r *movieRepository) GetAll(movieName string) (*[]response_model.Movie, error) {
+func (r *movieRepository) GetAll(movieName string) ([]*response_model.Movie, error) {
 	partitionKeyValue := "MOVIE"
 
 	var filterExpression *string
@@ -130,17 +130,17 @@ func (r *movieRepository) GetAll(movieName string) (*[]response_model.Movie, err
 		return nil, err
 	}
 
-	var movies []response_model.Movie
+	var movies []*response_model.Movie
 
 	err = attributevalue.UnmarshalListOfMaps(result.Items, &movies)
 
 	if err != nil {
 		return nil, err
 	}
-	return &movies, nil
+	return movies, nil
 }
 
-func (r *movieRepository) GetByGenre(genreName string) (*[]response_model.Movie, error) {
+func (r *movieRepository) GetByGenre(genreName string) ([]*response_model.Movie, error) {
 	pk := "GENRE#" + genreName
 
 	queryInput := &dynamodb.QueryInput{
@@ -160,14 +160,14 @@ func (r *movieRepository) GetByGenre(genreName string) (*[]response_model.Movie,
 		return nil, err
 	}
 
-	var movies []response_model.Movie
+	var movies []*response_model.Movie
 
 	err = attributevalue.UnmarshalListOfMaps(result.Items, &movies)
 
 	if err != nil {
 		return nil, err
 	}
-	return &movies, nil
+	return movies, nil
 }
 
 func (r *movieRepository) Delete(movieId string) error {
@@ -181,7 +181,7 @@ func (r *movieRepository) Delete(movieId string) error {
 		Genre []string `dynamodb:"Genre"`
 	}
 
-	for _, item := range *movieItems {
+	for _, item := range movieItems {
 
 		if movieModelForGenre.Genre == nil && item["Genre"] != nil {
 			attributevalue.UnmarshalMap(item, &movieModelForGenre)
@@ -220,7 +220,7 @@ func (r *movieRepository) Delete(movieId string) error {
 	return err
 }
 
-func (r *movieRepository) getMovieRelatedItems(movieId string) (*[]map[string]types.AttributeValue, error) {
+func (r *movieRepository) getMovieRelatedItems(movieId string) ([]map[string]types.AttributeValue, error) {
 	pk := "MOVIE#" + movieId
 	keyExpression := expression.Key("PK").Equal(expression.Value(pk))
 
@@ -239,7 +239,7 @@ func (r *movieRepository) getMovieRelatedItems(movieId string) (*[]map[string]ty
 			KeyConditionExpression:    expr.KeyCondition(),
 		},
 	)
-	return &response.Items, err
+	return response.Items, err
 }
 
 func (r *movieRepository) Get(movieId string) (*response_model.MovieDetails, error) {
@@ -249,13 +249,13 @@ func (r *movieRepository) Get(movieId string) (*response_model.MovieDetails, err
 		return nil, err
 	}
 
-	if len(*movieItems) == 0 {
+	if len(movieItems) == 0 {
 		return nil, nil
 	}
 
 	var movieDetails response_model.MovieDetails
 	var reviews []response_model.Review
-	for _, item := range *movieItems {
+	for _, item := range movieItems {
 		var typeStruct struct {
 			GSI_PK string `dynamodbav:"GSI_PK"`
 		}

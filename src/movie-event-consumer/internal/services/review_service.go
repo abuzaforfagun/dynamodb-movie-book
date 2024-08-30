@@ -12,7 +12,7 @@ import (
 )
 
 type ReviewService interface {
-	GetReviews(movieId string) (*[]models.Review, error)
+	GetReviews(movieId string) ([]*models.Review, error)
 }
 
 type reviewService struct {
@@ -27,8 +27,8 @@ func NewReviewService(client *dynamodb.Client, tableName string) ReviewService {
 	}
 }
 
-func (r *reviewService) GetReviews(movieId string) (*[]models.Review, error) {
-	var reviewData []models.Review
+func (r *reviewService) GetReviews(movieId string) ([]*models.Review, error) {
+	var reviewData []*models.Review
 
 	pk := "MOVIE#" + movieId
 	sk := "USER#"
@@ -59,5 +59,5 @@ func (r *reviewService) GetReviews(movieId string) (*[]models.Review, error) {
 	if err != nil {
 		log.Println("WARNING: Failed to unmarshal", err)
 	}
-	return &reviewData, nil
+	return reviewData, nil
 }

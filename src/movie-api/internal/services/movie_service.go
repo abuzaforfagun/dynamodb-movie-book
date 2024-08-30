@@ -18,9 +18,9 @@ import (
 
 type MovieService interface {
 	Add(movie *request_model.AddMovie) (string, error)
-	GetAll(searchQuery string) (*[]response_model.Movie, error)
-	GetTopRated() (*[]response_model.Movie, error)
-	GetByGenre(genreName string) (*[]response_model.Movie, error)
+	GetAll(searchQuery string) ([]*response_model.Movie, error)
+	GetTopRated() ([]*response_model.Movie, error)
+	GetByGenre(genreName string) ([]*response_model.Movie, error)
 	HasMovie(movieId string) (bool, error)
 	Delete(movieId string) error
 	Get(movieId string) (*response_model.MovieDetails, error)
@@ -48,7 +48,7 @@ func NewMovieService(movieRepository repositories.MovieRepository,
 	}
 }
 
-func (s *movieService) GetTopRated() (*[]response_model.Movie, error) {
+func (s *movieService) GetTopRated() ([]*response_model.Movie, error) {
 	return s.movieRepository.GetTopRated()
 }
 
@@ -122,7 +122,7 @@ func (s *movieService) Add(movie *request_model.AddMovie) (string, error) {
 	return movieId, nil
 }
 
-func (s *movieService) GetAll(searchQuery string) (*[]response_model.Movie, error) {
+func (s *movieService) GetAll(searchQuery string) ([]*response_model.Movie, error) {
 	movies, err := s.movieRepository.GetAll(searchQuery)
 	if err != nil {
 		return nil, err
@@ -131,7 +131,7 @@ func (s *movieService) GetAll(searchQuery string) (*[]response_model.Movie, erro
 	return movies, nil
 }
 
-func (s *movieService) GetByGenre(genreName string) (*[]response_model.Movie, error) {
+func (s *movieService) GetByGenre(genreName string) ([]*response_model.Movie, error) {
 	movies, err := s.movieRepository.GetByGenre(strings.ToLower(genreName))
 	if err != nil {
 		return nil, err
