@@ -6,10 +6,10 @@ import (
 	"log"
 	"strings"
 
-	"github.com/abuzaforfagun/dynamodb-movie-book/dynamodb_connector"
 	"github.com/abuzaforfagun/dynamodb-movie-book/movie-api/internal/models/db_model"
 	"github.com/abuzaforfagun/dynamodb-movie-book/movie-api/internal/models/dto"
 	"github.com/abuzaforfagun/dynamodb-movie-book/movie-api/internal/models/response_model"
+	"github.com/abuzaforfagun/dynamodb-movie-book/utils/dynamodb_connector"
 	"github.com/aws/aws-sdk-go-v2/aws"
 	"github.com/aws/aws-sdk-go-v2/feature/dynamodb/attributevalue"
 	"github.com/aws/aws-sdk-go-v2/feature/dynamodb/expression"

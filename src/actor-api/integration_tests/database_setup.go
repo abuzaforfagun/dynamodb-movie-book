@@ -7,7 +7,7 @@ import (
 	"os"
 
 	"github.com/abuzaforfagun/dynamodb-movie-book/actor-api/internal/initializers"
-	"github.com/abuzaforfagun/dynamodb-movie-book/dynamodb_connector"
+	"github.com/abuzaforfagun/dynamodb-movie-book/utils/dynamodb_connector"
 	"github.com/aws/aws-sdk-go-v2/aws"
 	"github.com/aws/aws-sdk-go-v2/feature/dynamodb/attributevalue"
 	"github.com/aws/aws-sdk-go-v2/service/dynamodb"

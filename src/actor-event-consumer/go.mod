@@ -1,7 +1,7 @@
 module github.com/abuzaforfagun/dynamodb-movie-book/actor-event-consumer
 
 require (
-	github.com/abuzaforfagun/dynamodb-movie-book/dynamodb_connector v0.0.0-00010101000000-000000000000
+	github.com/abuzaforfagun/dynamodb-movie-book/utils v0.0.0-00010101000000-000000000000
 	github.com/abuzaforfagun/dynamodb-movie-book/events v0.0.0-00010101000000-000000000000
 	github.com/abuzaforfagun/dynamodb-movie-book/grpc v0.0.0-00010101000000-000000000000
 	github.com/aws/aws-sdk-go-v2/feature/dynamodb/attributevalue v1.15.0
@@ -41,6 +41,6 @@ replace github.com/abuzaforfagun/dynamodb-movie-book/events => ../events/
 
 replace github.com/abuzaforfagun/dynamodb-movie-book/grpc => ../grpc/
 
-replace github.com/abuzaforfagun/dynamodb-movie-book/dynamodb_connector => ../dynamodb_connector/
+replace github.com/abuzaforfagun/dynamodb-movie-book/utils => ../utils/
 
 go 1.22.5

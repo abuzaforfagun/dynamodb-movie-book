@@ -3,7 +3,7 @@ module github.com/abuzaforfagun/dynamodb-movie-book/review-event-consumer
 go 1.22.5
 
 require (
-	github.com/abuzaforfagun/dynamodb-movie-book/dynamodb_connector v0.0.0-00010101000000-000000000000
+	github.com/abuzaforfagun/dynamodb-movie-book/utils v0.0.0-00010101000000-000000000000
 	github.com/abuzaforfagun/dynamodb-movie-book/events v0.0.0-00010101000000-000000000000
 	github.com/abuzaforfagun/dynamodb-movie-book/grpc v0.0.0-00010101000000-000000000000
 	github.com/aws/aws-sdk-go v1.55.5
@@ -17,7 +17,7 @@ require (
 
 replace github.com/abuzaforfagun/dynamodb-movie-book/events => ../events/
 
-replace github.com/abuzaforfagun/dynamodb-movie-book/dynamodb_connector => ../dynamodb_connector/
+replace github.com/abuzaforfagun/dynamodb-movie-book/utils => ../utils/
 
 replace github.com/abuzaforfagun/dynamodb-movie-book/grpc => ../grpc/
 

@@ -1,4 +1,4 @@
-module github.com/abuzaforfagun/dynamodb-movie-book/dynamodb_connector
+module github.com/abuzaforfagun/dynamodb-movie-book/utils
 
 go 1.22.5
 
@@ -8,6 +8,7 @@ require (
 	github.com/aws/aws-sdk-go-v2/config v1.27.31
 	github.com/aws/aws-sdk-go-v2/credentials v1.17.30
 	github.com/aws/aws-sdk-go-v2/service/dynamodb v1.34.6
+	github.com/streadway/amqp v1.1.0
 )
 
 require (

@@ -8,8 +8,8 @@ import (
 	"github.com/abuzaforfagun/dynamodb-movie-book/actor-event-consumer/internal/processor"
 	"github.com/abuzaforfagun/dynamodb-movie-book/actor-event-consumer/internal/rabbitmq"
 	"github.com/abuzaforfagun/dynamodb-movie-book/actor-event-consumer/internal/services"
-	"github.com/abuzaforfagun/dynamodb-movie-book/dynamodb_connector"
 	"github.com/abuzaforfagun/dynamodb-movie-book/grpc/moviepb"
+	"github.com/abuzaforfagun/dynamodb-movie-book/utils/dynamodb_connector"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/credentials/insecure"
 )

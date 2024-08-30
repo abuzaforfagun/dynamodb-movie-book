@@ -8,7 +8,7 @@ import (
 	"github.com/abuzaforfagun/dynamodb-movie-book/actor-api/internal/handlers"
 	"github.com/abuzaforfagun/dynamodb-movie-book/actor-api/internal/initializers"
 	"github.com/abuzaforfagun/dynamodb-movie-book/actor-api/internal/repositories"
-	"github.com/abuzaforfagun/dynamodb-movie-book/dynamodb_connector"
+	"github.com/abuzaforfagun/dynamodb-movie-book/utills/dynamodb_connector"
 	"github.com/gin-gonic/gin"
 	swaggerFiles "github.com/swaggo/files"
 	ginSwagger "github.com/swaggo/gin-swagger"

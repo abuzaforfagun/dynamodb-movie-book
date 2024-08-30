@@ -5,7 +5,7 @@ WORKDIR /app
 COPY src/actor-api ./actor-api
 COPY src/grpc ./grpc
 COPY src/events ./events
-COPY src/dynamodb_connector ./dynamodb_connector
+COPY src/utils ./utils
 
 WORKDIR /app/actor-api
 RUN go mod download
@@ -16,7 +16,7 @@ RUN go mod download
 WORKDIR /app/events
 RUN go mod download
 
-WORKDIR /app/dynamodb_connector
+WORKDIR /app/utils
 RUN go mod download
 
 WORKDIR /app/actor-api/cmd/grpc

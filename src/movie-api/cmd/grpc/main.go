@@ -5,11 +5,11 @@ import (
 	"net"
 	"os"
 
-	"github.com/abuzaforfagun/dynamodb-movie-book/dynamodb_connector"
 	"github.com/abuzaforfagun/dynamodb-movie-book/grpc/moviepb"
 	"github.com/abuzaforfagun/dynamodb-movie-book/movie-api/internal/grpc_services"
 	"github.com/abuzaforfagun/dynamodb-movie-book/movie-api/internal/initializers"
 	"github.com/abuzaforfagun/dynamodb-movie-book/movie-api/internal/repositories"
+	"github.com/abuzaforfagun/dynamodb-movie-book/utils/dynamodb_connector"
 	"google.golang.org/grpc"
 )
 

@@ -4,7 +4,6 @@ import (
 	"log"
 	"os"
 
-	"github.com/abuzaforfagun/dynamodb-movie-book/dynamodb_connector"
 	"github.com/abuzaforfagun/dynamodb-movie-book/grpc/actorpb"
 	"github.com/abuzaforfagun/dynamodb-movie-book/grpc/userpb"
 	_ "github.com/abuzaforfagun/dynamodb-movie-book/movie-api/docs"
@@ -15,6 +14,7 @@ import (
 	"github.com/abuzaforfagun/dynamodb-movie-book/movie-api/internal/repositories"
 	"github.com/abuzaforfagun/dynamodb-movie-book/movie-api/internal/routers"
 	"github.com/abuzaforfagun/dynamodb-movie-book/movie-api/internal/services"
+	"github.com/abuzaforfagun/dynamodb-movie-book/utils/dynamodb_connector"
 	"github.com/gin-gonic/gin"
 	swaggerFiles "github.com/swaggo/files"
 	ginSwagger "github.com/swaggo/gin-swagger"

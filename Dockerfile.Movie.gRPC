@@ -5,7 +5,7 @@ WORKDIR /app
 COPY src/movie-api ./movie-api
 COPY src/grpc ./grpc
 COPY src/events ./events
-COPY src/dynamodb_connector ./dynamodb_connector
+COPY src/utils ./utils
 
 WORKDIR /app/movie-api
 RUN go mod download
@@ -16,7 +16,7 @@ RUN go mod download
 WORKDIR /app/events
 RUN go mod download
 
-WORKDIR /app/dynamodb_connector
+WORKDIR /app/utils
 RUN go mod download
 
 WORKDIR /app/movie-api/cmd/grpc

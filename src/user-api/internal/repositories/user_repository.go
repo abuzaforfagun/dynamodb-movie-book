@@ -5,7 +5,7 @@ import (
 	"fmt"
 	"log"
 
-	"github.com/abuzaforfagun/dynamodb-movie-book/dynamodb_connector"
+	"github.com/abuzaforfagun/dynamodb-movie-book/utils/dynamodb_connector"
 
 	"github.com/abuzaforfagun/dynamodb-movie-book/user-api/internal/models/db_model"
 	"github.com/abuzaforfagun/dynamodb-movie-book/user-api/internal/models/response_model"

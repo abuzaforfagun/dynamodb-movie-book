@@ -5,11 +5,11 @@ import (
 	"os"
 	"strconv"
 
-	"github.com/abuzaforfagun/dynamodb-movie-book/dynamodb_connector"
 	"github.com/abuzaforfagun/dynamodb-movie-book/movie-event-consumer/internal/initializers"
 	"github.com/abuzaforfagun/dynamodb-movie-book/movie-event-consumer/internal/processor"
 	"github.com/abuzaforfagun/dynamodb-movie-book/movie-event-consumer/internal/rabbitmq"
 	"github.com/abuzaforfagun/dynamodb-movie-book/movie-event-consumer/internal/services"
+	"github.com/abuzaforfagun/dynamodb-movie-book/utils/dynamodb_connector"
 )
 
 func main() {

@@ -8,8 +8,8 @@ import (
 	"github.com/abuzaforfagun/dynamodb-movie-book/actor-api/internal/grpc_services"
 	"github.com/abuzaforfagun/dynamodb-movie-book/actor-api/internal/initializers"
 	"github.com/abuzaforfagun/dynamodb-movie-book/actor-api/internal/repositories"
-	"github.com/abuzaforfagun/dynamodb-movie-book/dynamodb_connector"
 	"github.com/abuzaforfagun/dynamodb-movie-book/grpc/actorpb"
+	"github.com/abuzaforfagun/dynamodb-movie-book/utils/dynamodb_connector"
 	"google.golang.org/grpc"
 )
 

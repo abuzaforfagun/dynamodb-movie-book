@@ -4,7 +4,7 @@ WORKDIR /app
 
 COPY src/movie-event-consumer ./movie-event-consumer
 COPY src/events ./events
-COPY src/dynamodb_connector ./dynamodb_connector
+COPY src/utils ./utils
 
 WORKDIR /app/movie-event-consumer
 RUN go mod download
@@ -12,7 +12,7 @@ RUN go mod download
 WORKDIR /app/events
 RUN go mod download
 
-WORKDIR /app/dynamodb_connector
+WORKDIR /app/utils
 RUN go mod download
 
 WORKDIR /app/movie-event-consumer/cmd

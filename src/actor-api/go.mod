@@ -3,7 +3,7 @@ module github.com/abuzaforfagun/dynamodb-movie-book/actor-api
 go 1.22.5
 
 require (
-	github.com/abuzaforfagun/dynamodb-movie-book/dynamodb_connector v0.0.0-00010101000000-000000000000
+	github.com/abuzaforfagun/dynamodb-movie-book/utils v0.0.0-00010101000000-000000000000
 	github.com/abuzaforfagun/dynamodb-movie-book/grpc v0.0.0-00010101000000-000000000000
 	github.com/aws/aws-sdk-go-v2 v1.30.4
 	github.com/aws/aws-sdk-go-v2/config v1.27.31 // indirect
@@ -21,7 +21,7 @@ require (
 
 replace github.com/abuzaforfagun/dynamodb-movie-book/grpc => ../grpc/
 
-replace github.com/abuzaforfagun/dynamodb-movie-book/dynamodb_connector => ../dynamodb_connector/
+replace github.com/abuzaforfagun/dynamodb-movie-book/utils => ../utils/
 
 require google.golang.org/grpc v1.66.0
 
