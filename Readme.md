@@ -1,10 +1,15 @@
 # MovieBook
 
+## Getting Started: Running the application
+
+_Option 1_: `docker-compose up`
+_Option 2_: Follow the `Makefile` and start the services using `make [service-name]`. (Please make sure dynamodb and rabbitmq are running)
+
 ## Purpose
 
 The purpose of the project is about to develop highly scalable product using microservice architecture, event driven development and dynamodb.
 
-## Project requirement
+## Project scope
 
 Create a movie book, where admin can create movies with actors. And user can check out movie details and submit their review. And we need to keep in mind that, this is a read heavy applicaiton.
 
