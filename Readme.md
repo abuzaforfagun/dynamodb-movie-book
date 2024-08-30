@@ -2,8 +2,8 @@
 
 ## Getting Started: Running the application
 
-_Option 1_: `docker-compose up`
-_Option 2_: Follow the `Makefile` and start the services using `make [service-name]`. (Please make sure dynamodb and rabbitmq are running)
+- **Option 1**: `docker-compose up`
+- **Option 2**: Follow the `Makefile` and start the services using `make [service-name]`. (Please make sure dynamodb and rabbitmq are running)
 
 ## Purpose
 
@@ -12,6 +12,11 @@ The purpose of the project is about to develop highly scalable product using mic
 ## Project scope
 
 Create a movie book, where admin can create movies with actors. And user can check out movie details and submit their review. And we need to keep in mind that, this is a read heavy applicaiton.
+
+## How to contribute
+
+- Please create an issue/follow the exiting issues.
+- Create a PR containing, change description, unit and integration tests.
 
 ## Features
 
@@ -38,9 +43,9 @@ Create a movie book, where admin can create movies with actors. And user can che
 
 ## Testing stretegy
 
-- Unit tests
-- Integration tests
-- E2E tests
+- Unit tests (Feel free to contribute)
+- Integration tests (Feel free to contribute)
+- E2E tests (Feel free to contribute)
 - Manual testing
 
 ## Overall architecture design
