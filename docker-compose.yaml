@@ -177,10 +177,10 @@ services:
   user-api:
     build:
       context: .
-      dockerfile: Dockerfile.Movie.API
+      dockerfile: Dockerfile.User.API
     ports:
       - "5002:5002"
-    entrypoint: ["sh", "-c", "sleep 30 && ./movieapi"]
+    entrypoint: ["sh", "-c", "sleep 30 && ./userapi"]
     environment:
       ENVOIRNMENT: production
       DYNAMODB_URL: http://dynamodb-local:8000
