@@ -7,11 +7,11 @@
 
 ## Purpose
 
-The purpose of the project is about to develop highly scalable product using microservice architecture, event driven development and dynamodb.
+The purpose of this project is to develop a highly scalable product using microservice architecture, event-driven development, and DynamoDB.
 
 ## Project scope
 
-Create a movie book, where admin can create movies with actors. And user can check out movie details and submit their review. And we need to keep in mind that, this is a read heavy applicaiton.
+Create a movie book, where an admin can create movies with associated actors, and users can view movie details and submit their reviews. Since this is a read-heavy application, we need to design with scalability in mind.
 
 ## How to contribute
 
@@ -68,16 +68,18 @@ User and actor creation are mostly straight forward, it store the data into thei
 
 #### Movie creation
 
-Movie creation, is related with few other features, for an example list movies by a single genre, list actor movies. To make those operation scalable, we are going to populate required data for genre and actor details. After storing the data to table, it trigger an event, actor and movie event listener process the event to generate appropriate data for their services.
+Movie creation is connected to several other features, such as listing movies by genre and listing movies by a particular actor. To make these operations scalable, we will pre-populate the necessary data for genres and actor details. After storing the data in the table, it triggers an event that is processed by actor and movie event listeners to generate the appropriate data for their respective services.
+
 ![Movie Creation](https://github.com/user-attachments/assets/afe41414-02a6-4161-85cd-3202edbdf2b0)
 
 #### Add review
 
-Reviews are related with movie and user. When a review get added, it trigger an event, that event get processed by movie event listener, and user event listener. Movie event listener change the overall score of movie and re calcualte the top reviewed movies. And user event listener populate the data for user details page where he/she can lookup the reviews he/she made.
+Reviews are linked to both movies and users. When a review is added, it triggers an event that is processed by both the movie event listener and the user event listener. The movie event listener updates the overall score of the movie and recalculates the top-reviewed movies. The user event listener updates the user details page, allowing the user to view the reviews they have submitted.
+
 ![Add Review](https://github.com/user-attachments/assets/3dd1d0cf-934f-4d96-a45f-f83950cbf62a)
 
 #### User name update
 
-When a user submit review, for better scalability we have dupliated the user data to movie table, and as a result when a user updated their name, we also need to update the related data in movie table, and to achieve that we have triggered another event after updating the user name, and review event listener update the user name accordingly.
+To improve scalability, we have duplicated user data in the movie table when a review is submitted. As a result, if a user updates their name, we also need to update the corresponding data in the movie table. To achieve this, another event is triggered after the user's name is updated, and the review event listener updates the user name accordingly.
 
 ![User name updated](https://github.com/user-attachments/assets/d65bee2a-a321-4042-9379-d0d5042c0a78)
