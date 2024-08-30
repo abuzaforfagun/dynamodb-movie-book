@@ -16,7 +16,7 @@ func ConsumeMessages(conn *amqp.Connection, queueName string, handler MessageHan
 	msgs, err := ch.Consume(
 		queueName, // queue name
 		"",        // consumer tag
-		true,      // auto-ack
+		false,     // auto-ack
 		false,     // exclusive
 		false,     // no-local
 		false,     // no-wait
@@ -28,5 +28,6 @@ func ConsumeMessages(conn *amqp.Connection, queueName string, handler MessageHan
 
 	for msg := range msgs {
 		handler(msg)
+		msg.Ack(false)
 	}
 }
