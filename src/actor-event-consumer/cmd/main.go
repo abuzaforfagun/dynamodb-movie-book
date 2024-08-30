@@ -54,6 +54,7 @@ func main() {
 	if err != nil {
 		log.Fatalf("Failed to connect to RabbitMQ: %s", err)
 	}
+	defer conn.Close()
 
 	tableName := os.Getenv("TABLE_NAME")
 
