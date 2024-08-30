@@ -39,6 +39,7 @@ func (r *rabbitMQ) PublishMessage(message interface{}, topicName string) error {
 	defer channel.Close()
 
 	rabbitMqMessage := amqp.Publishing{
+		Priority:    amqp.Persistent,
 		ContentType: "application/json",
 		Body:        json,
 	}

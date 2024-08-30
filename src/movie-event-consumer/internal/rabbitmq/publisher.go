@@ -39,8 +39,9 @@ func (r *publisher) PublishMessage(message interface{}, queueName string) error 
 	defer channel.Close()
 
 	rabbitMqMessage := amqp.Publishing{
-		ContentType: "application/json",
-		Body:        json,
+		DeliveryMode: amqp.Persistent,
+		ContentType:  "application/json",
+		Body:         json,
 	}
 	return channel.Publish("", queueName, false, false, rabbitMqMessage)
 }
