@@ -50,12 +50,11 @@ func main() {
 	}
 
 	rabbitMqUri := os.Getenv("AMQP_SERVER_URL")
-	rmq, conn, channel, err := rabbitmq.NewRabbitMQ(rabbitMqUri)
+	rmq, err := rabbitmq.NewRabbitMQ(rabbitMqUri)
 	if err != nil {
 		log.Fatal("Unable to connect to RabbitMQ", err)
 	}
-	defer conn.Close()
-	defer channel.Close()
+	defer rmq.Close()
 
 	tableName := os.Getenv("TABLE_NAME")
 

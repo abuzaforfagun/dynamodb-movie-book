@@ -10,6 +10,7 @@ import (
 )
 
 type RabbitMQ interface {
+	Close()
 	PublishMessage(message interface{}, topicName string) error
 	DeclareFanoutExchanges(exchangeNames []string) error
 	DeclareDirectExchanges(exchangeNames []string) error
@@ -17,26 +18,35 @@ type RabbitMQ interface {
 }
 
 type rabbitMQ struct {
-	conn    *amqp.Connection
-	channel *amqp.Channel
+	conn     *amqp.Connection
+	channels map[string]*amqp.Channel
 }
 
-func NewRabbitMQ(serverUri string) (RabbitMQ, *amqp.Connection, *amqp.Channel, error) {
+func NewRabbitMQ(serverUri string) (RabbitMQ, error) {
 	conn, err := amqp.Dial(serverUri)
 	if err != nil {
-		return nil, nil, nil, fmt.Errorf("failed to connect to RabbitMQ: %w", err)
+		return nil, fmt.Errorf("failed to connect to RabbitMQ: %w", err)
 	}
 
 	channel, err := conn.Channel()
 	if err != nil {
 		conn.Close()
-		return nil, nil, nil, err
+		return nil, err
 	}
+	channels := map[string]*amqp.Channel{}
+	channels["conn"] = channel
 
 	return &rabbitMQ{
-		conn:    conn,
-		channel: channel,
-	}, conn, channel, nil
+		conn:     conn,
+		channels: channels,
+	}, nil
+}
+
+func (r *rabbitMQ) Close() {
+	for _, ch := range r.channels {
+		ch.Close()
+	}
+	r.conn.Close()
 }
 
 func (r *rabbitMQ) PublishMessage(message interface{}, exchangeName string) error {
@@ -69,8 +79,13 @@ func (r *rabbitMQ) DeclareExchanges(exchangeNames []string, exchangeType string)
 
 		wg.Add(1)
 		go func(exName string) {
+			ch, err := r.conn.Channel()
+			if err != nil {
+				log.Panicln("Unable to create channel", err)
+			}
+
 			defer wg.Done()
-			err := r.channel.ExchangeDeclare(
+			err = ch.ExchangeDeclare(
 				exName,
 				exchangeType,
 				true,
@@ -81,8 +96,11 @@ func (r *rabbitMQ) DeclareExchanges(exchangeNames []string, exchangeType string)
 			)
 
 			if err != nil {
+				ch.Close()
 				errChan <- err
 			}
+			r.channels[exName] = ch
+
 		}(exchangeName)
 	}
 
@@ -107,7 +125,14 @@ func (r *rabbitMQ) DeclareDirectExchanges(exchangeNames []string) error {
 }
 
 func (r *rabbitMQ) RegisterQueueExchange(queueName string, exchangeName string, messageHandler func(d amqp.Delivery)) {
-	queue, err := r.channel.QueueDeclare(
+	ch, err := r.conn.Channel()
+	if err != nil {
+		log.Fatalf("failed to create the [channel=%s]", exchangeName)
+		return
+	}
+	r.channels[exchangeName] = ch
+
+	queue, err := ch.QueueDeclare(
 		queueName, // name
 		true,      // durable
 		false,     // delete when unused
@@ -119,7 +144,7 @@ func (r *rabbitMQ) RegisterQueueExchange(queueName string, exchangeName string, 
 		log.Fatalf("Failed to declare queue: %s", err)
 	}
 
-	err = r.channel.QueueBind(
+	err = ch.QueueBind(
 		queueName,    // queue name
 		"",           // routing key (not used for fanout)
 		exchangeName, // exchange name
@@ -130,12 +155,17 @@ func (r *rabbitMQ) RegisterQueueExchange(queueName string, exchangeName string, 
 		log.Fatalf("Failed to bind queue to exchange: %s", err)
 	}
 
-	go r.consumeMessages(queue.Name, messageHandler)
+	go r.consumeMessages(exchangeName, queue.Name, messageHandler)
 }
 
-func (r *rabbitMQ) consumeMessages(queueName string, handler func(d amqp.Delivery)) {
+func (r *rabbitMQ) consumeMessages(exchangeName string, queueName string, handler func(d amqp.Delivery)) {
 
-	msgs, err := r.channel.Consume(
+	ch := r.channels[exchangeName]
+	if ch == nil {
+		log.Fatalf("Unable to get channel")
+	}
+
+	msgs, err := ch.Consume(
 		queueName, // queue name
 		"",        // consumer tag
 		false,     // auto-ack
@@ -144,6 +174,7 @@ func (r *rabbitMQ) consumeMessages(queueName string, handler func(d amqp.Deliver
 		false,     // no-wait
 		nil,       // args
 	)
+
 	if err != nil {
 		panic(err)
 	}

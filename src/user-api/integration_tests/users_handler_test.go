@@ -23,12 +23,10 @@ import (
 	"github.com/aws/aws-sdk-go-v2/service/dynamodb/types"
 	"github.com/gin-gonic/gin"
 	"github.com/google/uuid"
-	"github.com/streadway/amqp"
 )
 
 var (
-	conn    *amqp.Connection
-	channel *amqp.Channel
+	rmq rabbitmq.RabbitMQ
 )
 
 func TestMain(m *testing.M) {
@@ -37,8 +35,7 @@ func TestMain(m *testing.M) {
 
 	// Run the tests
 	code := m.Run()
-	defer conn.Close()
-	defer channel.Close()
+	defer rmq.Close()
 
 	// Tear down the test database
 	TearDownTestDatabase()
@@ -53,9 +50,8 @@ func newUserHandler() *handlers.UserHandler {
 	serverUri := os.Getenv("AMQP_SERVER_URL")
 	userUpdatedExchangeName := os.Getenv("EXCHANGE_NAME_USER_UPDATED")
 
-	var rmq rabbitmq.RabbitMQ
 	var err error
-	rmq, conn, channel, err = rabbitmq.NewRabbitMQ(serverUri)
+	rmq, err = rabbitmq.NewRabbitMQ(serverUri)
 	if err != nil {
 		log.Fatal("Unable to connect rabbitmq", err)
 	}

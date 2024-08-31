@@ -52,12 +52,11 @@ func main() {
 	movieScoreUpdatedQueueName := os.Getenv("MOVIE_SCORE_UPDATED_QUEUE")
 
 	rabbitMqUri := os.Getenv("AMQP_SERVER_URL")
-	rmq, conn, channel, err := rabbitmq.NewRabbitMQ(rabbitMqUri)
+	rmq, err := rabbitmq.NewRabbitMQ(rabbitMqUri)
 	if err != nil {
 		log.Fatal("Unable to connect to RabbitMQ", err)
 	}
-	defer conn.Close()
-	defer channel.Close()
+	defer rmq.Close()
 
 	genreService := services.NewGenreService(dbConnector.Client, awsTableName)
 	movieService := services.NewMovieService(dbConnector.Client, rmq, awsTableName, movieScoreUpdatedQueueName, numberOfTopRatedMovies)

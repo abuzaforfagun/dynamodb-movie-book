@@ -26,7 +26,6 @@ import (
 	"github.com/aws/aws-sdk-go-v2/service/dynamodb/types"
 	"github.com/gin-gonic/gin"
 	"github.com/google/uuid"
-	"github.com/streadway/amqp"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/credentials/insecure"
 )
@@ -34,8 +33,7 @@ import (
 var (
 	ActorGrpcConn *grpc.ClientConn
 	UserGrpcConn  *grpc.ClientConn
-	conn          *amqp.Connection
-	channel       *amqp.Channel
+	rmq           rabbitmq.RabbitMQ
 )
 
 func TestMain(m *testing.M) {
@@ -65,8 +63,7 @@ func TestMain(m *testing.M) {
 
 	// Run the tests
 	code := m.Run()
-	defer conn.Close()
-	defer channel.Close()
+	defer rmq.Close()
 
 	// Tear down the test database
 	integration_tests.TearDownTestDatabase()
@@ -83,9 +80,8 @@ func newReviewHandler() *reviews_handler.ReviewHandler {
 
 	rabbitMqUri := os.Getenv("AMQP_SERVER_URL")
 
-	var rmq rabbitmq.RabbitMQ
 	var err error
-	rmq, conn, channel, err = rabbitmq.NewRabbitMQ(rabbitMqUri)
+	rmq, err = rabbitmq.NewRabbitMQ(rabbitMqUri)
 	if err != nil {
 		log.Fatal("Unable to connect rabbitmq", err)
 	}
