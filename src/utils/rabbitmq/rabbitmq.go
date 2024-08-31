@@ -17,8 +17,8 @@ type RabbitMQ interface {
 }
 
 type rabbitMQ struct {
-	serverUri string
-	channel   *amqp.Channel
+	conn    *amqp.Connection
+	channel *amqp.Channel
 }
 
 func NewRabbitMQ(serverUri string) (RabbitMQ, *amqp.Connection, *amqp.Channel, error) {
@@ -34,8 +34,8 @@ func NewRabbitMQ(serverUri string) (RabbitMQ, *amqp.Connection, *amqp.Channel, e
 	}
 
 	return &rabbitMQ{
-		serverUri: serverUri,
-		channel:   channel,
+		conn:    conn,
+		channel: channel,
 	}, conn, channel, nil
 }
 
@@ -46,11 +46,19 @@ func (r *rabbitMQ) PublishMessage(message interface{}, exchangeName string) erro
 	}
 
 	rabbitMqMessage := amqp.Publishing{
-		Priority:    amqp.Persistent,
-		ContentType: "application/json",
-		Body:        jsonBytes,
+		DeliveryMode: amqp.Persistent,
+		ContentType:  "application/json",
+		Body:         jsonBytes,
 	}
-	return r.channel.Publish(exchangeName, "", false, false, rabbitMqMessage)
+
+	ch, err := r.conn.Channel()
+
+	if err != nil {
+		log.Panic("Unable to create channel", err)
+	}
+	defer ch.Close()
+
+	return ch.Publish(exchangeName, "", false, false, rabbitMqMessage)
 }
 
 func (r *rabbitMQ) DeclareExchanges(exchangeNames []string, exchangeType string) error {
