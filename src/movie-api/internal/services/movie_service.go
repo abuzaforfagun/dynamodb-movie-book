@@ -7,12 +7,12 @@ import (
 
 	"github.com/abuzaforfagun/dynamodb-movie-book/events"
 	"github.com/abuzaforfagun/dynamodb-movie-book/grpc/actorpb"
-	"github.com/abuzaforfagun/dynamodb-movie-book/movie-api/internal/infrastructure"
 	"github.com/abuzaforfagun/dynamodb-movie-book/movie-api/internal/models/custom_errors"
 	"github.com/abuzaforfagun/dynamodb-movie-book/movie-api/internal/models/db_model"
 	"github.com/abuzaforfagun/dynamodb-movie-book/movie-api/internal/models/request_model"
 	"github.com/abuzaforfagun/dynamodb-movie-book/movie-api/internal/models/response_model"
 	"github.com/abuzaforfagun/dynamodb-movie-book/movie-api/internal/repositories"
+	"github.com/abuzaforfagun/dynamodb-movie-book/utils/rabbitmq"
 	"github.com/google/uuid"
 )
 
@@ -29,14 +29,14 @@ type MovieService interface {
 type movieService struct {
 	movieRepository        repositories.MovieRepository
 	reviewService          ReviewService
-	rabbitMq               infrastructure.RabbitMQ
+	rabbitMq               rabbitmq.RabbitMQ
 	movieAddedExchangeName string
 	actorClient            actorpb.ActorsServiceClient
 }
 
 func NewMovieService(movieRepository repositories.MovieRepository,
 	reviewService ReviewService,
-	rabbitMq infrastructure.RabbitMQ,
+	rabbitMq rabbitmq.RabbitMQ,
 	actorClient actorpb.ActorsServiceClient,
 	movieAddedExchangeName string) MovieService {
 	return &movieService{

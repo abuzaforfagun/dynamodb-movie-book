@@ -7,9 +7,9 @@ import (
 	"github.com/abuzaforfagun/dynamodb-movie-book/grpc/userpb"
 	"github.com/abuzaforfagun/dynamodb-movie-book/review-event-consumer/internal/initializers"
 	"github.com/abuzaforfagun/dynamodb-movie-book/review-event-consumer/internal/processor"
-	"github.com/abuzaforfagun/dynamodb-movie-book/review-event-consumer/internal/rabbitmq"
 	"github.com/abuzaforfagun/dynamodb-movie-book/review-event-consumer/internal/services"
 	"github.com/abuzaforfagun/dynamodb-movie-book/utils/dynamodb_connector"
+	"github.com/abuzaforfagun/dynamodb-movie-book/utils/rabbitmq"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/credentials/insecure"
 )
@@ -41,15 +41,9 @@ func main() {
 
 	dbConnector, err := dynamodb_connector.New(&dbConfig)
 
-	amqpServerURL := os.Getenv("AMQP_SERVER_URL")
 	userUpdatedExchangeName := os.Getenv("EXCHANGE_NAME_USER_UPDATED")
 	userUpdatedQueueName := os.Getenv("USER_UPDATE_QUEUE")
 	userGrpcUrl := os.Getenv("USER_GRPC_API")
-
-	conn, err := rabbitmq.NewConnection(amqpServerURL)
-	if err != nil {
-		log.Fatalf("Failed to connect to RabbitMQ: %s", err)
-	}
 
 	userConn, err := grpc.NewClient(userGrpcUrl, grpc.WithTransportCredentials(insecure.NewCredentials()))
 	if err != nil {
@@ -61,7 +55,16 @@ func main() {
 
 	userUpdatedHandler := processor.NewUserUpdatedHandler(reviewService)
 
-	rabbitmq.RegisterQueueExchange(conn, userUpdatedQueueName, userUpdatedExchangeName, userUpdatedHandler.HandleMessage)
+	rabbitMqUri := os.Getenv("AMQP_SERVER_URL")
+	rmq, conn, channel, err := rabbitmq.NewRabbitMQ(rabbitMqUri)
+	if err != nil {
+		log.Fatal("Unable to connect to RabbitMQ", err)
+	}
+	defer conn.Close()
+	defer channel.Close()
+
+	rmq.RegisterQueueExchange(userUpdatedQueueName, userUpdatedExchangeName, userUpdatedHandler.HandleMessage)
+
 	log.Println("Ready to process events...")
 	select {}
 }

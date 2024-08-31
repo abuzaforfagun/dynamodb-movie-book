@@ -7,6 +7,7 @@ import (
 	"github.com/abuzaforfagun/dynamodb-movie-book/user-api/internal/models/db_model"
 	"github.com/abuzaforfagun/dynamodb-movie-book/user-api/internal/models/request_model"
 	"github.com/abuzaforfagun/dynamodb-movie-book/user-api/internal/models/response_model"
+	"github.com/streadway/amqp"
 )
 
 const ExistingEmail string = "existing@email.com"
@@ -14,12 +15,16 @@ const ExistingUserId string = "e5a971e7-d1ae-448d-a19c-269694937e3a"
 
 type MockRabbitMQ struct{}
 
-func (m *MockRabbitMQ) PublishMessage(message interface{}, topicName string) error {
+func (r *MockRabbitMQ) PublishMessage(message interface{}, exchangeName string) error {
 	return nil
 }
 
-func (m *MockRabbitMQ) DeclareFanoutExchange(exchangename string) error {
+func (m *MockRabbitMQ) DeclareFanoutExchanges(exchangeNames []string) error {
 	return nil
+}
+
+func (m *MockRabbitMQ) RegisterQueueExchange(conn *amqp.Connection, queueName string, exchangeName string, messageHandler func(d amqp.Delivery)) {
+
 }
 
 type MockUserRepository struct{}
@@ -48,8 +53,8 @@ func (m *MockUserRepository) HasUserByEmail(email string) (bool, error) {
 
 func TestAddUser(t *testing.T) {
 	userRepository := &MockUserRepository{}
-	rabbitMqRepository := &MockRabbitMQ{}
-	userService := NewUserService(userRepository, rabbitMqRepository, "")
+	rabbitMq := &MockRabbitMQ{}
+	userService := NewUserService(userRepository, rabbitMq, "")
 
 	tests := []struct {
 		testName     string

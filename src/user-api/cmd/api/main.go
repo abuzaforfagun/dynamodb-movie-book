@@ -6,11 +6,11 @@ import (
 
 	_ "github.com/abuzaforfagun/dynamodb-movie-book/user-api/docs"
 	"github.com/abuzaforfagun/dynamodb-movie-book/user-api/internal/handlers"
-	"github.com/abuzaforfagun/dynamodb-movie-book/user-api/internal/infrastructure"
 	"github.com/abuzaforfagun/dynamodb-movie-book/user-api/internal/initializers"
 	"github.com/abuzaforfagun/dynamodb-movie-book/user-api/internal/repositories"
 	"github.com/abuzaforfagun/dynamodb-movie-book/user-api/internal/services"
 	"github.com/abuzaforfagun/dynamodb-movie-book/utils/dynamodb_connector"
+	"github.com/abuzaforfagun/dynamodb-movie-book/utils/rabbitmq"
 	"github.com/gin-gonic/gin"
 	swaggerFiles "github.com/swaggo/files"
 	ginSwagger "github.com/swaggo/gin-swagger"
@@ -60,14 +60,20 @@ func main() {
 	}
 
 	rabbitMqUri := os.Getenv("AMQP_SERVER_URL")
-	userUpdatedExchageName := os.Getenv("EXCHANGE_NAME_USER_UPDATED")
-	rabbitMq := infrastructure.NewRabbitMQ(rabbitMqUri)
+	rmq, conn, channel, err := rabbitmq.NewRabbitMQ(rabbitMqUri)
+	if err != nil {
+		log.Fatal("Unable to connect to RabbitMQ", err)
+	}
+	defer conn.Close()
+	defer channel.Close()
 
-	rabbitMq.DeclareFanoutExchange(userUpdatedExchageName)
+	userUpdatedExchageName := os.Getenv("EXCHANGE_NAME_USER_UPDATED")
+
+	rmq.DeclareFanoutExchanges([]string{userUpdatedExchageName})
 
 	userRepository := repositories.NewUserRepository(dbConnector.Client, dbConnector.TableName)
 
-	userService := services.NewUserService(userRepository, rabbitMq, userUpdatedExchageName)
+	userService := services.NewUserService(userRepository, rmq, userUpdatedExchageName)
 
 	router := gin.Default()
 	router.GET("/swagger/*any", ginSwagger.WrapHandler(swaggerFiles.Handler))

@@ -7,11 +7,11 @@ import (
 
 	"github.com/abuzaforfagun/dynamodb-movie-book/events"
 	"github.com/abuzaforfagun/dynamodb-movie-book/grpc/userpb"
-	"github.com/abuzaforfagun/dynamodb-movie-book/movie-api/internal/infrastructure"
 	"github.com/abuzaforfagun/dynamodb-movie-book/movie-api/internal/models/custom_errors"
 	"github.com/abuzaforfagun/dynamodb-movie-book/movie-api/internal/models/db_model"
 	"github.com/abuzaforfagun/dynamodb-movie-book/movie-api/internal/models/request_model"
 	"github.com/abuzaforfagun/dynamodb-movie-book/movie-api/internal/repositories"
+	"github.com/abuzaforfagun/dynamodb-movie-book/utils/rabbitmq"
 )
 
 type ReviewService interface {
@@ -22,7 +22,7 @@ type ReviewService interface {
 
 type reviewService struct {
 	reviewRepository        repositories.ReviewRepository
-	rabbitMq                infrastructure.RabbitMQ
+	rabbitMq                rabbitmq.RabbitMQ
 	reviewAddedExchangeName string
 	userClient              userpb.UserServiceClient
 }
@@ -30,7 +30,7 @@ type reviewService struct {
 func NewReviewService(
 	reviewRepository repositories.ReviewRepository,
 	userClient userpb.UserServiceClient,
-	rabbitMq infrastructure.RabbitMQ,
+	rabbitMq rabbitmq.RabbitMQ,
 	reviewAddedExchangeName string) ReviewService {
 	return &reviewService{
 		reviewRepository:        reviewRepository,

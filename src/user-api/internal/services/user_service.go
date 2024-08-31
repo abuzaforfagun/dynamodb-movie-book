@@ -2,12 +2,12 @@ package services
 
 import (
 	"github.com/abuzaforfagun/dynamodb-movie-book/events"
-	"github.com/abuzaforfagun/dynamodb-movie-book/user-api/internal/infrastructure"
 	"github.com/abuzaforfagun/dynamodb-movie-book/user-api/internal/models/custom_errors"
 	"github.com/abuzaforfagun/dynamodb-movie-book/user-api/internal/models/db_model"
 	"github.com/abuzaforfagun/dynamodb-movie-book/user-api/internal/models/request_model"
 	"github.com/abuzaforfagun/dynamodb-movie-book/user-api/internal/models/response_model"
 	"github.com/abuzaforfagun/dynamodb-movie-book/user-api/internal/repositories"
+	"github.com/abuzaforfagun/dynamodb-movie-book/utils/rabbitmq"
 	"github.com/google/uuid"
 )
 
@@ -20,17 +20,17 @@ type UserService interface {
 
 type userService struct {
 	userRepository          repositories.UserRepository
-	rabbitMq                infrastructure.RabbitMQ
+	rmq                     rabbitmq.RabbitMQ
 	userUpdatedExchangeName string
 }
 
 func NewUserService(
 	userRepository repositories.UserRepository,
-	rabbitMq infrastructure.RabbitMQ,
+	rabbitMq rabbitmq.RabbitMQ,
 	userUpdatedExchageName string) UserService {
 	return &userService{
 		userRepository:          userRepository,
-		rabbitMq:                rabbitMq,
+		rmq:                     rabbitMq,
 		userUpdatedExchangeName: userUpdatedExchageName,
 	}
 }
@@ -84,7 +84,7 @@ func (s *userService) Update(userId string, updateModel request_model.UpdateUser
 	}
 
 	userUpdatedEvent := events.NewUserUpdated(userId)
-	err = s.rabbitMq.PublishMessage(userUpdatedEvent, s.userUpdatedExchangeName)
+	err = s.rmq.PublishMessage(userUpdatedEvent, s.userUpdatedExchangeName)
 	return err
 }
 

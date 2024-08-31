@@ -9,6 +9,7 @@ import (
 	"github.com/abuzaforfagun/dynamodb-movie-book/movie-api/internal/models/db_model"
 	"github.com/abuzaforfagun/dynamodb-movie-book/movie-api/internal/models/request_model"
 	"github.com/abuzaforfagun/dynamodb-movie-book/movie-api/internal/models/response_model"
+	"github.com/streadway/amqp"
 	"google.golang.org/grpc"
 )
 
@@ -71,8 +72,15 @@ func (m *MockRabbitMQ) PublishMessage(message interface{}, topicName string) err
 	return nil
 }
 
-func (m *MockRabbitMQ) DeclareFanoutExchange(exchangename string) error {
+func (m *MockRabbitMQ) DeclareFanoutExchanges(exchangename []string) error {
 	return nil
+}
+
+func (m *MockRabbitMQ) DeclareDirectExchanges(exchangeNames []string) error {
+	return nil
+}
+
+func (m *MockRabbitMQ) RegisterQueueExchange(queueName string, exchangeName string, messageHandler func(d amqp.Delivery)) {
 }
 
 type MockActorClient struct{}

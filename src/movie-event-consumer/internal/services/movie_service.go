@@ -8,7 +8,9 @@ import (
 	"sort"
 	"strings"
 
+	"github.com/abuzaforfagun/dynamodb-movie-book/events"
 	"github.com/abuzaforfagun/dynamodb-movie-book/movie-event-consumer/internal/models"
+	"github.com/abuzaforfagun/dynamodb-movie-book/utils/rabbitmq"
 	"github.com/aws/aws-sdk-go-v2/aws"
 	"github.com/aws/aws-sdk-go-v2/feature/dynamodb/attributevalue"
 	"github.com/aws/aws-sdk-go-v2/feature/dynamodb/expression"
@@ -23,19 +25,25 @@ type MovieService interface {
 }
 
 type movieService struct {
-	client            *dynamodb.Client
-	tableName         string
-	numberOfTopMovies int
+	client                *dynamodb.Client
+	rmq                   rabbitmq.RabbitMQ
+	tableName             string
+	numberOfTopMovies     int
+	scoreUpdatedQueueName string
 }
 
 func NewMovieService(
 	client *dynamodb.Client,
+	rmq rabbitmq.RabbitMQ,
 	tableName string,
+	scoreUpdatedQueueName string,
 	numberOfTopMovies int) MovieService {
 	return &movieService{
-		client:            client,
-		tableName:         tableName,
-		numberOfTopMovies: numberOfTopMovies,
+		client:                client,
+		rmq:                   rmq,
+		tableName:             tableName,
+		scoreUpdatedQueueName: scoreUpdatedQueueName,
+		numberOfTopMovies:     numberOfTopMovies,
 	}
 }
 
@@ -96,6 +104,13 @@ func (r *movieService) UpdateMovieScore(movieId string, score float64) error {
 	_, err = r.client.UpdateItem(context.TODO(), input)
 	if err != nil {
 		log.Println("ERROR: Unable to update score", err)
+		return err
+	}
+	event := events.NewMovieScoreUpdated(movieId, score)
+	err = r.rmq.PublishMessage(event, r.scoreUpdatedQueueName)
+
+	if err != nil {
+		log.Println("Unable to publish score updatd event")
 		return err
 	}
 	return nil

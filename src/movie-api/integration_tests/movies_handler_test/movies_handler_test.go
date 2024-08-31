@@ -7,6 +7,7 @@ import (
 	"bytes"
 	"context"
 	"encoding/json"
+	"log"
 	"net"
 	"net/http"
 	"net/http/httptest"
@@ -19,18 +20,19 @@ import (
 	"github.com/abuzaforfagun/dynamodb-movie-book/grpc/userpb"
 	"github.com/abuzaforfagun/dynamodb-movie-book/movie-api/integration_tests"
 	"github.com/abuzaforfagun/dynamodb-movie-book/movie-api/internal/handlers/movies_handler"
-	"github.com/abuzaforfagun/dynamodb-movie-book/movie-api/internal/infrastructure"
 	"github.com/abuzaforfagun/dynamodb-movie-book/movie-api/internal/models/db_model"
 	"github.com/abuzaforfagun/dynamodb-movie-book/movie-api/internal/models/request_model"
 	"github.com/abuzaforfagun/dynamodb-movie-book/movie-api/internal/models/response_model"
 	"github.com/abuzaforfagun/dynamodb-movie-book/movie-api/internal/repositories"
 	"github.com/abuzaforfagun/dynamodb-movie-book/movie-api/internal/services"
+	"github.com/abuzaforfagun/dynamodb-movie-book/utils/rabbitmq"
 	"github.com/aws/aws-sdk-go-v2/aws"
 	"github.com/aws/aws-sdk-go-v2/feature/dynamodb/attributevalue"
 	"github.com/aws/aws-sdk-go-v2/service/dynamodb"
 	"github.com/aws/aws-sdk-go-v2/service/dynamodb/types"
 	"github.com/gin-gonic/gin"
 	"github.com/google/uuid"
+	"github.com/streadway/amqp"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/credentials/insecure"
 )
@@ -38,6 +40,8 @@ import (
 var (
 	ActorGrpcConn *grpc.ClientConn
 	UserGrpcConn  *grpc.ClientConn
+	conn          *amqp.Connection
+	channel       *amqp.Channel
 )
 
 func TestMain(m *testing.M) {
@@ -69,6 +73,9 @@ func TestMain(m *testing.M) {
 	// Run the tests
 	code := m.Run()
 
+	defer conn.Close()
+	defer channel.Close()
+
 	// Tear down the test database
 	integration_tests.TearDownTestDatabase()
 
@@ -83,16 +90,22 @@ func newMovieHandler() *movies_handler.MoviesHandler {
 	movieRepository := repositories.NewMovieRepository(integration_tests.DbService.Client, integration_tests.DbService.TableName)
 	reviewRepository := repositories.NewReviewRepository(integration_tests.DbService.Client, integration_tests.DbService.TableName)
 
-	serverUri := os.Getenv("AMQP_SERVER_URL")
 	movieAddedExchangeName := os.Getenv("EXCHANGE_NAME_MOVIE_ADDED")
 
-	rabbitMq := infrastructure.NewRabbitMQ(serverUri)
+	rabbitMqUri := os.Getenv("AMQP_SERVER_URL")
+
+	var rmq rabbitmq.RabbitMQ
+	var err error
+	rmq, conn, channel, err = rabbitmq.NewRabbitMQ(rabbitMqUri)
+	if err != nil {
+		log.Fatal("Unable to connect rabbitmq", err)
+	}
 
 	actorClient := actorpb.NewActorsServiceClient(ActorGrpcConn)
 	userClient := userpb.NewUserServiceClient(UserGrpcConn)
 
-	reviewService := services.NewReviewService(reviewRepository, userClient, rabbitMq, "test")
-	moviesService := services.NewMovieService(movieRepository, reviewService, rabbitMq, actorClient, movieAddedExchangeName)
+	reviewService := services.NewReviewService(reviewRepository, userClient, rmq, "test")
+	moviesService := services.NewMovieService(movieRepository, reviewService, rmq, actorClient, movieAddedExchangeName)
 	return movies_handler.New(moviesService)
 }
 func TestGetAll(t *testing.T) {

@@ -6,10 +6,10 @@ import (
 
 	"github.com/abuzaforfagun/dynamodb-movie-book/actor-event-consumer/internal/initializers"
 	"github.com/abuzaforfagun/dynamodb-movie-book/actor-event-consumer/internal/processor"
-	"github.com/abuzaforfagun/dynamodb-movie-book/actor-event-consumer/internal/rabbitmq"
 	"github.com/abuzaforfagun/dynamodb-movie-book/actor-event-consumer/internal/services"
 	"github.com/abuzaforfagun/dynamodb-movie-book/grpc/moviepb"
 	"github.com/abuzaforfagun/dynamodb-movie-book/utils/dynamodb_connector"
+	"github.com/abuzaforfagun/dynamodb-movie-book/utils/rabbitmq"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/credentials/insecure"
 )
@@ -30,7 +30,6 @@ func main() {
 	awsTableName := os.Getenv("TABLE_NAME")
 	dynamodbUrl := os.Getenv("DYNAMODB_URL")
 
-	amqpServerURL := os.Getenv("AMQP_SERVER_URL")
 	movieAddedExchangeName := os.Getenv("EXCHANGE_NAME_MOVIE_ADDED")
 	movieAddedQueueName := os.Getenv("MOVIE_ADDED_QUEUE")
 	movieGrpcUrl := os.Getenv("MOVIE_GRPC_API")
@@ -50,11 +49,13 @@ func main() {
 		log.Fatalln("Failed to connect dynamodb")
 	}
 
-	conn, err := rabbitmq.NewConnection(amqpServerURL)
+	rabbitMqUri := os.Getenv("AMQP_SERVER_URL")
+	rmq, conn, channel, err := rabbitmq.NewRabbitMQ(rabbitMqUri)
 	if err != nil {
-		log.Fatalf("Failed to connect to RabbitMQ: %s", err)
+		log.Fatal("Unable to connect to RabbitMQ", err)
 	}
 	defer conn.Close()
+	defer channel.Close()
 
 	tableName := os.Getenv("TABLE_NAME")
 
@@ -69,7 +70,7 @@ func main() {
 
 	moviedAddedHandler := processor.NewMovieAddedHandler(actorService)
 
-	rabbitmq.RegisterQueueExchange(conn, movieAddedQueueName, movieAddedExchangeName, moviedAddedHandler.HandleMessage)
+	rmq.RegisterQueueExchange(movieAddedQueueName, movieAddedExchangeName, moviedAddedHandler.HandleMessage)
 
 	log.Println("Ready to process events...")
 	select {}

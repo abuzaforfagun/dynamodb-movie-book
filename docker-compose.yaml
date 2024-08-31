@@ -148,7 +148,7 @@ services:
       MOVIE_ADDED_QUEUE: movie_event_consumer.movie_added
       REVIEW_ADDED_QUEUE: movie_event_consumer.review_added
       MOVIE_SCORE_UPDATED_QUEUE: movie_event_consumer.movie_score_updated
-      EXCHANGE_NAME_MOVIE_SCORE_UPDATED: move_score_updated
+      EXCHANGE_NAME_SCORE_UPDATED: movie_score_updated
       NUMBER_OF_TOP_MOVIES: 10
     depends_on:
       - rabbitmq

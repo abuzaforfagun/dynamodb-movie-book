@@ -5,28 +5,21 @@ import (
 	"log"
 
 	"github.com/abuzaforfagun/dynamodb-movie-book/events"
-	"github.com/abuzaforfagun/dynamodb-movie-book/movie-event-consumer/internal/rabbitmq"
 	"github.com/abuzaforfagun/dynamodb-movie-book/movie-event-consumer/internal/services"
 	"github.com/streadway/amqp"
 )
 
 type ReviewAddedHandler struct {
-	movieService          services.MovieService
-	reviewService         services.ReviewService
-	rabbitMqPublisher     rabbitmq.Publisher
-	scoreUpdatedQueueName string
+	movieService  services.MovieService
+	reviewService services.ReviewService
 }
 
 func NewReviewAddedHandler(
 	movieService *services.MovieService,
-	reviewService *services.ReviewService,
-	rabbitMqPublisher *rabbitmq.Publisher,
-	scoreUpdatedQueueName string) ReviewAddedHandler {
+	reviewService *services.ReviewService) ReviewAddedHandler {
 	return ReviewAddedHandler{
-		movieService:          *movieService,
-		reviewService:         *reviewService,
-		rabbitMqPublisher:     *rabbitMqPublisher,
-		scoreUpdatedQueueName: scoreUpdatedQueueName,
+		movieService:  *movieService,
+		reviewService: *reviewService,
 	}
 }
 
@@ -70,11 +63,5 @@ func (h *ReviewAddedHandler) HandleMessage(msg amqp.Delivery) {
 		log.Println("ERROR: Unable to update movie score")
 	}
 
-	event := events.NewMovieScoreUpdated(payload.MovieId, avgScore)
-	err = h.rabbitMqPublisher.PublishMessage(event, h.scoreUpdatedQueueName)
-
-	if err != nil {
-		log.Println("Unable to publish score updatd event")
-	}
 	log.Printf("Processing completed [MessageId=%s]", payload.MessageId)
 }
