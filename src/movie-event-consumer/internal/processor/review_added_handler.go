@@ -3,6 +3,7 @@ package processor
 import (
 	"encoding/json"
 	"log"
+	"math"
 
 	"github.com/abuzaforfagun/dynamodb-movie-book/events"
 	"github.com/abuzaforfagun/dynamodb-movie-book/movie-event-consumer/internal/services"
@@ -58,7 +59,8 @@ func (h *ReviewAddedHandler) HandleMessage(msg amqp.Delivery) {
 	}
 
 	avgScore := totalScore / float64(len(reviews))
-	err = h.movieService.UpdateMovieScore(payload.MovieId, avgScore)
+	roundedAvgScore := math.Round(avgScore*100) / 100
+	err = h.movieService.UpdateMovieScore(payload.MovieId, roundedAvgScore)
 	if err != nil {
 		log.Println("ERROR: Unable to update movie score")
 	}
