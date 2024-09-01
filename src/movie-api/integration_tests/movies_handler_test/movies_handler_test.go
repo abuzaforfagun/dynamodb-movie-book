@@ -39,7 +39,7 @@ import (
 var (
 	ActorGrpcConn *grpc.ClientConn
 	UserGrpcConn  *grpc.ClientConn
-	rmq           rabbitmq.RabbitMQ
+	publisher     rabbitmq.Publisher
 )
 
 func TestMain(m *testing.M) {
@@ -71,7 +71,7 @@ func TestMain(m *testing.M) {
 	// Run the tests
 	code := m.Run()
 
-	defer rmq.Close()
+	defer publisher.Close()
 
 	// Tear down the test database
 	integration_tests.TearDownTestDatabase()
@@ -92,7 +92,7 @@ func newMovieHandler() *movies_handler.MoviesHandler {
 	rabbitMqUri := os.Getenv("AMQP_SERVER_URL")
 
 	var err error
-	rmq, err = rabbitmq.NewRabbitMQ(rabbitMqUri)
+	publisher, err = rabbitmq.NewPublisher(rabbitMqUri)
 	if err != nil {
 		log.Fatal("Unable to connect rabbitmq", err)
 	}
@@ -100,8 +100,8 @@ func newMovieHandler() *movies_handler.MoviesHandler {
 	actorClient := actorpb.NewActorsServiceClient(ActorGrpcConn)
 	userClient := userpb.NewUserServiceClient(UserGrpcConn)
 
-	reviewService := services.NewReviewService(reviewRepository, userClient, rmq, "test")
-	moviesService := services.NewMovieService(movieRepository, reviewService, rmq, actorClient, movieAddedExchangeName)
+	reviewService := services.NewReviewService(reviewRepository, userClient, publisher, "test")
+	moviesService := services.NewMovieService(movieRepository, reviewService, publisher, actorClient, movieAddedExchangeName)
 	return movies_handler.New(moviesService)
 }
 func TestGetAll(t *testing.T) {

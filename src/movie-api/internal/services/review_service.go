@@ -22,7 +22,7 @@ type ReviewService interface {
 
 type reviewService struct {
 	reviewRepository        repositories.ReviewRepository
-	rabbitMq                rabbitmq.RabbitMQ
+	publisher               rabbitmq.Publisher
 	reviewAddedExchangeName string
 	userClient              userpb.UserServiceClient
 }
@@ -30,12 +30,12 @@ type reviewService struct {
 func NewReviewService(
 	reviewRepository repositories.ReviewRepository,
 	userClient userpb.UserServiceClient,
-	rabbitMq rabbitmq.RabbitMQ,
+	publisher rabbitmq.Publisher,
 	reviewAddedExchangeName string) ReviewService {
 	return &reviewService{
 		reviewRepository:        reviewRepository,
 		userClient:              userClient,
-		rabbitMq:                rabbitMq,
+		publisher:               publisher,
 		reviewAddedExchangeName: reviewAddedExchangeName,
 	}
 }
@@ -81,7 +81,7 @@ func (s *reviewService) Add(movieId string, reviewRequest request_model.AddRevie
 
 	event := events.NewReviewAdded(movieId, reviewRequest.UserId, reviewRequest.Score)
 
-	s.rabbitMq.PublishMessage(event, s.reviewAddedExchangeName)
+	s.publisher.PublishMessage(event, s.reviewAddedExchangeName)
 
 	return nil
 }

@@ -1,3 +1,6 @@
+//go:build integration
+// +build integration
+
 package integration_tests
 
 import (
@@ -26,7 +29,7 @@ import (
 )
 
 var (
-	rmq rabbitmq.RabbitMQ
+	rmq rabbitmq.Publisher
 )
 
 func TestMain(m *testing.M) {
@@ -51,7 +54,7 @@ func newUserHandler() *handlers.UserHandler {
 	userUpdatedExchangeName := os.Getenv("EXCHANGE_NAME_USER_UPDATED")
 
 	var err error
-	rmq, err = rabbitmq.NewRabbitMQ(serverUri)
+	rmq, err = rabbitmq.NewPublisher(serverUri)
 	if err != nil {
 		log.Fatal("Unable to connect rabbitmq", err)
 	}

@@ -26,7 +26,7 @@ type MovieService interface {
 
 type movieService struct {
 	client                *dynamodb.Client
-	rmq                   rabbitmq.RabbitMQ
+	publisher             rabbitmq.Publisher
 	tableName             string
 	numberOfTopMovies     int
 	scoreUpdatedQueueName string
@@ -34,13 +34,13 @@ type movieService struct {
 
 func NewMovieService(
 	client *dynamodb.Client,
-	rmq rabbitmq.RabbitMQ,
+	publisher rabbitmq.Publisher,
 	tableName string,
 	scoreUpdatedQueueName string,
 	numberOfTopMovies int) MovieService {
 	return &movieService{
 		client:                client,
-		rmq:                   rmq,
+		publisher:             publisher,
 		tableName:             tableName,
 		scoreUpdatedQueueName: scoreUpdatedQueueName,
 		numberOfTopMovies:     numberOfTopMovies,
@@ -107,7 +107,7 @@ func (r *movieService) UpdateMovieScore(movieId string, score float64) error {
 		return err
 	}
 	event := events.NewMovieScoreUpdated(movieId, score)
-	err = r.rmq.PublishMessage(event, r.scoreUpdatedQueueName)
+	err = r.publisher.PublishMessage(event, r.scoreUpdatedQueueName)
 
 	if err != nil {
 		log.Println("Unable to publish score updatd event")

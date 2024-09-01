@@ -58,8 +58,14 @@ func main() {
 	}
 	defer rmq.Close()
 
+	publisher, err := rabbitmq.NewPublisher(rabbitMqUri)
+	if err != nil {
+		log.Fatal("Unable to create publisher", err)
+	}
+	defer publisher.Close()
+
 	genreService := services.NewGenreService(dbConnector.Client, awsTableName)
-	movieService := services.NewMovieService(dbConnector.Client, rmq, awsTableName, movieScoreUpdatedQueueName, numberOfTopRatedMovies)
+	movieService := services.NewMovieService(dbConnector.Client, publisher, awsTableName, movieScoreUpdatedQueueName, numberOfTopRatedMovies)
 	reviewService := services.NewReviewService(dbConnector.Client, awsTableName)
 
 	moviedAddedHandler := processor.NewMovieAddedHandler(&movieService, &genreService)

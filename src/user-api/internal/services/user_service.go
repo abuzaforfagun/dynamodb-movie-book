@@ -20,17 +20,17 @@ type UserService interface {
 
 type userService struct {
 	userRepository          repositories.UserRepository
-	rmq                     rabbitmq.RabbitMQ
+	publisher               rabbitmq.Publisher
 	userUpdatedExchangeName string
 }
 
 func NewUserService(
 	userRepository repositories.UserRepository,
-	rabbitMq rabbitmq.RabbitMQ,
+	publisher rabbitmq.Publisher,
 	userUpdatedExchageName string) UserService {
 	return &userService{
 		userRepository:          userRepository,
-		rmq:                     rabbitMq,
+		publisher:               publisher,
 		userUpdatedExchangeName: userUpdatedExchageName,
 	}
 }
@@ -84,7 +84,7 @@ func (s *userService) Update(userId string, updateModel request_model.UpdateUser
 	}
 
 	userUpdatedEvent := events.NewUserUpdated(userId)
-	err = s.rmq.PublishMessage(userUpdatedEvent, s.userUpdatedExchangeName)
+	err = s.publisher.PublishMessage(userUpdatedEvent, s.userUpdatedExchangeName)
 	return err
 }
 

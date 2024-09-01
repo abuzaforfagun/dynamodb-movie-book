@@ -29,21 +29,21 @@ type MovieService interface {
 type movieService struct {
 	movieRepository        repositories.MovieRepository
 	reviewService          ReviewService
-	rabbitMq               rabbitmq.RabbitMQ
+	publisher              rabbitmq.Publisher
 	movieAddedExchangeName string
 	actorClient            actorpb.ActorsServiceClient
 }
 
 func NewMovieService(movieRepository repositories.MovieRepository,
 	reviewService ReviewService,
-	rabbitMq rabbitmq.RabbitMQ,
+	publisher rabbitmq.Publisher,
 	actorClient actorpb.ActorsServiceClient,
 	movieAddedExchangeName string) MovieService {
 	return &movieService{
 		movieRepository:        movieRepository,
 		reviewService:          reviewService,
 		movieAddedExchangeName: movieAddedExchangeName,
-		rabbitMq:               rabbitMq,
+		publisher:              publisher,
 		actorClient:            actorClient,
 	}
 }
@@ -114,7 +114,7 @@ func (s *movieService) Add(movie *request_model.AddMovie) (string, error) {
 	}
 
 	movieAddedEvent := events.NewMovieCreated(movieId)
-	err = s.rabbitMq.PublishMessage(movieAddedEvent, s.movieAddedExchangeName)
+	err = s.publisher.PublishMessage(movieAddedEvent, s.movieAddedExchangeName)
 	if err != nil {
 		log.Printf("ERROR: failed to publish event. Error: %v", err)
 		return "", err

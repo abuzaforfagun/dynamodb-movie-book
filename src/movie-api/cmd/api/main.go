@@ -77,6 +77,13 @@ func main() {
 	}
 	defer rmq.Close()
 
+	publisher, err := rabbitmq.NewPublisher(rabbitMqUri)
+	if err != nil {
+		log.Fatal("Unable to connect to RabbitMQ", err)
+	}
+
+	defer publisher.Close()
+
 	rmq.DeclareFanoutExchanges([]string{
 		movieAddedExchageName, userUpdatedExchageName, reviewAddedExchageName,
 	})
@@ -90,7 +97,7 @@ func main() {
 	}
 	defer userConn.Close()
 	userClient := userpb.NewUserServiceClient(userConn)
-	reviewService := services.NewReviewService(reviewRepository, userClient, rmq, reviewAddedExchageName)
+	reviewService := services.NewReviewService(reviewRepository, userClient, publisher, reviewAddedExchageName)
 
 	actorConn, err := grpc.NewClient(actorGrpcUrl, grpc.WithTransportCredentials(insecure.NewCredentials()))
 	if err != nil {
@@ -99,7 +106,7 @@ func main() {
 	defer actorConn.Close()
 
 	actorClient := actorpb.NewActorsServiceClient(actorConn)
-	movieService := services.NewMovieService(movieRepository, reviewService, rmq, actorClient, movieAddedExchageName)
+	movieService := services.NewMovieService(movieRepository, reviewService, publisher, actorClient, movieAddedExchageName)
 
 	router := gin.Default()
 	router.GET("/swagger/*any", ginSwagger.WrapHandler(swaggerFiles.Handler))

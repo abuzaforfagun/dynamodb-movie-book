@@ -1,7 +1,6 @@
 package rabbitmq
 
 import (
-	"encoding/json"
 	"fmt"
 	"log"
 	"sync"
@@ -11,7 +10,6 @@ import (
 
 type RabbitMQ interface {
 	Close()
-	PublishMessage(message interface{}, topicName string) error
 	DeclareFanoutExchanges(exchangeNames []string) error
 	DeclareDirectExchanges(exchangeNames []string) error
 	RegisterQueueExchange(queueName string, exchangeName string, messageHandler func(d amqp.Delivery))
@@ -47,28 +45,6 @@ func (r *rabbitMQ) Close() {
 		ch.Close()
 	}
 	r.conn.Close()
-}
-
-func (r *rabbitMQ) PublishMessage(message interface{}, exchangeName string) error {
-	jsonBytes, err := json.Marshal(message)
-	if err != nil {
-		return err
-	}
-
-	rabbitMqMessage := amqp.Publishing{
-		DeliveryMode: amqp.Persistent,
-		ContentType:  "application/json",
-		Body:         jsonBytes,
-	}
-
-	ch, err := r.conn.Channel()
-
-	if err != nil {
-		log.Panic("Unable to create channel", err)
-	}
-	defer ch.Close()
-
-	return ch.Publish(exchangeName, "", false, false, rabbitMqMessage)
 }
 
 func (r *rabbitMQ) DeclareExchanges(exchangeNames []string, exchangeType string) error {

@@ -9,7 +9,6 @@ import (
 	"github.com/abuzaforfagun/dynamodb-movie-book/movie-api/internal/models/db_model"
 	"github.com/abuzaforfagun/dynamodb-movie-book/movie-api/internal/models/request_model"
 	"github.com/abuzaforfagun/dynamodb-movie-book/movie-api/internal/models/response_model"
-	"github.com/streadway/amqp"
 	"google.golang.org/grpc"
 )
 
@@ -66,21 +65,13 @@ func (m *MockReviewService) Delete(movieId string, userId string) error {
 	return nil
 }
 
-type MockRabbitMQ struct{}
+type MockPublisher struct{}
 
-func (m *MockRabbitMQ) PublishMessage(message interface{}, topicName string) error {
+func (m *MockPublisher) PublishMessage(message interface{}, topicName string) error {
 	return nil
 }
 
-func (m *MockRabbitMQ) DeclareFanoutExchanges(exchangename []string) error {
-	return nil
-}
-
-func (m *MockRabbitMQ) DeclareDirectExchanges(exchangeNames []string) error {
-	return nil
-}
-
-func (m *MockRabbitMQ) RegisterQueueExchange(queueName string, exchangeName string, messageHandler func(d amqp.Delivery)) {
+func (m *MockPublisher) Close() {
 }
 
 type MockActorClient struct{}
@@ -93,10 +84,10 @@ func TestDelete(t *testing.T) {
 
 	movieRepository := &MockMovieRepository{}
 	reviewService := &MockReviewService{}
-	rabbitMq := &MockRabbitMQ{}
+	mockPublisher := &MockPublisher{}
 	actorClient := &MockActorClient{}
 
-	service := NewMovieService(movieRepository, reviewService, rabbitMq, actorClient, "")
+	service := NewMovieService(movieRepository, reviewService, mockPublisher, actorClient, "")
 
 	tests := []struct {
 		testName    string

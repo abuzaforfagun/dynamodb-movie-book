@@ -65,6 +65,11 @@ func main() {
 		log.Fatal("Unable to connect to RabbitMQ", err)
 	}
 	defer rmq.Close()
+	publisher, err := rabbitmq.NewPublisher(rabbitMqUri)
+	if err != nil {
+		log.Fatal("Unable to connect to RabbitMQ", err)
+	}
+	defer publisher.Close()
 
 	userUpdatedExchageName := os.Getenv("EXCHANGE_NAME_USER_UPDATED")
 
@@ -72,7 +77,7 @@ func main() {
 
 	userRepository := repositories.NewUserRepository(dbConnector.Client, dbConnector.TableName)
 
-	userService := services.NewUserService(userRepository, rmq, userUpdatedExchageName)
+	userService := services.NewUserService(userRepository, publisher, userUpdatedExchageName)
 
 	router := gin.Default()
 	router.GET("/swagger/*any", ginSwagger.WrapHandler(swaggerFiles.Handler))
