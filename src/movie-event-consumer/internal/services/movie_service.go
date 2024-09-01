@@ -36,13 +36,13 @@ func NewMovieService(
 	client *dynamodb.Client,
 	publisher rabbitmq.Publisher,
 	tableName string,
-	scoreUpdatedQueueName string,
+	scoreUpdatedExchangeName string,
 	numberOfTopMovies int) MovieService {
 	return &movieService{
 		client:                client,
 		publisher:             publisher,
 		tableName:             tableName,
-		scoreUpdatedQueueName: scoreUpdatedQueueName,
+		scoreUpdatedQueueName: scoreUpdatedExchangeName,
 		numberOfTopMovies:     numberOfTopMovies,
 	}
 }

@@ -63,9 +63,10 @@ func main() {
 		log.Fatal("Unable to create publisher", err)
 	}
 	defer publisher.Close()
+	movieScoreUpdatedExchangeName := os.Getenv("EXCHANGE_NAME_SCORE_UPDATED")
 
 	genreService := services.NewGenreService(dbConnector.Client, awsTableName)
-	movieService := services.NewMovieService(dbConnector.Client, publisher, awsTableName, movieScoreUpdatedQueueName, numberOfTopRatedMovies)
+	movieService := services.NewMovieService(dbConnector.Client, publisher, awsTableName, movieScoreUpdatedExchangeName, numberOfTopRatedMovies)
 	reviewService := services.NewReviewService(dbConnector.Client, awsTableName)
 
 	moviedAddedHandler := processor.NewMovieAddedHandler(&movieService, &genreService)
@@ -75,9 +76,8 @@ func main() {
 	rmq.RegisterQueueExchange(movieAddedQueueName, movieAddedExchangeName, moviedAddedHandler.HandleMessage)
 	rmq.RegisterQueueExchange(reviewAddedQueueName, reviewAddedExchangeName, reviewAddedHandler.HandleMessage)
 
-	movieScoreUpdatedExchangeName := os.Getenv("EXCHANGE_NAME_SCORE_UPDATED")
 	rmq.DeclareDirectExchanges([]string{movieScoreUpdatedExchangeName})
-	rmq.RegisterQueueExchange(reviewAddedQueueName, movieScoreUpdatedExchangeName, movieScoreUpdatedHandler.HandleMessage)
+	rmq.RegisterQueueExchange(movieScoreUpdatedQueueName, movieScoreUpdatedExchangeName, movieScoreUpdatedHandler.HandleMessage)
 
 	log.Println("Ready to process events...")
 	select {}
