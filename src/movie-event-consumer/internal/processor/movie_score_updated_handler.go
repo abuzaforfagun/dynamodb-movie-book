@@ -27,11 +27,13 @@ func (h *MovieScoreUpdatedHandler) HandleMessage(msg amqp.Delivery) {
 
 	if err != nil {
 		log.Println("Unable to unmarshal", err)
+		msg.Nack(false, false)
 		return
 	}
 
 	if payload.MovieId == "" {
 		log.Println("ERROR: MovieId should not be empty.")
+		msg.Nack(false, false)
 		return
 	}
 
@@ -39,6 +41,7 @@ func (h *MovieScoreUpdatedHandler) HandleMessage(msg amqp.Delivery) {
 
 	if err != nil {
 		log.Println("ERROR: Unable to populate movies under genres", err)
+		msg.Nack(false, false)
 	}
 
 	msg.Ack(false)

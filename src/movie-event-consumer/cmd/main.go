@@ -70,36 +70,36 @@ func main() {
 	genreService := services.NewGenreService(dbConnector.Client, awsTableName)
 	movieService := services.NewMovieService(dbConnector.Client, publisher, awsTableName, movieScoreUpdatedExchangeName, numberOfTopRatedMovies)
 	reviewService := services.NewReviewService(dbConnector.Client, awsTableName)
-	dlxService := services.NewDlxService(dbConnector.Client, awsTableName)
 
 	moviedAddedHandler := processor.NewMovieAddedHandler(&movieService, &genreService)
 	reviewAddedHandler := processor.NewReviewAddedHandler(&movieService, &reviewService)
 	movieScoreUpdatedHandler := processor.NewMovieScoreUpdatedHandler(&movieService)
-	dlxMovieAddedHandler := processor.NewDlxMovieAddedHandler(dlxService)
-	dlxReviewAddedHandler := processor.NewDlxMovieAddedHandler(dlxService)
 
 	dlxExchangeName := os.Getenv("DLX")
-	dlxQueueName := os.Getenv("DLX")
 	rmq.DeclareTopicExchanges([]string{dlxExchangeName})
+	rmq.DeclareDirectExchanges([]string{movieScoreUpdatedExchangeName})
 
-	rmq.RegisterQueueExchange(dlxQueueName, dlxExchangeName, movieAddedQueueName, nil, dlxMovieAddedHandler.HandleMessage)
+	// rmq.RegisterDlxQueueExchange(dlxQueueName, dlxExchangeName, "dlx."+movieScoreUpdatedQueueName, dlxMovieScoreUpdatedHandler.HandleMessage)
+	movieScoreUpdatedTable := amqp.Table{
+		"x-message-ttl":             int32(10000),
+		"x-dead-letter-exchange":    dlxExchangeName,                     // The DLX exchange
+		"x-dead-letter-routing-key": "dlx." + movieScoreUpdatedQueueName, // Routing key for DLX
+	}
+	rmq.RegisterQueueExchange(movieScoreUpdatedQueueName, movieScoreUpdatedExchangeName, "", movieScoreUpdatedTable, movieScoreUpdatedHandler.HandleMessage)
+
 	movieAddedTable := amqp.Table{
 		"x-message-ttl":             int32(10000),
-		"x-dead-letter-exchange":    dlxExchangeName,     // The DLX exchange
-		"x-dead-letter-routing-key": movieAddedQueueName, // Routing key for DLX
+		"x-dead-letter-exchange":    dlxExchangeName,              // The DLX exchange
+		"x-dead-letter-routing-key": "dlx." + movieAddedQueueName, // Routing key for DLX
 	}
 	rmq.RegisterQueueExchange(movieAddedQueueName, movieAddedExchangeName, "", movieAddedTable, moviedAddedHandler.HandleMessage)
 
-	rmq.RegisterQueueExchange(dlxQueueName, dlxExchangeName, reviewAddedQueueName, nil, dlxReviewAddedHandler.HandleMessage)
 	reviewAddedTable := amqp.Table{
 		"x-message-ttl":             int32(10000),
-		"x-dead-letter-exchange":    dlxExchangeName,      // The DLX exchange
-		"x-dead-letter-routing-key": reviewAddedQueueName, // Routing key for DLX
+		"x-dead-letter-exchange":    dlxExchangeName,               // The DLX exchange
+		"x-dead-letter-routing-key": "dlx." + reviewAddedQueueName, // Routing key for DLX
 	}
 	rmq.RegisterQueueExchange(reviewAddedQueueName, reviewAddedExchangeName, "", reviewAddedTable, reviewAddedHandler.HandleMessage)
-
-	rmq.DeclareDirectExchanges([]string{movieScoreUpdatedExchangeName})
-	rmq.RegisterQueueExchange(movieScoreUpdatedQueueName, movieScoreUpdatedExchangeName, "", nil, movieScoreUpdatedHandler.HandleMessage)
 
 	log.Println("Ready to process events...")
 	select {}
