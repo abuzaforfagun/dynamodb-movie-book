@@ -12,7 +12,13 @@ type RabbitMQ interface {
 	Close()
 	DeclareFanoutExchanges(exchangeNames []string) error
 	DeclareDirectExchanges(exchangeNames []string) error
-	RegisterQueueExchange(queueName string, exchangeName string, messageHandler func(d amqp.Delivery))
+	DeclareTopicExchanges(exchangeNames []string) error
+	RegisterQueueExchange(
+		queueName string,
+		exchangeName string,
+		routingkey string,
+		args amqp.Table,
+		messageHandler func(d amqp.Delivery))
 }
 
 type rabbitMQ struct {
@@ -100,7 +106,16 @@ func (r *rabbitMQ) DeclareDirectExchanges(exchangeNames []string) error {
 	return r.DeclareExchanges(exchangeNames, "direct")
 }
 
-func (r *rabbitMQ) RegisterQueueExchange(queueName string, exchangeName string, messageHandler func(d amqp.Delivery)) {
+func (r *rabbitMQ) DeclareTopicExchanges(exchangeNames []string) error {
+	return r.DeclareExchanges(exchangeNames, "topic")
+}
+
+func (r *rabbitMQ) RegisterQueueExchange(
+	queueName string,
+	exchangeName string,
+	routingKey string,
+	args amqp.Table,
+	messageHandler func(d amqp.Delivery)) {
 	ch, err := r.conn.Channel()
 	if err != nil {
 		log.Fatalf("failed to create the [channel=%s]", exchangeName)
@@ -114,7 +129,7 @@ func (r *rabbitMQ) RegisterQueueExchange(queueName string, exchangeName string, 
 		false,     // delete when unused
 		false,     // exclusive
 		false,     // no-wait
-		nil,       // arguments
+		args,      // arguments
 	)
 	if err != nil {
 		log.Fatalf("Failed to declare queue: %s", err)
@@ -122,7 +137,7 @@ func (r *rabbitMQ) RegisterQueueExchange(queueName string, exchangeName string, 
 
 	err = ch.QueueBind(
 		queueName,    // queue name
-		"",           // routing key (not used for fanout)
+		routingKey,   // routing key (not used for fanout)
 		exchangeName, // exchange name
 		false,        // no-wait
 		nil,          // arguments

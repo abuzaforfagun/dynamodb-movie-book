@@ -69,7 +69,7 @@ func main() {
 
 	moviedAddedHandler := processor.NewMovieAddedHandler(actorService)
 
-	rmq.RegisterQueueExchange(movieAddedQueueName, movieAddedExchangeName, moviedAddedHandler.HandleMessage)
+	rmq.RegisterQueueExchange(movieAddedQueueName, movieAddedExchangeName, "", nil, moviedAddedHandler.HandleMessage)
 
 	log.Println("Ready to process events...")
 	select {}

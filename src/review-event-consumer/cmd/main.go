@@ -62,7 +62,7 @@ func main() {
 	}
 	defer rmq.Close()
 
-	rmq.RegisterQueueExchange(userUpdatedQueueName, userUpdatedExchangeName, userUpdatedHandler.HandleMessage)
+	rmq.RegisterQueueExchange(userUpdatedQueueName, userUpdatedExchangeName, "", nil, userUpdatedHandler.HandleMessage)
 
 	log.Println("Ready to process events...")
 	select {}

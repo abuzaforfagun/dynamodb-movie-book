@@ -73,11 +73,11 @@ func main() {
 	reviewAddedHandler := processor.NewReviewAddedHandler(&movieService, &reviewService)
 	movieScoreUpdatedHandler := processor.NewMovieScoreUpdatedHandler(&movieService)
 
-	rmq.RegisterQueueExchange(movieAddedQueueName, movieAddedExchangeName, moviedAddedHandler.HandleMessage)
-	rmq.RegisterQueueExchange(reviewAddedQueueName, reviewAddedExchangeName, reviewAddedHandler.HandleMessage)
+	rmq.RegisterQueueExchange(movieAddedQueueName, movieAddedExchangeName, "", nil, moviedAddedHandler.HandleMessage)
+	rmq.RegisterQueueExchange(reviewAddedQueueName, reviewAddedExchangeName, "", nil, reviewAddedHandler.HandleMessage)
 
 	rmq.DeclareDirectExchanges([]string{movieScoreUpdatedExchangeName})
-	rmq.RegisterQueueExchange(movieScoreUpdatedQueueName, movieScoreUpdatedExchangeName, movieScoreUpdatedHandler.HandleMessage)
+	rmq.RegisterQueueExchange(movieScoreUpdatedQueueName, movieScoreUpdatedExchangeName, "", nil, movieScoreUpdatedHandler.HandleMessage)
 
 	log.Println("Ready to process events...")
 	select {}
