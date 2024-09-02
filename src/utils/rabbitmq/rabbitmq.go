@@ -172,6 +172,5 @@ func (r *rabbitMQ) consumeMessages(exchangeName string, queueName string, handle
 
 	for msg := range msgs {
 		handler(msg)
-		msg.Ack(false)
 	}
 }

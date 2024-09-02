@@ -42,5 +42,6 @@ func (h *MovieAddedHandler) HandleMessage(msg amqp.Delivery) {
 		return
 	}
 
+	msg.Ack(false)
 	log.Printf("Message processing completed [MessageId=%s]", payload.MessageId)
 }

@@ -65,5 +65,6 @@ func (h *ReviewAddedHandler) HandleMessage(msg amqp.Delivery) {
 		log.Println("ERROR: Unable to update movie score")
 	}
 
+	msg.Ack(false)
 	log.Printf("Processing completed [MessageId=%s]", payload.MessageId)
 }

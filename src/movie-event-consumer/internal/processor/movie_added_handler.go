@@ -48,6 +48,9 @@ func (h *MovieAddedHandler) HandleMessage(msg amqp.Delivery) {
 
 	if err != nil {
 		log.Println("ERROR: Unable to populate movies under genres", err)
+		msg.Nack(false, false)
 	}
+
+	msg.Ack(false)
 	log.Printf("Message processing completed [MessageId=%s]", payload.MessageId)
 }

@@ -34,5 +34,7 @@ func (h *UserUpdatedHandler) HandleMessage(msg amqp.Delivery) {
 		log.Printf("ERROR: Unable to update reviewer %v\n", err)
 		// TODO: requee or move to DLQ
 	}
+
+	msg.Ack(false)
 	log.Printf("Message processing completed [MessageId=%s]", payload.MessageId)
 }
