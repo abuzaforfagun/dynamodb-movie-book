@@ -25,6 +25,8 @@ func NewReviewAddedHandler(
 }
 
 func (h *ReviewAddedHandler) HandleMessage(msg amqp.Delivery) {
+	msg.Nack(false, false)
+	return
 	var payload events.ReviewAdded
 	log.Printf("Processing message [MessageId=%s]", payload.MessageId)
 
@@ -32,11 +34,13 @@ func (h *ReviewAddedHandler) HandleMessage(msg amqp.Delivery) {
 
 	if err != nil {
 		log.Println("Unable to unmarshal", err)
+		msg.Nack(false, false)
 		return
 	}
 
 	if payload.MovieId == "" || payload.UserId == "" {
 		log.Println("ERROR: MovieId should not be empty.")
+		msg.Nack(false, false)
 		return
 	}
 
@@ -44,12 +48,14 @@ func (h *ReviewAddedHandler) HandleMessage(msg amqp.Delivery) {
 
 	if err != nil || movie == nil {
 		log.Printf("ERROR: Invalid [MovieId=%s]\n", payload.MovieId)
+		msg.Nack(false, false)
 		return
 	}
 
 	reviews, err := h.reviewService.GetReviews(payload.MovieId)
 	if err != nil {
 		log.Println("ERROR: Unable to get reviews")
+		msg.Nack(false, false)
 		return
 	}
 
@@ -63,6 +69,8 @@ func (h *ReviewAddedHandler) HandleMessage(msg amqp.Delivery) {
 	err = h.movieService.UpdateMovieScore(payload.MovieId, roundedAvgScore)
 	if err != nil {
 		log.Println("ERROR: Unable to update movie score")
+		msg.Nack(false, false)
+		return
 	}
 
 	msg.Ack(false)

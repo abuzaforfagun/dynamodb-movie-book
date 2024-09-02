@@ -29,11 +29,13 @@ func (h *MovieAddedHandler) HandleMessage(msg amqp.Delivery) {
 
 	if err != nil {
 		log.Println("Unable to unmarshal", err)
+		msg.Nack(false, false)
 		return
 	}
 
 	if payload.MovieId == "" {
 		log.Println("ERROR: MovieId should not be empty.")
+		msg.Nack(false, false)
 		return
 	}
 
@@ -41,6 +43,7 @@ func (h *MovieAddedHandler) HandleMessage(msg amqp.Delivery) {
 
 	if err != nil || movie == nil {
 		log.Printf("ERROR: Invalid [MovieId=%s]\n", payload.MovieId)
+		msg.Nack(false, false)
 		return
 	}
 

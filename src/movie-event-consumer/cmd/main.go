@@ -10,6 +10,7 @@ import (
 	"github.com/abuzaforfagun/dynamodb-movie-book/movie-event-consumer/internal/services"
 	"github.com/abuzaforfagun/dynamodb-movie-book/utils/dynamodb_connector"
 	"github.com/abuzaforfagun/dynamodb-movie-book/utils/rabbitmq"
+	"github.com/streadway/amqp"
 )
 
 func main() {
@@ -43,6 +44,7 @@ func main() {
 	reviewAddedExchangeName := os.Getenv("EXCHANGE_NAME_REVIEW_ADDED")
 	movieAddedQueueName := os.Getenv("MOVIE_ADDED_QUEUE")
 	reviewAddedQueueName := os.Getenv("REVIEW_ADDED_QUEUE")
+
 	numberOfTopRatedMoviesStr := os.Getenv("NUMBER_OF_TOP_MOVIES")
 	numberOfTopRatedMovies, err := strconv.Atoi(numberOfTopRatedMoviesStr)
 	if err != nil {
@@ -68,13 +70,33 @@ func main() {
 	genreService := services.NewGenreService(dbConnector.Client, awsTableName)
 	movieService := services.NewMovieService(dbConnector.Client, publisher, awsTableName, movieScoreUpdatedExchangeName, numberOfTopRatedMovies)
 	reviewService := services.NewReviewService(dbConnector.Client, awsTableName)
+	dlxService := services.NewDlxService(dbConnector.Client, awsTableName)
 
 	moviedAddedHandler := processor.NewMovieAddedHandler(&movieService, &genreService)
 	reviewAddedHandler := processor.NewReviewAddedHandler(&movieService, &reviewService)
 	movieScoreUpdatedHandler := processor.NewMovieScoreUpdatedHandler(&movieService)
+	dlxMovieAddedHandler := processor.NewDlxMovieAddedHandler(dlxService)
+	dlxReviewAddedHandler := processor.NewDlxMovieAddedHandler(dlxService)
 
-	rmq.RegisterQueueExchange(movieAddedQueueName, movieAddedExchangeName, "", nil, moviedAddedHandler.HandleMessage)
-	rmq.RegisterQueueExchange(reviewAddedQueueName, reviewAddedExchangeName, "", nil, reviewAddedHandler.HandleMessage)
+	dlxExchangeName := os.Getenv("DLX")
+	dlxQueueName := os.Getenv("DLX")
+	rmq.DeclareTopicExchanges([]string{dlxExchangeName})
+
+	rmq.RegisterQueueExchange(dlxQueueName, dlxExchangeName, movieAddedQueueName, nil, dlxMovieAddedHandler.HandleMessage)
+	movieAddedTable := amqp.Table{
+		"x-message-ttl":             int32(10000),
+		"x-dead-letter-exchange":    dlxExchangeName,     // The DLX exchange
+		"x-dead-letter-routing-key": movieAddedQueueName, // Routing key for DLX
+	}
+	rmq.RegisterQueueExchange(movieAddedQueueName, movieAddedExchangeName, "", movieAddedTable, moviedAddedHandler.HandleMessage)
+
+	rmq.RegisterQueueExchange(dlxQueueName, dlxExchangeName, reviewAddedQueueName, nil, dlxReviewAddedHandler.HandleMessage)
+	reviewAddedTable := amqp.Table{
+		"x-message-ttl":             int32(10000),
+		"x-dead-letter-exchange":    dlxExchangeName,      // The DLX exchange
+		"x-dead-letter-routing-key": reviewAddedQueueName, // Routing key for DLX
+	}
+	rmq.RegisterQueueExchange(reviewAddedQueueName, reviewAddedExchangeName, "", reviewAddedTable, reviewAddedHandler.HandleMessage)
 
 	rmq.DeclareDirectExchanges([]string{movieScoreUpdatedExchangeName})
 	rmq.RegisterQueueExchange(movieScoreUpdatedQueueName, movieScoreUpdatedExchangeName, "", nil, movieScoreUpdatedHandler.HandleMessage)
