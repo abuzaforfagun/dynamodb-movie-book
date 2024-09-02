@@ -10,6 +10,7 @@ import (
 	"github.com/abuzaforfagun/dynamodb-movie-book/review-event-consumer/internal/services"
 	"github.com/abuzaforfagun/dynamodb-movie-book/utils/dynamodb_connector"
 	"github.com/abuzaforfagun/dynamodb-movie-book/utils/rabbitmq"
+	"github.com/streadway/amqp"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/credentials/insecure"
 )
@@ -62,7 +63,14 @@ func main() {
 	}
 	defer rmq.Close()
 
-	rmq.RegisterQueueExchange(userUpdatedQueueName, userUpdatedExchangeName, "", nil, userUpdatedHandler.HandleMessage)
+	dlxExchangeName := os.Getenv("DLX")
+	rmq.DeclareTopicExchanges([]string{dlxExchangeName})
+	userUpdatedTable := amqp.Table{
+		"x-message-ttl":             int32(10000),
+		"x-dead-letter-exchange":    dlxExchangeName,      // The DLX exchange
+		"x-dead-letter-routing-key": userUpdatedQueueName, // Routing key for DLX
+	}
+	rmq.RegisterQueueExchange(userUpdatedQueueName, userUpdatedExchangeName, "", userUpdatedTable, userUpdatedHandler.HandleMessage)
 
 	log.Println("Ready to process events...")
 	select {}

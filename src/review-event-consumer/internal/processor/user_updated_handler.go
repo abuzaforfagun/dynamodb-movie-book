@@ -26,13 +26,16 @@ func (h *UserUpdatedHandler) HandleMessage(msg amqp.Delivery) {
 
 	if payload == nil {
 		log.Println("Invalid message", payload)
+		msg.Nack(false, false)
+		return
 	}
 
 	err := h.reviewService.UpdateReviewerName(payload.UserId)
 
 	if err != nil {
 		log.Printf("ERROR: Unable to update reviewer %v\n", err)
-		// TODO: requee or move to DLQ
+		msg.Nack(false, false)
+		return
 	}
 
 	msg.Ack(false)

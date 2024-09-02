@@ -10,6 +10,7 @@ import (
 	"github.com/abuzaforfagun/dynamodb-movie-book/grpc/moviepb"
 	"github.com/abuzaforfagun/dynamodb-movie-book/utils/dynamodb_connector"
 	"github.com/abuzaforfagun/dynamodb-movie-book/utils/rabbitmq"
+	"github.com/streadway/amqp"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/credentials/insecure"
 )
@@ -69,7 +70,14 @@ func main() {
 
 	moviedAddedHandler := processor.NewMovieAddedHandler(actorService)
 
-	rmq.RegisterQueueExchange(movieAddedQueueName, movieAddedExchangeName, "", nil, moviedAddedHandler.HandleMessage)
+	dlxExchangeName := os.Getenv("DLX")
+	rmq.DeclareTopicExchanges([]string{dlxExchangeName})
+	movieAddedTable := amqp.Table{
+		"x-message-ttl":             int32(10000),
+		"x-dead-letter-exchange":    dlxExchangeName,     // The DLX exchange
+		"x-dead-letter-routing-key": movieAddedQueueName, // Routing key for DLX
+	}
+	rmq.RegisterQueueExchange(movieAddedQueueName, movieAddedExchangeName, "", movieAddedTable, moviedAddedHandler.HandleMessage)
 
 	log.Println("Ready to process events...")
 	select {}

@@ -25,8 +25,6 @@ func NewReviewAddedHandler(
 }
 
 func (h *ReviewAddedHandler) HandleMessage(msg amqp.Delivery) {
-	msg.Nack(false, false)
-	return
 	var payload events.ReviewAdded
 	log.Printf("Processing message [MessageId=%s]", payload.MessageId)
 

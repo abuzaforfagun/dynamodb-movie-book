@@ -125,6 +125,7 @@ services:
       EXCHANGE_NAME_MOVIE_ADDED: movie_added
       MOVIE_ADDED_QUEUE: actor_event_consumer.movie_added
       MOVIE_GRPC_API: "movie-grpc:6001"
+      DLX: dlx.actor_event_consumer
     depends_on:
       - rabbitmq
       - dynamodb-local
@@ -150,6 +151,7 @@ services:
       MOVIE_SCORE_UPDATED_QUEUE: movie_event_consumer.movie_score_updated
       EXCHANGE_NAME_SCORE_UPDATED: movie_score_updated
       NUMBER_OF_TOP_MOVIES: 10
+      DLX: dlx.movie_event_consumer
     depends_on:
       - rabbitmq
       - dynamodb-local
@@ -170,6 +172,7 @@ services:
       EXCHANGE_NAME_USER_UPDATED: user_updated
       USER_UPDATE_QUEUE: review_service.user_updated
       USER_GRPC_API: "user-grpc:6002"
+      DLX: dlx.review_event_consumer
     depends_on:
       - rabbitmq
       - dynamodb-local
