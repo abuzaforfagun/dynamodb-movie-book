@@ -79,7 +79,6 @@ func main() {
 	rmq.DeclareTopicExchanges([]string{dlxExchangeName})
 	rmq.DeclareDirectExchanges([]string{movieScoreUpdatedExchangeName})
 
-	// rmq.RegisterDlxQueueExchange(dlxQueueName, dlxExchangeName, "dlx."+movieScoreUpdatedQueueName, dlxMovieScoreUpdatedHandler.HandleMessage)
 	movieScoreUpdatedTable := amqp.Table{
 		"x-message-ttl":             int32(10000),
 		"x-dead-letter-exchange":    dlxExchangeName,                     // The DLX exchange
